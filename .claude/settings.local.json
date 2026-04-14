@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(nvm list:*)",
+      "Bash(fnm list:*)",
+      "Bash(nvm use:*)"
+    ]
+  }
+}
