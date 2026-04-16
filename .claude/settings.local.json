@@ -4,7 +4,10 @@
       "Bash(npm -v)",
       "Bash(nvm list:*)",
       "Bash(fnm list:*)",
-      "Bash(nvm use:*)"
+      "Bash(nvm use:*)",
+      "Bash(pip show *)",
+      "Bash(pdftotext *)",
+      "Bash(npx nuxt *)"
     ]
   }
 }

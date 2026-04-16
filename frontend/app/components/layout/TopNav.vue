@@ -2,7 +2,8 @@
   <header class="top-nav">
     <nav class="container top-nav__inner" aria-label="Navigare principală">
       <NuxtLink to="/" class="top-nav__logo">
-        Sterilizări Gratuite
+        <PawPrint :size="24" class="top-nav__logo-icon" />
+        <span>sterilizări<strong>gratuite</strong></span>
       </NuxtLink>
 
       <button
@@ -12,7 +13,8 @@
         @click="menuOpen = !menuOpen"
       >
         <span class="sr-only">Meniu</span>
-        <span class="top-nav__hamburger" />
+        <Menu v-if="!menuOpen" :size="24" />
+        <X v-else :size="24" />
       </button>
 
       <ul id="main-menu" class="top-nav__links" :class="{ 'top-nav__links--open': menuOpen }">
@@ -27,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { PawPrint, Menu, X } from 'lucide-vue-next'
+
 const menuOpen = ref(false)
 
 const links = [
@@ -39,7 +43,7 @@ const links = [
 
 <style scoped>
 .top-nav {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-light);
   background: var(--color-bg);
 }
 
@@ -52,15 +56,31 @@ const links = [
 }
 
 .top-nav__logo {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
   color: var(--color-primary);
   text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.top-nav__logo:hover {
+  text-decoration: none;
+}
+
+.top-nav__logo-icon {
+  color: var(--color-accent);
+}
+
+.top-nav__logo strong {
+  color: var(--color-accent);
 }
 
 .top-nav__links {
   display: flex;
-  gap: var(--space-lg);
+  gap: var(--space-xl);
   list-style: none;
 }
 
@@ -68,12 +88,20 @@ const links = [
   color: var(--color-text);
   font-size: var(--font-size-sm);
   font-weight: 500;
+  text-decoration: none;
+  padding: var(--space-xs) 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
 }
 
-.top-nav__links a:hover,
-.top-nav__links a.router-link-active {
-  color: var(--color-primary);
+.top-nav__links a:hover {
+  color: var(--color-accent);
   text-decoration: none;
+}
+
+.top-nav__links a.router-link-exact-active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-accent);
 }
 
 .top-nav__toggle {
@@ -81,33 +109,14 @@ const links = [
   background: none;
   border: none;
   cursor: pointer;
-  padding: var(--space-sm);
+  padding: var(--space-xs);
+  color: var(--color-text);
 }
-
-.top-nav__hamburger {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: var(--color-text);
-  position: relative;
-}
-
-.top-nav__hamburger::before,
-.top-nav__hamburger::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--color-text);
-}
-
-.top-nav__hamburger::before { top: -7px; }
-.top-nav__hamburger::after { top: 7px; }
 
 @media (max-width: 768px) {
   .top-nav__toggle {
-    display: block;
+    display: flex;
+    align-items: center;
   }
 
   .top-nav__links {
@@ -121,6 +130,8 @@ const links = [
     border-bottom: 1px solid var(--color-border);
     padding: var(--space-md);
     gap: var(--space-md);
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   .top-nav__links--open {
