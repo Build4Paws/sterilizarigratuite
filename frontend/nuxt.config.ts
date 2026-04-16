@@ -12,6 +12,21 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'ro' },
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
+      link: [
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com',
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: '',
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap',
+        },
+      ],
       meta: [
         { name: 'description', content: 'Găsește campanii de sterilizare gratuită pentru câini și pisici în România. Înscrie-te și te anunțăm când apare o campanie în zona ta.' },
         { property: 'og:type', content: 'website' },
