@@ -7,7 +7,11 @@
       "Bash(nvm use:*)",
       "Bash(pip show *)",
       "Bash(pdftotext *)",
-      "Bash(npx nuxt *)"
+      "Bash(npx nuxt *)",
+      "WebSearch",
+      "Bash(curl -s \"https://roloca.coldfuse.io/judete\")",
+      "Bash(curl -s \"https://roloca.coldfuse.io/judete/CJ\")",
+      "Bash(node -e \"const fs = require\\('fs'\\); const d = JSON.parse\\(fs.readFileSync\\('frontend/app/assets/data/judete.json','utf8'\\)\\); console.log\\('Counties:', d.judete.length\\); let total = 0; d.judete.forEach\\(j => total += j.localitati.length\\); console.log\\('Total localities:', total\\); console.log\\('First:', d.judete[0].auto, d.judete[0].nume\\);\")"
     ]
   }
 }

@@ -2,8 +2,7 @@
   <header class="top-nav">
     <nav class="container top-nav__inner" aria-label="Navigare principală">
       <NuxtLink to="/" class="top-nav__logo">
-        <PawPrint :size="24" class="top-nav__logo-icon" />
-        <span>sterilizări<strong>gratuite</strong></span>
+        <img src="~/assets/images/logo-horizontal.svg" alt="Build4Paws" class="top-nav__logo-img" />
       </NuxtLink>
 
       <button
@@ -29,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { PawPrint, Menu, X } from 'lucide-vue-next'
+import { Menu, X } from 'lucide-vue-next'
 
 const menuOpen = ref(false)
 
@@ -58,24 +57,16 @@ const links = [
 .top-nav__logo {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  color: var(--color-primary);
   text-decoration: none;
-  letter-spacing: -0.01em;
 }
 
 .top-nav__logo:hover {
   text-decoration: none;
 }
 
-.top-nav__logo-icon {
-  color: var(--color-accent);
-}
-
-.top-nav__logo strong {
-  color: var(--color-accent);
+.top-nav__logo-img {
+  height: 36px;
+  width: auto;
 }
 
 .top-nav__links {

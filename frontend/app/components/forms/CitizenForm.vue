@@ -42,9 +42,8 @@
         v-model="form.county"
         label="Județ"
         placeholder="Alege județul"
-        :options="countyOptions"
+        :options="counties"
         :required="true"
-        :disabled="loadingCounties"
         :error="touched.county ? errors.county : undefined"
         @blur="touch('county')"
         @update:model-value="onCountyChange"
@@ -54,9 +53,9 @@
         v-model="form.locality"
         label="Localitate"
         placeholder="Alege localitatea"
-        :options="localityOptions"
+        :options="localities"
         :required="true"
-        :disabled="!form.county || loadingLocalities"
+        :disabled="!form.county"
         :error="touched.locality ? errors.locality : undefined"
         @blur="touch('locality')"
       />
@@ -117,7 +116,11 @@
 import type { CitizenRegistration } from '~/types'
 
 const router = useRouter()
-const { counties, localities, loadingCounties, loadingLocalities, fetchCounties, fetchLocalities } = useLocationData()
+const { counties, localities, setCounty, init: initLocations } = useLocationData()
+
+onMounted(() => {
+  initLocations()
+})
 
 const form = reactive<CitizenRegistration>({
   name: '',
@@ -153,13 +156,6 @@ const countOptions = Array.from({ length: 10 }, (_, i) => ({
   label: String(i + 1),
 }))
 
-const countyOptions = computed(() =>
-  counties.value.map(c => ({ value: c.code, label: c.name }))
-)
-
-const localityOptions = computed(() =>
-  localities.value.map(l => ({ value: l.id, label: l.name }))
-)
 
 function validate(): boolean {
   const e: Record<string, string> = {}
@@ -191,7 +187,7 @@ function touch(field: string) {
 
 function onCountyChange(code: string) {
   form.locality = ''
-  fetchLocalities(code)
+  setCounty(code)
 }
 
 async function handleSubmit() {
@@ -239,10 +235,6 @@ async function handleSubmit() {
   }
 }
 
-// Fetch counties on mount
-onMounted(() => {
-  fetchCounties()
-})
 </script>
 
 <style scoped>
