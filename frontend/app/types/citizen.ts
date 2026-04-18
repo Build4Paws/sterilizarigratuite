@@ -1,4 +1,5 @@
-export interface CitizenRegistration {
+/** UI form state — maps to reactive form fields */
+export interface CitizenFormState {
   name: string
   phone?: string
   email?: string
@@ -9,6 +10,18 @@ export interface CitizenRegistration {
   dogCount?: number
   catCount?: number
   gdprConsent: boolean
+}
+
+/** API payload — what we POST to /register */
+export interface CitizenRegistration {
+  name: string
+  phone?: string
+  email?: string
+  county: string
+  locality: string
+  species: ('dog' | 'cat')[]
+  dogCount?: number
+  catCount?: number
 }
 
 export interface CitizenConfirmation {
