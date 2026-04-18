@@ -14,7 +14,6 @@
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-muted);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
   user-select: none;
 }

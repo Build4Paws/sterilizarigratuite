@@ -26,8 +26,8 @@
     <!-- Cum te contactăm? -->
     <div class="form-section">
       <div class="form-section__header">
-        <h3 class="form-section__title">Cum te contactăm?</h3>
-        <p class="form-section__hint">Lasă-ne un email, un număr de telefon, sau ambele.</p>
+        <h3 class="form-section__title">Cum preferi să te contactăm?</h3>
+        <p class="form-section__hint">Lasă-ne un număr de telefon sau o adresă de email, sau ambele</p>
       </div>
       <UiFormRow align="end" :nowrap="!isMobile">
         <UiFormItem basis="140px">
@@ -56,7 +56,7 @@
     <div class="form-section">
       <div class="form-section__header">
         <h3 class="form-section__title">Unde locuiești?</h3>
-        <p class="form-section__hint">Te anunțăm doar când apare o campanie aproape de tine.</p>
+        <p class="form-section__hint">Te anunțăm doar când apare o campanie în localitatea ta</p>
       </div>
       <UiFormRow>
         <UiFormItem basis="200px">
@@ -86,10 +86,10 @@
       </UiFormRow>
     </div>
 
-    <!-- Ce animăluțe ai? -->
+    <!-- Ce dorești să sterilizezi?? -->
     <fieldset class="form-section form-section--fieldset">
       <div class="form-section__header">
-        <legend class="form-section__title">Ce animăluțe ai?</legend>
+        <legend class="form-section__title">Ce dorești să sterilizezi?</legend>
         <p class="form-section__hint">Bifează ce prieteni blănoși ai acasă.</p>
       </div>
       <UiFormRow>

@@ -7,44 +7,8 @@
           Sterilizare gratuită pentru câinele sau pisica ta
         </h1>
         <p class="hero__subtitle">
-          Te anunțăm când se organizează o campanie de sterilizare gratuită în zona ta.
+          Te anunțăm când se organizează o campanie de sterilizare gratuită în localitatea ta.
         </p>
-      </div>
-
-      <!-- Decorative illustrations — desktop only -->
-      <div class="hero__decor hero__decor--left" aria-hidden="true">
-        <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" class="hero__illustration">
-          <!-- Dog silhouette -->
-          <ellipse cx="60" cy="120" rx="40" ry="8" fill="rgba(255,255,255,0.06)" />
-          <path d="M30 95 C30 75, 40 60, 60 55 C80 60, 90 75, 90 95 L90 110 C90 115, 85 118, 80 118 L40 118 C35 118, 30 115, 30 110 Z" fill="rgba(255,255,255,0.1)" />
-          <circle cx="48" cy="80" r="3" fill="rgba(255,255,255,0.25)" />
-          <circle cx="72" cy="80" r="3" fill="rgba(255,255,255,0.25)" />
-          <ellipse cx="60" cy="88" rx="5" ry="3.5" fill="rgba(255,255,255,0.2)" />
-          <path d="M28 68 C22 55, 25 42, 35 45 C40 47, 35 60, 33 68" fill="rgba(255,255,255,0.1)" />
-          <path d="M92 68 C98 55, 95 42, 85 45 C80 47, 85 60, 87 68" fill="rgba(255,255,255,0.1)" />
-          <path d="M50 105 L50 118" stroke="rgba(255,255,255,0.08)" stroke-width="3" stroke-linecap="round" />
-          <path d="M70 105 L70 118" stroke="rgba(255,255,255,0.08)" stroke-width="3" stroke-linecap="round" />
-          <path d="M90 95 C95 90, 105 92, 108 98 C110 102, 105 100, 100 97" fill="rgba(255,255,255,0.08)" />
-        </svg>
-      </div>
-      <div class="hero__decor hero__decor--right" aria-hidden="true">
-        <svg viewBox="0 0 120 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="hero__illustration">
-          <!-- Cat silhouette -->
-          <ellipse cx="60" cy="115" rx="35" ry="6" fill="rgba(255,255,255,0.06)" />
-          <path d="M35 90 C35 72, 45 60, 60 58 C75 60, 85 72, 85 90 L85 105 C85 110, 80 112, 75 112 L45 112 C40 112, 35 110, 35 105 Z" fill="rgba(255,255,255,0.1)" />
-          <circle cx="50" cy="78" r="3.5" fill="rgba(255,255,255,0.25)" />
-          <circle cx="70" cy="78" r="3.5" fill="rgba(255,255,255,0.25)" />
-          <circle cx="50" cy="78" r="1.5" fill="rgba(255,255,255,0.15)" />
-          <circle cx="70" cy="78" r="1.5" fill="rgba(255,255,255,0.15)" />
-          <path d="M57 86 L60 88 L63 86" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M55 90 C52 92, 45 90, 40 88" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-linecap="round" />
-          <path d="M65 90 C68 92, 75 90, 80 88" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-linecap="round" />
-          <!-- Pointy ears -->
-          <path d="M38 72 L28 48 L45 65" fill="rgba(255,255,255,0.1)" />
-          <path d="M82 72 L92 48 L75 65" fill="rgba(255,255,255,0.1)" />
-          <!-- Tail -->
-          <path d="M85 100 C95 95, 105 85, 100 72 C98 67, 102 62, 108 60" stroke="rgba(255,255,255,0.1)" stroke-width="3" stroke-linecap="round" fill="none" />
-        </svg>
       </div>
     </section>
 
