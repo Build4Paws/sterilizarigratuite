@@ -57,8 +57,12 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    awsSessionToken: process.env.AWS_SESSION_TOKEN || '',
+    awsRegion: process.env.AWS_REGION || 'eu-central-1',
+    awsApiBase: process.env.AWS_API_BASE || 'https://cuk1b8z6w4.execute-api.eu-central-1.amazonaws.com',
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3001/api',
       hcaptchaSiteKey: process.env.NUXT_PUBLIC_HCAPTCHA_SITE_KEY || '',
     },
   },

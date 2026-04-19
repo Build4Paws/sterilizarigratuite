@@ -22,6 +22,7 @@ export interface CitizenRegistration {
   species: ('dog' | 'cat')[]
   dogCount?: number
   catCount?: number
+  gdprConsent: boolean
 }
 
 export interface CitizenConfirmation {

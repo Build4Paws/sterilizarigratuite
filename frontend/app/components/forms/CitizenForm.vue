@@ -1,9 +1,5 @@
 <template>
   <form class="citizen-form" novalidate @submit.prevent="handleSubmit">
-    <UiAlert v-if="submitError" variant="error">
-      {{ submitError }}
-    </UiAlert>
-
     <!-- Să facem cunoștință -->
     <div class="form-section">
       <div class="form-section__header">
@@ -114,7 +110,6 @@
             id="citizen-dog-count"
             v-model="dogCountStr"
             label="Câți câini?"
-            placeholder="Alege"
             :options="countOptions"
           />
         </UiFormItem>
@@ -123,7 +118,6 @@
             id="citizen-cat-count"
             v-model="catCountStr"
             label="Câte pisici?"
-            placeholder="Alege"
             :options="countOptions"
           />
         </UiFormItem>
@@ -181,8 +175,8 @@ const form = reactive<CitizenFormState>({
   locality: '',
   hasDogs: false,
   hasCats: false,
-  dogCount: undefined,
-  catCount: undefined,
+  dogCount: 1,
+  catCount: 1,
   gdprConsent: false,
 })
 
@@ -197,8 +191,8 @@ const catCountStr = computed({
 })
 
 const submitting = ref(false)
-const submitError = ref('')
 const submitted = ref(false)
+const toast = useToast()
 
 const errors = ref<Record<string, string>>({})
 
@@ -252,7 +246,6 @@ async function handleSubmit() {
   if (!validate()) return
 
   submitting.value = true
-  submitError.value = ''
 
   try {
     const phoneClean = form.phone?.replace(/\s/g, '') || undefined
@@ -268,13 +261,15 @@ async function handleSubmit() {
       ],
       dogCount: form.hasDogs ? (form.dogCount ?? 1) : undefined,
       catCount: form.hasCats ? (form.catCount ?? 1) : undefined,
+      gdprConsent: form.gdprConsent,
     }
 
-    await $api('/register', {
+    await $fetch('/api/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: payload,
     })
+
+    toast.success('Te-ai înscris cu succes! Te anunțăm când apare o campanie în zona ta.')
 
     const channel = phoneClean && form.email?.trim() ? 'both' : phoneClean ? 'sms' : 'email'
     await router.push({
@@ -282,11 +277,29 @@ async function handleSubmit() {
       query: { channel, county: form.county },
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'A apărut o eroare. Te rugăm să încerci din nou.'
-    submitError.value = message
+    toast.error(extractApiError(err))
   } finally {
     submitting.value = false
   }
+}
+
+function extractApiError(err: unknown): string {
+  const fallback = 'A apărut o eroare. Te rugăm să încerci din nou.'
+  if (!err || typeof err !== 'object') return fallback
+
+  const e = err as { data?: unknown; statusMessage?: string; message?: string }
+
+  let data = e.data
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data) } catch { return data || e.statusMessage || fallback }
+  }
+  if (data && typeof data === 'object') {
+    const d = data as { errors?: string[]; message?: string; error?: string }
+    if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
+    if (d.message) return d.message
+    if (d.error) return d.error
+  }
+  return e.statusMessage || e.message || fallback
 }
 </script>
 
