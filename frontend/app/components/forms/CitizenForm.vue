@@ -141,6 +141,23 @@
         </UiFormItem>
       </UiFormRow>
 
+      <UiFormRow v-if="hcaptchaSiteKey">
+        <UiFormItem>
+          <ClientOnly>
+            <VueHcaptcha
+              ref="hcaptchaRef"
+              :sitekey="hcaptchaSiteKey"
+              @verify="onCaptchaVerify"
+              @expired="onCaptchaExpired"
+              @error="onCaptchaError"
+            />
+          </ClientOnly>
+          <p v-if="submitted && captchaError" class="citizen-form__error" role="alert">
+            {{ captchaError }}
+          </p>
+        </UiFormItem>
+      </UiFormRow>
+
       <UiFormRow>
         <UiFormItem basis="100%">
           <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
@@ -153,10 +170,36 @@
 </template>
 
 <script setup lang="ts">
-import type { CitizenFormState, CitizenRegistration } from '~/types'
+import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
+import type { CitizenFormState, CitizenRegistration, CitizenRegistrationResponse } from '~/types'
+import type { ContactChannel } from '~/composables/useCitizenSession'
 
 const router = useRouter()
+const runtimeConfig = useRuntimeConfig()
+const hcaptchaSiteKey = runtimeConfig.public.hcaptchaSiteKey as string
 const { counties, localities, setCounty, init: initLocations } = useLocationData()
+const citizenSession = useCitizenSession()
+
+const hcaptchaRef = ref<InstanceType<typeof VueHcaptcha> | null>(null)
+const hcaptchaToken = ref('')
+const captchaError = ref('')
+
+function onCaptchaVerify(token: string) {
+  hcaptchaToken.value = token
+  captchaError.value = ''
+}
+function onCaptchaExpired() {
+  hcaptchaToken.value = ''
+}
+function onCaptchaError() {
+  hcaptchaToken.value = ''
+  captchaError.value = 'Captcha a eșuat. Te rugăm să încerci din nou.'
+}
+function resetCaptcha() {
+  hcaptchaToken.value = ''
+  const instance = hcaptchaRef.value as { reset?: () => void } | null
+  instance?.reset?.()
+}
 
 const isMobile = ref(false)
 
@@ -245,6 +288,11 @@ async function handleSubmit() {
 
   if (!validate()) return
 
+  if (hcaptchaSiteKey && !hcaptchaToken.value) {
+    captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
+    return
+  }
+
   submitting.value = true
 
   try {
@@ -264,20 +312,32 @@ async function handleSubmit() {
       gdprConsent: form.gdprConsent,
     }
 
-    await $fetch('/api/register', {
+    const response = await $fetch<CitizenRegistrationResponse>('/api/register', {
       method: 'POST',
-      body: payload,
+      body: { ...payload, hcaptchaToken: hcaptchaToken.value || undefined },
     })
 
-    toast.success('Te-ai înscris cu succes! Te anunțăm când apare o campanie în zona ta.')
+    const emailClean = form.email?.trim() || undefined
+    const channel: ContactChannel = phoneClean && emailClean ? 'both' : phoneClean ? 'sms' : 'email'
+    const countyName = counties.value.find(c => c.value === form.county)?.label ?? form.county
 
-    const channel = phoneClean && form.email?.trim() ? 'both' : phoneClean ? 'sms' : 'email'
-    await router.push({
-      path: '/confirmare',
-      query: { channel, county: form.county },
+    citizenSession.setSession({
+      name: form.name.trim(),
+      channel,
+      phone: phoneClean,
+      email: emailClean,
+      countyCode: form.county,
+      countyName,
+      locality: form.locality,
+      species: payload.species,
+      submittedAt: new Date().toISOString(),
+      stats: response?.stats,
     })
+
+    await router.push('/confirmare')
   } catch (err: unknown) {
     toast.error(extractApiError(err))
+    resetCaptcha()
   } finally {
     submitting.value = false
   }

@@ -1,36 +1,238 @@
 <template>
   <div class="container page-confirmare">
-    <h1>Ești înscris!</h1>
-    <p>Te anunțăm când apare o campanie de sterilizare gratuită în zona ta.</p>
-    <!-- Dynamic content (waiting count, clinics, magic link) added in Phase 2/3 -->
-    <p class="placeholder">[Conținut dinamic confirmare — Phase 2/3]</p>
+    <div v-if="session" class="confirmare">
+      <header class="confirmare__header">
+        <CircleCheck class="confirmare__icon" :size="48" />
+        <h1 class="confirmare__title">Ești înscris/ă, {{ firstName }}!</h1>
+        <p class="confirmare__channel">{{ channelMessage }}</p>
+      </header>
+
+      <section class="confirmare__block">
+        <div class="confirmare__block-header">
+          <Users :size="20" />
+          <h2>În zona ta</h2>
+        </div>
+        <p v-html="rankMessage" />
+        <p class="confirmare__followup">
+          Când strângem suficiente persoane din zona ta, organizăm o campanie și te anunțăm.
+        </p>
+      </section>
+
+      <section v-if="clinics.length" class="confirmare__block confirmare__block--clinics">
+        <div class="confirmare__block-header">
+          <MapPin :size="20" />
+          <h2>Cabinete permanente în zona ta</h2>
+        </div>
+        <p class="confirmare__lead">
+          Vești bune — există deja cabinete unde poți steriliza gratuit, fără să aștepți o campanie:
+        </p>
+        <ul class="clinics">
+          <li v-for="c in clinics" :key="`${c.name}-${c.locality}`" class="clinics__item">
+            <div class="clinics__name">{{ c.name }}</div>
+            <div class="clinics__meta">
+              {{ c.locality }}<span v-if="c.phone"> — <a :href="`tel:${c.phone}`">{{ c.phone }}</a></span>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-useSeoMeta({
-  robots: 'noindex, nofollow',
+import { CircleCheck, Users, MapPin } from 'lucide-vue-next'
+
+definePageMeta({ layout: 'default' })
+useSeoMeta({ robots: 'noindex, nofollow', title: 'Înscriere confirmată — Sterilizări Gratuite' })
+
+const router = useRouter()
+const { session } = useCitizenSession()
+
+onMounted(() => {
+  if (!session.value) router.replace('/')
 })
+
+const firstName = computed(() => session.value?.name.trim().split(/\s+/)[0] ?? '')
+
+const channelMessage = computed(() => {
+  const s = session.value
+  if (!s) return ''
+  switch (s.channel) {
+    case 'sms':   return `Te anunțăm prin SMS la ${s.phone}.`
+    case 'email': return `Te anunțăm prin email la ${s.email}.`
+    case 'both':  return `Te anunțăm prin SMS la ${s.phone} și email la ${s.email}.`
+  }
+})
+
+const FEMININE_ORDINALS: Record<number, string> = {
+  1: 'prima',
+  2: 'a doua',
+  3: 'a treia',
+  4: 'a patra',
+  5: 'a cincea',
+  6: 'a șasea',
+  7: 'a șaptea',
+  8: 'a opta',
+  9: 'a noua',
+  10: 'a zecea',
+}
+
+function feminineOrdinal(n: number): string {
+  return FEMININE_ORDINALS[n] ?? `a ${n}-a`
+}
+
+const rankMessage = computed(() => {
+  const s = session.value
+  if (!s) return ''
+  const locality = `<strong>${s.locality}</strong>`
+  const county = `<strong>${s.countyName}</strong>`
+
+  // stats counts represent OTHERS already registered (excluding the current user),
+  // so the user's own rank is count + 1.
+  const localityRank = (s.stats?.registeredInLocality ?? 0) + 1
+  const countyRank = (s.stats?.registeredInCounty ?? 0) + 1
+
+  if (countyRank === 1) {
+    return `Ești <strong>prima persoană</strong> din județul ${county} care s-a înscris.`
+  }
+  if (localityRank > 5) {
+    return `Ești <strong>${feminineOrdinal(localityRank)} persoană</strong> din ${locality} care s-a înscris.`
+  }
+  if (localityRank === 1) {
+    return `Ești <strong>prima persoană</strong> din ${locality} și printre primele <strong>${countyRank}</strong> din județul ${county} care s-au înscris.`
+  }
+  if (countyRank > localityRank) {
+    return `Ești <strong>${feminineOrdinal(localityRank)} persoană</strong> din ${locality}, și printre primele <strong>${countyRank}</strong> din județul ${county} care s-au înscris.`
+  }
+  return `Ești <strong>${feminineOrdinal(localityRank)} persoană</strong> din ${locality} și din județul ${county} care s-au înscris.`
+})
+
+const { clinics } = useClinics(
+  session.value?.countyCode ?? '',
+  session.value?.locality ?? '',
+)
 </script>
 
 <style scoped>
 .page-confirmare {
   padding: var(--space-2xl) 0;
+}
+
+.confirmare {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.confirmare__header {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
-.page-confirmare h1 {
+.confirmare__icon {
+  color: #10b981;
+}
+
+.confirmare__title {
+  font-family: var(--font-heading);
   font-size: var(--font-size-xl);
-  color: var(--color-success);
-  margin-bottom: var(--space-md);
+  color: var(--color-primary);
+  margin: 0;
 }
 
-.placeholder {
-  margin-top: var(--space-xl);
-  padding: var(--space-xl);
-  background: var(--color-bg-muted);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
+.confirmare__channel {
   color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  margin: 0;
+}
+
+.confirmare__block {
+  background: var(--color-slate-50, #f8fafc);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.confirmare__block--clinics {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.confirmare__block-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.confirmare__block-header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  margin: 0;
+  font-weight: 600;
+  color: inherit;
+}
+
+.confirmare__block p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.confirmare__lead {
+  margin-bottom: var(--space-xs);
+}
+
+.confirmare__followup {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.clinics {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.clinics__item {
+  padding: var(--space-sm) 0;
+  border-top: 1px solid rgba(6, 95, 70, 0.15);
+}
+
+.clinics__item:first-child {
+  border-top: 0;
+}
+
+.clinics__name {
+  font-weight: 600;
+}
+
+.clinics__meta {
+  font-size: var(--font-size-sm);
+  opacity: 0.85;
+}
+
+.clinics__meta a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.confirmare__footer {
+  text-align: center;
+  padding-top: var(--space-md);
+}
+
+.confirmare__home {
+  color: var(--color-primary);
+  text-decoration: underline;
+  font-weight: 500;
 }
 </style>

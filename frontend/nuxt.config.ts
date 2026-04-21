@@ -61,7 +61,8 @@ export default defineNuxtConfig({
     awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
     awsSessionToken: process.env.AWS_SESSION_TOKEN || '',
     awsRegion: process.env.AWS_REGION || 'eu-central-1',
-    awsApiBase: process.env.AWS_API_BASE || 'https://cuk1b8z6w4.execute-api.eu-central-1.amazonaws.com',
+    awsApiBase: process.env.AWS_API_BASE || 'https://api.sterilizarigratuite.ro',
+    hcaptchaSecretKey: process.env.HCAPTCHA_SECRET_KEY || '',
     public: {
       hcaptchaSiteKey: process.env.NUXT_PUBLIC_HCAPTCHA_SITE_KEY || '',
     },
@@ -71,7 +72,7 @@ export default defineNuxtConfig({
     '/': { prerender: true },
     '/campanii': { swr: 300 },
     '/organizatori': { prerender: true },
-    '/confirmare': { robots: false },
+    '/confirmare': { robots: false, ssr: false },
     '/confirmare-campanie': { robots: false },
     '/m/**': { robots: false },
     '/r/**': { robots: false },

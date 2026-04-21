@@ -1,5 +1,10 @@
 import { AwsClient } from 'aws4fetch'
 
+interface HcaptchaVerifyResponse {
+  success: boolean
+  'error-codes'?: string[]
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const {
@@ -8,6 +13,7 @@ export default defineEventHandler(async (event) => {
     awsSessionToken,
     awsRegion,
     awsApiBase,
+    hcaptchaSecretKey,
   } = config
 
   if (!awsAccessKeyId || !awsSecretAccessKey || !awsApiBase) {
@@ -17,7 +23,28 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const body = await readBody(event)
+  const body = (await readBody(event)) as Record<string, unknown> | null
+  const { hcaptchaToken, ...registration } = body ?? {}
+
+  // Fail-closed when the secret is configured; skip when it's empty (dev mode).
+  const secret = hcaptchaSecretKey as string
+  if (secret) {
+    if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
+      throw createError({ statusCode: 400, statusMessage: 'Captcha token lipsă.' })
+    }
+    const verify = await $fetch<HcaptchaVerifyResponse>('https://api.hcaptcha.com/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ secret, response: hcaptchaToken }).toString(),
+    })
+    if (!verify.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Verificarea captcha a eșuat.',
+        data: verify['error-codes'],
+      })
+    }
+  }
 
   const aws = new AwsClient({
     accessKeyId: awsAccessKeyId as string,
@@ -27,10 +54,14 @@ export default defineEventHandler(async (event) => {
     service: 'execute-api',
   })
 
-  const res = await aws.fetch(`${awsApiBase}/register`, {
+  const baseUrl = /^https?:\/\//i.test(awsApiBase as string)
+    ? (awsApiBase as string)
+    : `https://${awsApiBase}`
+
+  const res = await aws.fetch(`${baseUrl}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body ?? {}),
+    body: JSON.stringify(registration),
   })
 
   const text = await res.text()
@@ -43,6 +74,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  setResponseHeader(event, 'content-type', res.headers.get('content-type') ?? 'application/json')
-  return text
+  try {
+    return JSON.parse(text)
+  } catch {
+    setResponseHeader(event, 'content-type', res.headers.get('content-type') ?? 'application/json')
+    return text
+  }
 })

@@ -30,3 +30,17 @@ export interface CitizenConfirmation {
   channel: 'sms' | 'email' | 'both'
   waitingCount: number
 }
+
+/** Aggregated counts returned alongside a successful registration */
+export interface RegistrationStats {
+  county: string
+  locality: string
+  registeredInCounty: number
+  registeredInLocality: number
+}
+
+/** Response returned by POST /register */
+export interface CitizenRegistrationResponse {
+  message: string
+  stats: RegistrationStats
+}
