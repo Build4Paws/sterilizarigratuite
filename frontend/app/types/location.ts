@@ -1,10 +1,13 @@
 export interface County {
-  code: string
-  name: string
+  auto: string
+  nume: string
 }
 
 export interface Locality {
-  id: string
-  name: string
-  countyCode: string
+  nume: string
+  simplu?: string
+}
+
+export interface JudeteData {
+  judete: (County & { localitati: Locality[] })[]
 }

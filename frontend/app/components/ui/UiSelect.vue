@@ -15,7 +15,7 @@
       @change="$emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
       @blur="$emit('blur')"
     >
-      <option value="" disabled>{{ placeholder }}</option>
+      <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
       <option v-for="opt in options" :key="opt.value" :value="opt.value">
         {{ opt.label }}
       </option>

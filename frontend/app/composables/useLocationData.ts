@@ -1,45 +1,52 @@
-import type { County, Locality } from '~/types'
+import type { JudeteData } from '~/types'
+
+let cachedData: JudeteData | null = null
+
+async function loadData(): Promise<JudeteData> {
+  if (cachedData) return cachedData
+  const mod = await import('~/assets/data/judete.json')
+  cachedData = mod.default as JudeteData
+  return cachedData
+}
 
 export function useLocationData() {
-  const counties = useState<County[]>('counties', () => [])
-  const localities = useState<Locality[]>('localities', () => [])
-  const selectedCounty = useState<string>('selectedCounty', () => '')
-  const loadingCounties = useState('loadingCounties', () => false)
-  const loadingLocalities = useState('loadingLocalities', () => false)
+  const selectedCounty = ref('')
+  const judete = ref<JudeteData['judete']>([])
+  const loaded = ref(false)
 
-  async function fetchCounties() {
-    if (counties.value.length > 0) return
-    loadingCounties.value = true
-    try {
-      const data = await $api<County[]>('/locations/counties')
-      counties.value = data
-    } finally {
-      loadingCounties.value = false
-    }
+  const counties = computed(() =>
+    judete.value.map(j => ({
+      value: j.auto,
+      label: j.nume,
+    }))
+  )
+
+  const localities = computed(() => {
+    if (!selectedCounty.value) return []
+    const judet = judete.value.find(j => j.auto === selectedCounty.value)
+    if (!judet) return []
+    return judet.localitati.map(l => ({
+      value: l.nume,
+      label: l.nume,
+    }))
+  })
+
+  function setCounty(code: string) {
+    selectedCounty.value = code
   }
 
-  async function fetchLocalities(countyCode: string) {
-    if (!countyCode) {
-      localities.value = []
-      return
-    }
-    selectedCounty.value = countyCode
-    loadingLocalities.value = true
-    try {
-      const data = await $api<Locality[]>(`/locations/counties/${countyCode}/localities`)
-      localities.value = data
-    } finally {
-      loadingLocalities.value = false
-    }
+  async function init() {
+    if (loaded.value) return
+    const data = await loadData()
+    judete.value = data.judete
+    loaded.value = true
   }
 
   return {
     counties,
     localities,
     selectedCounty,
-    loadingCounties,
-    loadingLocalities,
-    fetchCounties,
-    fetchLocalities,
+    setCounty,
+    init,
   }
 }

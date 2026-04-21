@@ -8,6 +8,7 @@
         :required="required"
         class="ui-checkbox__input"
         @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
+        @keydown.enter.prevent="$emit('update:modelValue', !modelValue)"
       />
       <span class="ui-checkbox__box" aria-hidden="true">
         <svg v-if="modelValue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">

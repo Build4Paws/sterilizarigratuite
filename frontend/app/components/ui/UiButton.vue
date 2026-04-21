@@ -1,7 +1,7 @@
 <template>
   <button
     :type="type"
-    :class="['ui-btn', `ui-btn--${variant}`, { 'ui-btn--loading': loading }]"
+    :class="['ui-btn', `ui-btn--${variant}`, { 'ui-btn--loading': loading, 'ui-btn--block': block }]"
     :disabled="disabled || loading"
   >
     <span v-if="loading" class="ui-btn__spinner" aria-hidden="true" />
@@ -15,11 +15,13 @@ withDefaults(defineProps<{
   type?: 'button' | 'submit' | 'reset'
   loading?: boolean
   disabled?: boolean
+  block?: boolean
 }>(), {
   variant: 'primary',
   type: 'button',
   loading: false,
   disabled: false,
+  block: false,
 })
 </script>
 
@@ -91,5 +93,9 @@ withDefaults(defineProps<{
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.ui-btn--block {
+  width: 100%;
 }
 </style>

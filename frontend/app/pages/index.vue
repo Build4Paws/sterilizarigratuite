@@ -1,21 +1,34 @@
 <template>
-  <div>
+  <div class="home">
+    <!-- Hero: navy background with centered title -->
     <section class="hero">
       <div class="container hero__inner">
-        <div class="hero__content">
-          <h1 class="hero__title">
-            Sterilizare gratuită pentru câinele sau pisica ta
-          </h1>
-          <p class="hero__subtitle">
-            Te anunțăm când se organizează o campanie de sterilizare gratuită în zona ta.
-          </p>
-        </div>
-        <div class="hero__form-wrapper">
+        <h1 class="hero__title">
+          Sterilizare gratuită pentru câinele sau pisica ta
+        </h1>
+        <p class="hero__subtitle">
+          Te anunțăm când se organizează o campanie de sterilizare gratuită în localitatea ta.
+        </p>
+      </div>
+    </section>
+
+    <!-- Curved divider -->
+    <div class="divider" aria-hidden="true">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,0 L0,60 Q360,120 720,80 Q1080,40 1440,90 L1440,0 Z" fill="var(--color-primary)" />
+      </svg>
+    </div>
+
+    <!-- Form section: form overlaps into this area -->
+    <section class="form-section">
+      <div class="container form-section__inner">
+        <div class="form-card">
           <FormsCitizenForm />
         </div>
       </div>
     </section>
 
+    <!-- Bottom band -->
     <section class="bottom-band">
       <div class="container bottom-band__inner">
         <NuxtLink to="/campanii" class="bottom-band__card">
@@ -78,43 +91,102 @@ useHead({
 </script>
 
 <style scoped>
+/* ---- Hero ---- */
 .hero {
   background: var(--color-primary);
   color: var(--color-text-light);
-  padding: var(--space-3xl) 0;
+  padding: var(--space-3xl) 0 8rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero__inner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3xl);
-  align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 .hero__title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text-light);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero__subtitle {
   font-size: var(--font-size-lg);
   color: var(--color-slate-300);
   font-weight: 400;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
-.hero__form-wrapper {
+/* Decorative illustrations */
+.hero__decor {
+  display: none;
+  position: absolute;
+  bottom: 2rem;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+.hero__decor--left {
+  left: 5%;
+}
+
+.hero__decor--right {
+  right: 5%;
+}
+
+.hero__illustration {
+  width: 140px;
+  height: auto;
+}
+
+/* ---- Curved divider ---- */
+.divider {
+  margin-top: -1px;
+  line-height: 0;
+  background: var(--color-bg-muted);
+}
+
+.divider svg {
+  width: 100%;
+  height: 80px;
+  display: block;
+}
+
+/* ---- Form section ---- */
+.form-section {
+  background: var(--color-bg-muted);
+  padding-bottom: var(--space-3xl);
+}
+
+.form-section__inner {
+  display: flex;
+  justify-content: center;
+  margin-top: -6rem;
+  position: relative;
+  z-index: 3;
+}
+
+.form-card {
   background: var(--color-bg);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
   color: var(--color-text);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 540px;
 }
 
+/* ---- Bottom band ---- */
 .bottom-band {
   padding: var(--space-3xl) 0;
-  background: var(--color-bg-muted);
+  background: var(--color-bg);
 }
 
 .bottom-band__inner {
@@ -158,22 +230,52 @@ useHead({
   color: var(--color-text-muted);
 }
 
-@media (max-width: 768px) {
+/* ---- Responsive ---- */
+@media (min-width: 1300px) {
   .hero {
-    padding: var(--space-2xl) 0;
-  }
-
-  .hero__inner {
-    grid-template-columns: 1fr;
-    gap: var(--space-xl);
+    padding: var(--space-3xl) 0 10rem;
   }
 
   .hero__title {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
   }
 
-  .hero__content {
-    text-align: center;
+  .hero__decor {
+    display: block;
+  }
+
+  .hero__illustration {
+    width: 180px;
+  }
+
+  .form-section__inner {
+    margin-top: -8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-2xl) 0 6rem;
+  }
+
+  .hero__title {
+    font-size: 1.75rem;
+  }
+
+  .hero__subtitle {
+    font-size: 1.125rem;
+  }
+
+  .form-section__inner {
+    margin-top: -4rem;
+  }
+
+  .form-card {
+    padding: var(--space-lg);
+  }
+
+  .divider svg {
+    height: 50px;
   }
 
   .bottom-band__inner {

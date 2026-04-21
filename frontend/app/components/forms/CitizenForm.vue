@@ -1,125 +1,216 @@
 <template>
   <form class="citizen-form" novalidate @submit.prevent="handleSubmit">
-    <UiAlert v-if="submitError" variant="error">
-      {{ submitError }}
-    </UiAlert>
-
-    <UiInput
-      id="citizen-name"
-      v-model="form.name"
-      label="Nume"
-      placeholder="Numele tău complet"
-      :required="true"
-      :error="touched.name ? errors.name : undefined"
-      @blur="touch('name')"
-    />
-
-    <div class="citizen-form__row">
-      <UiInput
-        id="citizen-phone"
-        v-model="form.phone"
-        label="Telefon"
-        type="tel"
-        placeholder="07XX XXX XXX"
-        :error="touched.phone ? errors.phone : undefined"
-        @blur="touch('phone')"
-      />
-      <UiInput
-        id="citizen-email"
-        v-model="form.email"
-        label="Email"
-        type="email"
-        placeholder="adresa@email.com"
-        :error="touched.email ? errors.email : undefined"
-        @blur="touch('email')"
-      />
-    </div>
-    <p class="citizen-form__hint">Completează măcar unul: telefon sau email.</p>
-
-    <div class="citizen-form__row">
-      <UiSelect
-        id="citizen-county"
-        v-model="form.county"
-        label="Județ"
-        placeholder="Alege județul"
-        :options="countyOptions"
-        :required="true"
-        :disabled="loadingCounties"
-        :error="touched.county ? errors.county : undefined"
-        @blur="touch('county')"
-        @update:model-value="onCountyChange"
-      />
-      <UiSelect
-        id="citizen-locality"
-        v-model="form.locality"
-        label="Localitate"
-        placeholder="Alege localitatea"
-        :options="localityOptions"
-        :required="true"
-        :disabled="!form.county || loadingLocalities"
-        :error="touched.locality ? errors.locality : undefined"
-        @blur="touch('locality')"
-      />
-    </div>
-
-    <fieldset class="citizen-form__species">
-      <legend class="citizen-form__species-legend">Specii</legend>
-      <div class="citizen-form__species-checks">
-        <UiCheckbox id="citizen-dogs" v-model="form.hasDogs">
-          Câini
-        </UiCheckbox>
-        <UiCheckbox id="citizen-cats" v-model="form.hasCats">
-          Pisici
-        </UiCheckbox>
+    <!-- Să facem cunoștință -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <h3 class="form-section__title">Salut! Cum te numești?</h3>
       </div>
-      <p v-if="touched.species && errors.species" class="citizen-form__field-error" role="alert">
+      <UiFormRow>
+        <UiFormItem>
+          <UiInput
+            id="citizen-name"
+            v-model="form.name"
+            label="Nume complet"
+            placeholder="ex: Maria Popescu"
+            :required="true"
+            :error="submitted ? errors.name : undefined"
+          />
+        </UiFormItem>
+      </UiFormRow>
+    </div>
+
+    <!-- Cum te contactăm? -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <h3 class="form-section__title">Cum preferi să te contactăm?</h3>
+        <p class="form-section__hint">Lasă-ne un număr de telefon sau o adresă de email, sau ambele</p>
+      </div>
+      <UiFormRow align="end" :nowrap="!isMobile">
+        <UiFormItem basis="140px">
+          <UiInput
+            id="citizen-email"
+            v-model="form.email"
+            label="Email"
+            type="email"
+            placeholder="adresa@email.com"
+            :error="submitted ? errors.email : undefined"
+          />
+        </UiFormItem>
+        <UiFormDivider>sau</UiFormDivider>
+        <UiFormItem basis="140px">
+          <UiPhoneInput
+            id="citizen-phone"
+            v-model="form.phone"
+            label="Telefon"
+            :error="submitted ? errors.phone : undefined"
+          />
+        </UiFormItem>
+      </UiFormRow>
+    </div>
+
+    <!-- Unde locuiești? -->
+    <div class="form-section">
+      <div class="form-section__header">
+        <h3 class="form-section__title">Unde locuiești?</h3>
+        <p class="form-section__hint">Te anunțăm doar când apare o campanie în localitatea ta</p>
+      </div>
+      <UiFormRow>
+        <UiFormItem basis="200px">
+          <UiCombobox
+            id="citizen-county"
+            v-model="form.county"
+            label="Județ"
+            placeholder="Caută județul"
+            :options="counties"
+            :required="true"
+            :error="submitted ? errors.county : undefined"
+            @update:model-value="onCountyChange"
+          />
+        </UiFormItem>
+        <UiFormItem basis="200px">
+          <UiCombobox
+            id="citizen-locality"
+            v-model="form.locality"
+            label="Localitate"
+            placeholder="Caută localitatea"
+            :options="localities"
+            :required="true"
+            :disabled="!form.county"
+            :error="submitted ? errors.locality : undefined"
+          />
+        </UiFormItem>
+      </UiFormRow>
+    </div>
+
+    <!-- Ce dorești să sterilizezi?? -->
+    <fieldset class="form-section form-section--fieldset">
+      <div class="form-section__header">
+        <legend class="form-section__title">Ce dorești să sterilizezi?</legend>
+        <p class="form-section__hint">Bifează ce prieteni blănoși ai acasă.</p>
+      </div>
+      <UiFormRow>
+        <UiFormItem :grow="false" basis="auto">
+          <UiCheckbox id="citizen-dogs" v-model="form.hasDogs">
+            Câini
+          </UiCheckbox>
+        </UiFormItem>
+        <UiFormItem :grow="false" basis="auto">
+          <UiCheckbox id="citizen-cats" v-model="form.hasCats">
+            Pisici
+          </UiCheckbox>
+        </UiFormItem>
+      </UiFormRow>
+      <p v-if="submitted && errors.species" class="citizen-form__error" role="alert">
         {{ errors.species }}
       </p>
 
-      <div v-if="form.hasDogs || form.hasCats" class="citizen-form__counts">
-        <UiSelect
-          v-if="form.hasDogs"
-          id="citizen-dog-count"
-          v-model="dogCountStr"
-          label="Câți câini?"
-          placeholder="Alege"
-          :options="countOptions"
-        />
-        <UiSelect
-          v-if="form.hasCats"
-          id="citizen-cat-count"
-          v-model="catCountStr"
-          label="Câte pisici?"
-          placeholder="Alege"
-          :options="countOptions"
-        />
-      </div>
+      <UiFormRow v-if="form.hasDogs || form.hasCats">
+        <UiFormItem v-if="form.hasDogs" basis="120px" :grow="false">
+          <UiSelect
+            id="citizen-dog-count"
+            v-model="dogCountStr"
+            label="Câți câini?"
+            :options="countOptions"
+          />
+        </UiFormItem>
+        <UiFormItem v-if="form.hasCats" basis="120px" :grow="false">
+          <UiSelect
+            id="citizen-cat-count"
+            v-model="catCountStr"
+            label="Câte pisici?"
+            :options="countOptions"
+          />
+        </UiFormItem>
+      </UiFormRow>
     </fieldset>
 
-    <UiCheckbox
-      id="citizen-gdpr"
-      v-model="form.gdprConsent"
-      :required="true"
-      :error="touched.gdprConsent ? errors.gdprConsent : undefined"
-    >
-      Sunt de acord cu
-      <NuxtLink to="/confidentialitate" target="_blank">politica de confidențialitate</NuxtLink>
-      și prelucrarea datelor personale.
-    </UiCheckbox>
+    <!-- GDPR + Submit -->
+    <div class="form-section form-section--footer">
+      <UiFormRow>
+        <UiFormItem>
+          <UiCheckbox
+            id="citizen-gdpr"
+            v-model="form.gdprConsent"
+            :required="true"
+            :error="submitted ? errors.gdprConsent : undefined"
+          >
+            Sunt de acord cu
+            <NuxtLink to="/confidentialitate" target="_blank">politica de confidențialitate</NuxtLink>
+            și prelucrarea datelor personale.
+          </UiCheckbox>
+        </UiFormItem>
+      </UiFormRow>
 
-    <UiButton type="submit" variant="primary" :loading="submitting" :disabled="submitting">
-      Înscrie-mă
-    </UiButton>
+      <UiFormRow v-if="hcaptchaSiteKey">
+        <UiFormItem>
+          <ClientOnly>
+            <VueHcaptcha
+              ref="hcaptchaRef"
+              :sitekey="hcaptchaSiteKey"
+              @verify="onCaptchaVerify"
+              @expired="onCaptchaExpired"
+              @error="onCaptchaError"
+            />
+          </ClientOnly>
+          <p v-if="submitted && captchaError" class="citizen-form__error" role="alert">
+            {{ captchaError }}
+          </p>
+        </UiFormItem>
+      </UiFormRow>
+
+      <UiFormRow>
+        <UiFormItem basis="100%">
+          <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
+            Înscrie-mă
+          </UiButton>
+        </UiFormItem>
+      </UiFormRow>
+    </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import type { CitizenRegistration } from '~/types'
+import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
+import type { CitizenFormState, CitizenRegistration, CitizenRegistrationResponse } from '~/types'
+import type { ContactChannel } from '~/composables/useCitizenSession'
 
 const router = useRouter()
-const { counties, localities, loadingCounties, loadingLocalities, fetchCounties, fetchLocalities } = useLocationData()
+const runtimeConfig = useRuntimeConfig()
+const hcaptchaSiteKey = runtimeConfig.public.hcaptchaSiteKey as string
+const { counties, localities, setCounty, init: initLocations } = useLocationData()
+const citizenSession = useCitizenSession()
 
-const form = reactive<CitizenRegistration>({
+const hcaptchaRef = ref<InstanceType<typeof VueHcaptcha> | null>(null)
+const hcaptchaToken = ref('')
+const captchaError = ref('')
+
+function onCaptchaVerify(token: string) {
+  hcaptchaToken.value = token
+  captchaError.value = ''
+}
+function onCaptchaExpired() {
+  hcaptchaToken.value = ''
+}
+function onCaptchaError() {
+  hcaptchaToken.value = ''
+  captchaError.value = 'Captcha a eșuat. Te rugăm să încerci din nou.'
+}
+function resetCaptcha() {
+  hcaptchaToken.value = ''
+  const instance = hcaptchaRef.value as { reset?: () => void } | null
+  instance?.reset?.()
+}
+
+const isMobile = ref(false)
+
+onMounted(() => {
+  initLocations()
+  const mq = window.matchMedia('(max-width: 640px)')
+  isMobile.value = mq.matches
+  mq.addEventListener('change', (e) => { isMobile.value = e.matches })
+})
+
+const form = reactive<CitizenFormState>({
   name: '',
   phone: '',
   email: '',
@@ -127,8 +218,8 @@ const form = reactive<CitizenRegistration>({
   locality: '',
   hasDogs: false,
   hasCats: false,
-  dogCount: undefined,
-  catCount: undefined,
+  dogCount: 1,
+  catCount: 1,
   gdprConsent: false,
 })
 
@@ -143,34 +234,32 @@ const catCountStr = computed({
 })
 
 const submitting = ref(false)
-const submitError = ref('')
+const submitted = ref(false)
+const toast = useToast()
 
 const errors = ref<Record<string, string>>({})
-const touched = ref<Record<string, boolean>>({})
 
-const countOptions = Array.from({ length: 10 }, (_, i) => ({
+const countOptions = Array.from({ length: 5 }, (_, i) => ({
   value: String(i + 1),
   label: String(i + 1),
 }))
-
-const countyOptions = computed(() =>
-  counties.value.map(c => ({ value: c.code, label: c.name }))
-)
-
-const localityOptions = computed(() =>
-  localities.value.map(l => ({ value: l.id, label: l.name }))
-)
 
 function validate(): boolean {
   const e: Record<string, string> = {}
 
   if (!form.name.trim()) e.name = 'Numele este obligatoriu.'
-  if (!form.phone?.trim() && !form.email?.trim()) {
+  const phoneDigits = form.phone?.replace(/\D/g, '') ?? ''
+  const hasPhone = phoneDigits.length > 0
+  const hasEmail = !!form.email?.trim()
+  if (!hasPhone && !hasEmail) {
     e.phone = 'Completează telefonul sau emailul.'
     e.email = 'Completează telefonul sau emailul.'
   }
-  if (form.phone?.trim() && !/^(\+?40|0)[0-9]{9}$/.test(form.phone.replace(/\s/g, ''))) {
-    e.phone = 'Număr de telefon invalid.'
+  if (hasPhone) {
+    const stripped = form.phone!.replace(/\s/g, '')
+    if (!/^\+40[0-9]{9}$/.test(stripped)) {
+      e.phone = 'Introdu 9 cifre după +40 (ex: 7XX XXX XXX).'
+    }
   }
   if (form.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
     e.email = 'Adresă de email invalidă.'
@@ -184,31 +273,33 @@ function validate(): boolean {
   return Object.keys(e).length === 0
 }
 
-function touch(field: string) {
-  touched.value[field] = true
-  validate()
-}
+// Re-validate reactively after first submit so errors clear as user fixes fields
+watch(() => ({ ...form }), () => {
+  if (submitted.value) validate()
+}, { deep: true })
 
 function onCountyChange(code: string) {
   form.locality = ''
-  fetchLocalities(code)
+  setCounty(code)
 }
 
 async function handleSubmit() {
-  // Mark all fields as touched
-  for (const key of ['name', 'phone', 'email', 'county', 'locality', 'species', 'gdprConsent']) {
-    touched.value[key] = true
-  }
+  submitted.value = true
 
   if (!validate()) return
 
+  if (hcaptchaSiteKey && !hcaptchaToken.value) {
+    captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
+    return
+  }
+
   submitting.value = true
-  submitError.value = ''
 
   try {
-    const payload = {
+    const phoneClean = form.phone?.replace(/\s/g, '') || undefined
+    const payload: CitizenRegistration = {
       name: form.name.trim(),
-      phone: form.phone?.trim() || undefined,
+      phone: phoneClean,
       email: form.email?.trim() || undefined,
       county: form.county,
       locality: form.locality,
@@ -218,87 +309,114 @@ async function handleSubmit() {
       ],
       dogCount: form.hasDogs ? (form.dogCount ?? 1) : undefined,
       catCount: form.hasCats ? (form.catCount ?? 1) : undefined,
+      gdprConsent: form.gdprConsent,
     }
 
-    await $api('/register', {
+    const response = await $fetch<CitizenRegistrationResponse>('/api/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: { ...payload, hcaptchaToken: hcaptchaToken.value || undefined },
     })
 
-    const channel = form.phone && form.email ? 'both' : form.phone ? 'sms' : 'email'
-    await router.push({
-      path: '/confirmare',
-      query: { channel, county: form.county },
+    const emailClean = form.email?.trim() || undefined
+    const channel: ContactChannel = phoneClean && emailClean ? 'both' : phoneClean ? 'sms' : 'email'
+    const countyName = counties.value.find(c => c.value === form.county)?.label ?? form.county
+
+    citizenSession.setSession({
+      name: form.name.trim(),
+      channel,
+      phone: phoneClean,
+      email: emailClean,
+      countyCode: form.county,
+      countyName,
+      locality: form.locality,
+      species: payload.species,
+      submittedAt: new Date().toISOString(),
+      stats: response?.stats,
     })
+
+    await router.push('/confirmare')
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'A apărut o eroare. Te rugăm să încerci din nou.'
-    submitError.value = message
+    toast.error(extractApiError(err))
+    resetCaptcha()
   } finally {
     submitting.value = false
   }
 }
 
-// Fetch counties on mount
-onMounted(() => {
-  fetchCounties()
-})
+function extractApiError(err: unknown): string {
+  const fallback = 'A apărut o eroare. Te rugăm să încerci din nou.'
+  if (!err || typeof err !== 'object') return fallback
+
+  const e = err as { data?: unknown; statusMessage?: string; message?: string }
+
+  let data = e.data
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data) } catch { return data || e.statusMessage || fallback }
+  }
+  if (data && typeof data === 'object') {
+    const d = data as { errors?: string[]; message?: string; error?: string }
+    if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
+    if (d.message) return d.message
+    if (d.error) return d.error
+  }
+  return e.statusMessage || e.message || fallback
+}
 </script>
 
 <style scoped>
 .citizen-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: 0;
   text-align: left;
 }
 
-.citizen-form__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* ---- Section blocks ---- */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.form-section--fieldset {
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.form-section--footer {
+  border-bottom: none;
   gap: var(--space-md);
 }
 
-.citizen-form__hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin-top: calc(-1 * var(--space-md));
+.form-section:first-child {
+  padding-top: 0;
 }
 
-.citizen-form__species {
-  border: none;
+.form-section__header {
+  margin-bottom: var(--space-xs);
+}
+
+.form-section__title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0;
   padding: 0;
 }
 
-.citizen-form__species-legend {
+.form-section__hint {
   font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text);
-  margin-bottom: var(--space-sm);
+  color: var(--color-text-muted);
+  margin-top: 2px;
 }
 
-.citizen-form__species-checks {
-  display: flex;
-  gap: var(--space-xl);
-}
-
-.citizen-form__counts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-  margin-top: var(--space-md);
-}
-
-.citizen-form__field-error {
+/* ---- Error ---- */
+.citizen-form__error {
   font-size: var(--font-size-sm);
   color: var(--color-error);
-  margin-top: var(--space-xs);
-}
-
-@media (max-width: 640px) {
-  .citizen-form__row,
-  .citizen-form__counts {
-    grid-template-columns: 1fr;
-  }
 }
 </style>
