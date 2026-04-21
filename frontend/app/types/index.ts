@@ -1,4 +1,4 @@
-export type { Campaign, Species } from './campaign'
+export type { Campaign, Species, CampaignStatus, CampaignCardData } from './campaign'
 export type {
   CitizenFormState,
   CitizenRegistration,

@@ -4,18 +4,17 @@
       {{ label }}
       <span v-if="required" class="ui-field__required" aria-hidden="true">*</span>
     </label>
-    <input
+    <textarea
       :id="id"
-      :type="type"
       :value="modelValue"
       :placeholder="placeholder"
       :required="required"
-      :min="min"
-      :max="max"
+      :rows="rows"
+      :maxlength="maxlength"
       :aria-invalid="!!error"
       :aria-describedby="error ? `${id}-error` : undefined"
-      class="ui-field__input"
-      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+      class="ui-field__textarea"
+      @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
       @blur="$emit('blur')"
     />
     <p v-if="error" :id="`${id}-error`" class="ui-field__error" role="alert">
@@ -25,18 +24,18 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   modelValue: string
   label: string
   id: string
-  type?: 'text' | 'email' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local'
   placeholder?: string
   required?: boolean
   error?: string
-  /** Forwarded to the input — useful for `date`/`time`/`number` constraints (e.g. min="2026-01-01"). */
-  min?: string | number
-  max?: string | number
-}>()
+  rows?: number
+  maxlength?: number
+}>(), {
+  rows: 4,
+})
 
 defineEmits<{
   'update:modelValue': [value: string]
@@ -61,7 +60,7 @@ defineEmits<{
   color: var(--color-error);
 }
 
-.ui-field__input {
+.ui-field__textarea {
   font-family: var(--font-body);
   font-size: var(--font-size-base);
   padding: 0.625rem 0.75rem;
@@ -70,51 +69,31 @@ defineEmits<{
   background: var(--color-input-bg);
   color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+  min-height: 5rem;
+  line-height: 1.5;
 }
 
-.ui-field__input::placeholder {
+.ui-field__textarea::placeholder {
   color: var(--color-slate-300);
 }
 
-.ui-field__input:focus {
+.ui-field__textarea:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(4, 26, 73, 0.1);
 }
 
-.ui-field--error .ui-field__input {
+.ui-field--error .ui-field__textarea {
   border-color: var(--color-error);
 }
 
-.ui-field--error .ui-field__input:focus {
+.ui-field--error .ui-field__textarea:focus {
   box-shadow: 0 0 0 3px rgba(250, 45, 45, 0.1);
 }
 
 .ui-field__error {
   font-size: var(--font-size-sm);
   color: var(--color-error);
-}
-
-/* Native date/time pickers ship their own indicator and intrinsic sizing —
-   normalize so they match other inputs in a row. */
-.ui-field__input[type='date'],
-.ui-field__input[type='time'],
-.ui-field__input[type='datetime-local'] {
-  font-family: var(--font-body);
-  min-height: 2.625rem;
-  appearance: none;
-}
-
-.ui-field__input[type='date']::-webkit-calendar-picker-indicator,
-.ui-field__input[type='time']::-webkit-calendar-picker-indicator,
-.ui-field__input[type='datetime-local']::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.6;
-}
-
-.ui-field__input[type='date']::-webkit-calendar-picker-indicator:hover,
-.ui-field__input[type='time']::-webkit-calendar-picker-indicator:hover,
-.ui-field__input[type='datetime-local']::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
 }
 </style>
