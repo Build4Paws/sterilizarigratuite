@@ -58,6 +58,19 @@ const links = [
   display: flex;
   align-items: center;
   text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+.top-nav__logo:hover {
+  text-decoration: none;
+}
+
+.top-nav__logo-icon {
+  color: var(--color-accent);
+}
+
+.top-nav__logo strong {
+  color: var(--color-accent);
 }
 
 .top-nav__logo:hover {
