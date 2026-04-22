@@ -10,5 +10,6 @@ export type {
   CampaignSubmission,
   CampaignSubmissionResponse,
   LocalityWaitingStats,
+  CampaignFormState,
 } from './organizer'
 export type { County, Locality, JudeteData } from './location'

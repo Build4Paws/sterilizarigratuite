@@ -33,3 +33,26 @@ export interface LocalityWaitingStats {
   registeredInLocality: number
   registeredInCounty: number
 }
+
+/** Reactive form state — maps to CampaignSubmission on submit. */
+export interface CampaignFormState {
+  organizationName: string
+  contactEmail: string
+  contactPhone: string
+  samePublicPhone: boolean
+  phonePublic: string
+  county: string
+  locality: string
+  address: string
+  dateStart: string
+  isMultiDay: boolean
+  dateEnd: string
+  timeStart: string
+  timeEnd: string
+  hasDogs: boolean
+  hasCats: boolean
+  slotsDogs?: number
+  slotsCats?: number
+  doctor: string
+  gdprConsent: boolean
+}
