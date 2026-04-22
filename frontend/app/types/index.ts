@@ -6,5 +6,9 @@ export type {
   CitizenRegistrationResponse,
   RegistrationStats,
 } from './citizen'
-export type { CampaignSubmission } from './organizer'
+export type {
+  CampaignSubmission,
+  CampaignSubmissionResponse,
+  LocalityWaitingStats,
+} from './organizer'
 export type { County, Locality, JudeteData } from './location'
