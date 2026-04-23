@@ -255,13 +255,10 @@ function validate(): boolean {
     e.phone = 'Completează telefonul sau emailul.'
     e.email = 'Completează telefonul sau emailul.'
   }
-  if (hasPhone) {
-    const stripped = form.phone!.replace(/\s/g, '')
-    if (!/^\+40[0-9]{9}$/.test(stripped)) {
-      e.phone = 'Introdu 9 cifre după +40 (ex: 7XX XXX XXX).'
-    }
+  if (hasPhone && !isValidPhone(form.phone)) {
+    e.phone = 'Introdu 9 cifre după +40 (ex: 7XX XXX XXX).'
   }
-  if (form.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+  if (hasEmail && !isValidEmail(form.email)) {
     e.email = 'Adresă de email invalidă.'
   }
   if (!form.county) e.county = 'Alege județul.'
@@ -296,7 +293,7 @@ async function handleSubmit() {
   submitting.value = true
 
   try {
-    const phoneClean = form.phone?.replace(/\s/g, '') || undefined
+    const phoneClean = stripPhone(form.phone) || undefined
     const payload: CitizenRegistration = {
       name: form.name.trim(),
       phone: phoneClean,
@@ -341,25 +338,6 @@ async function handleSubmit() {
   } finally {
     submitting.value = false
   }
-}
-
-function extractApiError(err: unknown): string {
-  const fallback = 'A apărut o eroare. Te rugăm să încerci din nou.'
-  if (!err || typeof err !== 'object') return fallback
-
-  const e = err as { data?: unknown; statusMessage?: string; message?: string }
-
-  let data = e.data
-  if (typeof data === 'string') {
-    try { data = JSON.parse(data) } catch { return data || e.statusMessage || fallback }
-  }
-  if (data && typeof data === 'object') {
-    const d = data as { errors?: string[]; message?: string; error?: string }
-    if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
-    if (d.message) return d.message
-    if (d.error) return d.error
-  }
-  return e.statusMessage || e.message || fallback
 }
 </script>
 

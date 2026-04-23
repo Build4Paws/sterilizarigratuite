@@ -27,7 +27,11 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
   const secret = hcaptchaSecretKey as string
   if (secret) {
     if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
-      throw createError({ statusCode: 400, statusMessage: 'Captcha token lipsă.' })
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Captcha token lipsă.',
+        data: { error: 'captcha_failed' },
+      })
     }
     const verify = await $fetch<HcaptchaVerifyResponse>('https://api.hcaptcha.com/siteverify', {
       method: 'POST',
@@ -38,7 +42,7 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
       throw createError({
         statusCode: 400,
         statusMessage: 'Verificarea captcha a eșuat.',
-        data: verify['error-codes'],
+        data: { error: 'captcha_failed', codes: verify['error-codes'] },
       })
     }
   }

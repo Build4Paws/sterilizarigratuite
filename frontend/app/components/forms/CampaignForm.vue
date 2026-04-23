@@ -414,29 +414,22 @@ const submitted = ref(false)
 const submitting = ref(false)
 const errors = ref<Record<string, string>>({})
 
-const PHONE_RE = /^\+40[0-9]{9}$/
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-function stripPhone(p: string | undefined): string {
-  return (p ?? '').replace(/\s/g, '')
-}
-
 function validate(): boolean {
   const e: Record<string, string> = {}
 
   if (!form.organizationName.trim()) e.organizationName = 'Numele organizației este obligatoriu.'
 
   if (!form.contactEmail.trim()) e.contactEmail = 'Emailul este obligatoriu.'
-  else if (!EMAIL_RE.test(form.contactEmail.trim())) e.contactEmail = 'Adresă de email invalidă.'
+  else if (!isValidEmail(form.contactEmail)) e.contactEmail = 'Adresă de email invalidă.'
 
   const contactPhoneClean = stripPhone(form.contactPhone)
   if (!contactPhoneClean) e.contactPhone = 'Telefonul de contact este obligatoriu.'
-  else if (!PHONE_RE.test(contactPhoneClean)) e.contactPhone = 'Introdu 9 cifre după +40.'
+  else if (!isValidPhone(form.contactPhone)) e.contactPhone = 'Introdu 9 cifre după +40.'
 
   if (!form.samePublicPhone) {
     const publicPhoneClean = stripPhone(form.phonePublic)
     if (!publicPhoneClean) e.phonePublic = 'Telefonul public este obligatoriu.'
-    else if (!PHONE_RE.test(publicPhoneClean)) e.phonePublic = 'Introdu 9 cifre după +40.'
+    else if (!isValidPhone(form.phonePublic)) e.phonePublic = 'Introdu 9 cifre după +40.'
   }
 
   if (!form.county) e.county = 'Alege județul.'
@@ -574,23 +567,6 @@ async function handleSubmit() {
   } finally {
     submitting.value = false
   }
-}
-
-function extractApiError(err: unknown): string {
-  const fallback = 'A apărut o eroare. Te rugăm să încerci din nou.'
-  if (!err || typeof err !== 'object') return fallback
-  const e = err as { data?: unknown; statusMessage?: string; message?: string }
-  let data = e.data
-  if (typeof data === 'string') {
-    try { data = JSON.parse(data) } catch { return data || e.statusMessage || fallback }
-  }
-  if (data && typeof data === 'object') {
-    const d = data as { errors?: string[]; message?: string; error?: string }
-    if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
-    if (d.message) return d.message
-    if (d.error) return d.error
-  }
-  return e.statusMessage || e.message || fallback
 }
 </script>
 

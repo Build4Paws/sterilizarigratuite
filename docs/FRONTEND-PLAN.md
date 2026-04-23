@@ -76,13 +76,17 @@ frontend/
 - Structured data: `Event` schema for each campaign
 - Pagination or "load more" if list grows
 
-### 2.3 Organizer landing (`/organizatori` — `pages/organizatori.vue`)
-- Landing copy explaining the value prop for organizers
-- Campaign submission form:
-  - Org name, județ, localitate (with "X persoane așteaptă" counter from API), adresă, date/time, multi-day checkbox, species + slots, doctor (optional), phone, email
-  - Preview step before submit (shows exactly how it will look on `/campanii`)
-  - On submit → POST to API → redirect to organizer confirmation page
-- SEO meta for this page
+### 2.3 Organizer landing (`/organizatori` — `pages/organizatori.vue`) ✅ Built
+- Hero (navy bg, orange `Megaphone` icon, curved divider) + elevated form-card overlapping the hero
+- "Cum funcționează" 3-step row (`FilePlus2` / `ShieldCheck` / `Send`) with numbered badges
+- FAQ section using native `<details>` (5 questions: who can publish, cost, notification flow, edits, public data)
+- Embeds `<FormsCampaignForm />`:
+  - Two-step wizard — **fill** then **preview** (renders the real `<CampaignCard variant="pending">`)
+  - Inline "X persoane așteaptă" pill via `useLocalityWaitingCount` (mocked at `GET /api/stats/locality`)
+  - Same checkbox to reuse contact phone as public phone (default checked)
+  - Multi-day checkbox; end-time validation only enforced for single-day campaigns
+- On submit → `POST /api/campaigns/submit` (proxied through Nuxt server route — currently mocked, see `docs/CAMPAIGNS-FLOW-PLAN.md` §5) → session stored in `useOrganizerSubmission` → redirect to `/confirmare-campanie`
+- See `docs/CAMPAIGNS-FLOW-PLAN.md` for full type/contract/story breakdown
 
 ### 2.4 Citizen confirmation (`/confirmare` — `pages/confirmare.vue`)
 - Post-submit page with:
@@ -92,9 +96,13 @@ frontend/
   - Magic link display (for managing subscription)
 - `noindex` meta (no SEO value, private confirmation)
 
-### 2.5 Organizer confirmation (`/confirmare-campanie` — `pages/confirmare-campanie.vue`)
-- *"Mulțumim! Revenim în maxim 24 de ore cu confirmarea."*
-- `noindex`
+### 2.5 Organizer confirmation (`/confirmare-campanie` — `pages/confirmare-campanie.vue`) ✅ Built
+- Hydrates from `useOrganizerSubmission` (sessionStorage); redirects to `/organizatori` if no session
+- Header: green `CircleCheck` + "Mulțumim, {organizationName}!" + lead text mentioning the 24h SLA and the contact email
+- Preview block: re-renders the `<CampaignCard variant="pending">` so the organizer sees what they submitted
+- Stats block (only when `stats` is present): "X persoane din {localitate} … încă Y din restul județului așteaptă o campanie"
+- Meta block: submission ID (in `<code>`), submit timestamp formatted in `ro-RO`, status pill ("În așteptarea aprobării")
+- `noindex, nofollow`
 
 ### 2.6 Citizen management (`/m/[token]` — `pages/m/[token].vue`)
 - Magic link page, no login required
@@ -227,6 +235,12 @@ Build with **minimal styling first** (semantic HTML + basic CSS), then apply des
 - Web check-in ("Am sterilizat animalul")
 - WhatsApp as notification channel
 - Bilingual support (RO + EN)
+
+### Open questions for organizer flow v2
+- Edit/withdraw flow for an `pending` submission without going through email
+- Magic-link login for organizers so they can see all their past campaigns
+- Notification preferences (which channels to use when announcing the campaign to citizens)
+- Should organizers be able to upload a logo / cover image on the campaign card?
 
 ---
 
