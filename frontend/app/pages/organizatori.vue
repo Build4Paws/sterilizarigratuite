@@ -3,12 +3,24 @@
     <!-- Hero -->
     <section class="hero">
       <div class="container hero__inner">
-        <Megaphone class="hero__icon" :size="44" aria-hidden="true" />
-        <h1 class="hero__title">Anunță o campanie de sterilizare</h1>
-        <p class="hero__subtitle">
-          Ești ONG sau primărie? Publică campania pe platformă și ajunge automat
-          la cetățenii din zonă care așteaptă o campanie.
-        </p>
+        <Transition name="hero-swap" mode="out-in">
+          <Megaphone v-if="formStep === 1" key="icon-form" class="hero__icon" :size="44" aria-hidden="true" />
+          <Eye v-else key="icon-preview" class="hero__icon" :size="44" aria-hidden="true" />
+        </Transition>
+        <Transition name="hero-swap" mode="out-in">
+          <h1 v-if="formStep === 1" key="title-form" class="hero__title">Anunță o campanie de sterilizare</h1>
+          <h1 v-else key="title-preview" class="hero__title">Previzualizare campanie</h1>
+        </Transition>
+        <Transition name="hero-swap" mode="out-in">
+          <p v-if="formStep === 1" key="sub-form" class="hero__subtitle">
+            Ești ONG sau primărie? Publică campania pe platformă și ajunge automat
+            la cetățenii din zonă care așteaptă o campanie.
+          </p>
+          <p v-else key="sub-preview" class="hero__subtitle">
+            Așa va apărea campania ta pe pagina de campanii după aprobare.
+            Verifică datele înainte să trimiți.
+          </p>
+        </Transition>
       </div>
     </section>
 
@@ -23,7 +35,7 @@
     <section class="form-section">
       <div class="container form-section__inner">
         <div class="form-card">
-          <FormsCampaignForm />
+          <FormsCampaignForm @step-change="formStep = $event" />
         </div>
       </div>
     </section>
@@ -66,11 +78,14 @@
 <script setup lang="ts">
 import {
   Megaphone,
+  Eye,
   FilePlus2,
   ShieldCheck,
   Send,
   ChevronDown,
 } from 'lucide-vue-next'
+
+const formStep = ref<1 | 2>(1)
 
 const steps = [
   {
@@ -124,6 +139,20 @@ useSeoMeta({
 <style scoped>
 .page-organizatori {
   background: var(--color-bg-muted);
+}
+
+/* ---- Hero text swap transition ---- */
+.hero-swap-enter-active,
+.hero-swap-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.hero-swap-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.hero-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 /* ---- Hero ---- */

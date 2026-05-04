@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { AwsClient } from 'aws4fetch'
 import type { CampaignSubmissionResponse } from '~/types'
 
 interface HcaptchaVerifyResponse {
@@ -6,24 +6,33 @@ interface HcaptchaVerifyResponse {
   'error-codes'?: string[]
 }
 
-/**
- * MOCK — backend endpoint not yet implemented.
- *
- * When the real `POST /campaigns/submit` endpoint is available, replace the
- * mock body below with the AwsClient SigV4 proxy pattern from
- * `server/api/register.post.ts` (read `awsApiBase` from runtime config,
- * sign+forward the request, return the parsed JSON).
- *
- * Mock contract matches docs/CAMPAIGNS-FLOW-PLAN.md §5.1.
- */
+interface OrganizersApiResponse {
+  message?: string
+  campaignId?: string
+  [key: string]: unknown
+}
+
 export default defineEventHandler(async (event): Promise<CampaignSubmissionResponse> => {
   const config = useRuntimeConfig()
-  const { hcaptchaSecretKey } = config
+  const {
+    awsAccessKeyId,
+    awsSecretAccessKey,
+    awsSessionToken,
+    awsRegion,
+    awsApiBase,
+    hcaptchaSecretKey,
+  } = config
+
+  if (!awsAccessKeyId || !awsSecretAccessKey || !awsApiBase) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Server is missing AWS credentials or API base URL',
+    })
+  }
 
   const body = (await readBody(event)) as Record<string, unknown> | null
   const { hcaptchaToken, ...submission } = body ?? {}
 
-  // hCaptcha verification — same fail-closed-when-secret-set pattern as register.
   const secret = hcaptchaSecretKey as string
   if (secret) {
     if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
@@ -47,43 +56,42 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
     }
   }
 
-  // Mock-only: simulate a duplicate-submission conflict if the org name
-  // contains the word "duplicate" — useful for testing the 409 branch.
-  const orgName = String((submission as { organizationName?: unknown }).organizationName ?? '')
-  if (/duplicate/i.test(orgName)) {
+  const aws = new AwsClient({
+    accessKeyId: awsAccessKeyId as string,
+    secretAccessKey: awsSecretAccessKey as string,
+    sessionToken: (awsSessionToken as string) || undefined,
+    region: awsRegion as string,
+    service: 'execute-api',
+  })
+
+  const baseUrl = /^https?:\/\//i.test(awsApiBase as string)
+    ? (awsApiBase as string)
+    : `https://${awsApiBase}`
+
+  const res = await aws.fetch(`${baseUrl}/organizers`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(submission),
+  })
+
+  const text = await res.text()
+
+  if (!res.ok) {
     throw createError({
-      statusCode: 409,
-      statusMessage: 'O campanie identică există deja pentru această locație și dată.',
-      data: { error: 'duplicate_submission', existingSubmissionId: 'mock-existing-id' },
+      statusCode: res.status,
+      statusMessage: res.statusText || 'Upstream error',
+      data: text,
     })
   }
 
-  // Pull county+locality so we can return a coherent stats block.
-  const county = String((submission as { county?: unknown }).county ?? '')
-  const locality = String((submission as { locality?: unknown }).locality ?? '')
-  const stats = county && locality ? mockStatsFor(county, locality) : undefined
+  const apiResponse: OrganizersApiResponse = JSON.parse(text)
 
   return {
-    message: 'Campaign submitted for review',
-    submissionId: randomUUID(),
+    message: String(apiResponse.message ?? 'Submitted'),
+    campaignId: String(apiResponse.campaignId ?? crypto.randomUUID()),
     status: 'pending',
-    stats,
   }
 })
-
-function mockStatsFor(county: string, locality: string) {
-  const localityCount = hashTo(`${county}:${locality}`, 25)
-  const extraInCounty = hashTo(`${county}#`, 60)
-  return {
-    registeredInLocality: localityCount,
-    registeredInCounty: localityCount + extraInCounty,
-  }
-}
-
-function hashTo(input: string, ceiling: number): number {
-  let hash = 0
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0
-  }
-  return hash % ceiling
-}

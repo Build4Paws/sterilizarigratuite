@@ -19,7 +19,7 @@ export interface CampaignSubmission {
 
 export interface CampaignSubmissionResponse {
   message: string
-  submissionId: string
+  campaignId: string
   status: 'pending'
   stats?: {
     registeredInLocality: number

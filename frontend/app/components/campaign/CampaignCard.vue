@@ -10,41 +10,57 @@
       </span>
     </header>
 
-    <p class="campaign-card__org">{{ campaign.organizationName }}</p>
+    <div class="campaign-card__org-row">
+      <Building2 :size="15" class="campaign-card__icon" aria-hidden="true" />
+      <span class="campaign-card__row-label">Organizator:</span>
+      <span class="campaign-card__org">{{ campaign.organizationName }}</span>
+    </div>
 
     <ul class="campaign-card__meta">
       <li class="campaign-card__meta-row">
-        <Calendar :size="16" class="campaign-card__icon" />
+        <Calendar :size="15" class="campaign-card__icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Data:</span>
         <span>{{ dateLabel }}</span>
       </li>
       <li class="campaign-card__meta-row">
-        <Clock :size="16" class="campaign-card__icon" />
-        <span>{{ campaign.timeStart }} – {{ campaign.timeEnd }}</span>
+        <Clock :size="15" class="campaign-card__icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Ora de start:</span>
+        <span>{{ campaign.timeStart }}</span>
       </li>
       <li class="campaign-card__meta-row">
-        <MapPin :size="16" class="campaign-card__icon" />
+        <Clock :size="15" class="campaign-card__icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Ora de încheiere:</span>
+        <span>{{ campaign.timeEnd }}</span>
+      </li>
+      <li class="campaign-card__meta-row campaign-card__meta-row--top">
+        <MapPin :size="15" class="campaign-card__icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Adresă:</span>
         <span class="campaign-card__address">{{ campaign.address }}</span>
       </li>
     </ul>
 
     <ul class="campaign-card__slots">
       <li v-if="campaign.species.includes('dog') && campaign.slotsDogs" class="campaign-card__slot">
-        <Dog :size="18" class="campaign-card__slot-icon" />
-        <span>{{ dogLabel(campaign.slotsDogs) }}</span>
+        <Dog :size="16" class="campaign-card__slot-icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Locuri câini:</span>
+        <span>{{ campaign.slotsDogs }}</span>
       </li>
       <li v-if="campaign.species.includes('cat') && campaign.slotsCats" class="campaign-card__slot">
-        <Cat :size="18" class="campaign-card__slot-icon" />
-        <span>{{ catLabel(campaign.slotsCats) }}</span>
+        <Cat :size="16" class="campaign-card__slot-icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Locuri pisici:</span>
+        <span>{{ campaign.slotsCats }}</span>
       </li>
     </ul>
 
     <footer class="campaign-card__foot">
       <div v-if="campaign.doctor" class="campaign-card__foot-row">
-        <Stethoscope :size="16" class="campaign-card__icon" />
+        <Stethoscope :size="15" class="campaign-card__icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Medic veterinar:</span>
         <span>{{ campaign.doctor }}</span>
       </div>
       <div class="campaign-card__foot-row">
-        <Phone :size="16" class="campaign-card__icon" />
+        <Phone :size="15" class="campaign-card__icon" aria-hidden="true" />
+        <span class="campaign-card__row-label">Telefon:</span>
         <a :href="`tel:${campaign.phonePublic}`" class="campaign-card__phone">
           {{ campaign.phonePublic }}
         </a>
@@ -54,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { Calendar, Clock, MapPin, Phone, Stethoscope, Dog, Cat } from 'lucide-vue-next'
+import { Calendar, Clock, MapPin, Phone, Stethoscope, Dog, Cat, Building2 } from 'lucide-vue-next'
 import type { CampaignCardData, CampaignStatus } from '~/types'
 
 const props = withDefaults(defineProps<{
@@ -98,12 +114,6 @@ function formatDateRO(iso: string): string {
   }).format(date)
 }
 
-function dogLabel(n: number): string {
-  return n === 1 ? '1 câine' : `${n} câini`
-}
-function catLabel(n: number): string {
-  return n === 1 ? '1 pisică' : `${n} pisici`
-}
 </script>
 
 <style scoped>
@@ -120,10 +130,11 @@ function catLabel(n: number): string {
 }
 
 .campaign-card--pending {
-  background: var(--color-bg-muted, #f8fafc);
-  border-style: dashed;
+  border-top: 3px solid var(--color-accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
+/* ---- Header ---- */
 .campaign-card__head {
   display: flex;
   align-items: flex-start;
@@ -152,6 +163,7 @@ function catLabel(n: number): string {
   letter-spacing: 0.04em;
 }
 
+/* ---- Badge ---- */
 .campaign-card__badge {
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -161,8 +173,8 @@ function catLabel(n: number): string {
 }
 
 .campaign-card__badge--neutral {
-  background: #e2e8f0;
-  color: #334155;
+  background: rgba(4, 26, 73, 0.08);
+  color: var(--color-primary);
 }
 
 .campaign-card__badge--warning {
@@ -175,15 +187,43 @@ function catLabel(n: number): string {
   color: #64748b;
 }
 
-.campaign-card__org {
+/* ---- Shared row layout ---- */
+.campaign-card__org-row,
+.campaign-card__meta-row,
+.campaign-card__foot-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
   font-size: var(--font-size-base);
-  font-weight: 500;
   color: var(--color-text);
-  margin: 0;
 }
 
-.campaign-card__meta,
-.campaign-card__slots {
+.campaign-card__meta-row--top {
+  align-items: flex-start;
+}
+
+.campaign-card__icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Small muted label before each value */
+.campaign-card__row-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+
+/* ---- Organizer row ---- */
+.campaign-card__org {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ---- Meta list ---- */
+.campaign-card__meta {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -192,26 +232,32 @@ function catLabel(n: number): string {
   gap: var(--space-xs);
 }
 
+.campaign-card__address {
+  line-height: 1.4;
+}
+
+/* ---- Slot chips ---- */
 .campaign-card__slots {
-  flex-direction: row;
+  list-style: none;
+  padding: var(--space-sm) 0 0;
+  margin: 0;
+  display: flex;
   flex-wrap: wrap;
-  gap: var(--space-md);
-  padding-top: var(--space-sm);
+  gap: var(--space-sm);
   border-top: 1px solid var(--color-border-light, #e2e8f0);
 }
 
-.campaign-card__meta-row,
 .campaign-card__slot {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  font-size: var(--font-size-base);
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
   color: var(--color-text);
-}
-
-.campaign-card__icon {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
+  background: rgba(249, 89, 5, 0.07);
+  border: 1px solid rgba(249, 89, 5, 0.18);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
 }
 
 .campaign-card__slot-icon {
@@ -219,24 +265,13 @@ function catLabel(n: number): string {
   flex-shrink: 0;
 }
 
-.campaign-card__address {
-  line-height: 1.4;
-}
-
+/* ---- Footer ---- */
 .campaign-card__foot {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
   padding-top: var(--space-sm);
   border-top: 1px solid var(--color-border-light, #e2e8f0);
-}
-
-.campaign-card__foot-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-size: var(--font-size-base);
-  color: var(--color-text);
 }
 
 .campaign-card__phone {

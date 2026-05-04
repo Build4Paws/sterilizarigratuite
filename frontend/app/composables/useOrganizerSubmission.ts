@@ -3,7 +3,7 @@ import type { CampaignSubmission, CampaignSubmissionResponse } from '~/types'
 export interface OrganizerSubmissionSession {
   campaign: CampaignSubmission
   countyName: string
-  submissionId: string
+  campaignId: string
   status: 'pending'
   stats?: CampaignSubmissionResponse['stats']
   submittedAt: string

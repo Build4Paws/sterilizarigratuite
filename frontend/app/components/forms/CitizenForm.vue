@@ -158,11 +158,26 @@
         </UiFormItem>
       </UiFormRow>
 
+      <Transition name="error-banner">
+        <UiFormRow v-if="submitted && errorCount > 0">
+          <UiFormItem basis="100%">
+            <div class="citizen-form__error-banner" role="alert">
+              <AlertCircle :size="16" />
+              <span>
+                {{ errorCount === 1 ? 'Un câmp necesită' : `${errorCount} câmpuri necesită` }} corectare.
+              </span>
+            </div>
+          </UiFormItem>
+        </UiFormRow>
+      </Transition>
+
       <UiFormRow>
         <UiFormItem basis="100%">
-          <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
-            Înscrie-mă
-          </UiButton>
+          <div :class="{ 'citizen-form__btn--shake': shaking }">
+            <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
+              Înscrie-mă
+            </UiButton>
+          </div>
         </UiFormItem>
       </UiFormRow>
     </div>
@@ -171,6 +186,7 @@
 
 <script setup lang="ts">
 import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
+import { AlertCircle } from 'lucide-vue-next'
 import type { CitizenFormState, CitizenRegistration, CitizenRegistrationResponse } from '~/types'
 import type { ContactChannel } from '~/composables/useCitizenSession'
 
@@ -235,9 +251,11 @@ const catCountStr = computed({
 
 const submitting = ref(false)
 const submitted = ref(false)
+const shaking = ref(false)
 const toast = useToast()
 
 const errors = ref<Record<string, string>>({})
+const errorCount = computed(() => Object.keys(errors.value).length)
 
 const countOptions = Array.from({ length: 5 }, (_, i) => ({
   value: String(i + 1),
@@ -283,7 +301,14 @@ function onCountyChange(code: string) {
 async function handleSubmit() {
   submitted.value = true
 
-  if (!validate()) return
+  if (!validate()) {
+    await nextTick()
+    const firstError = document.querySelector<HTMLElement>('.ui-field--error')
+    firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    shaking.value = true
+    setTimeout(() => { shaking.value = false }, 500)
+    return
+  }
 
   if (hcaptchaSiteKey && !hcaptchaToken.value) {
     captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
@@ -396,5 +421,40 @@ async function handleSubmit() {
 .citizen-form__error {
   font-size: var(--font-size-sm);
   color: var(--color-error);
+}
+
+.citizen-form__error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-error);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.error-banner-enter-active,
+.error-banner-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.error-banner-enter-from,
+.error-banner-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes citizen-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.citizen-form__btn--shake {
+  animation: citizen-shake 0.45s ease;
 }
 </style>

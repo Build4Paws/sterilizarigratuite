@@ -133,21 +133,21 @@
         </UiFormRow>
         <UiFormRow :nowrap="!isMobile">
           <UiFormItem basis="140px">
-            <UiInput
+            <UiSelect
               id="campaign-time-start"
               v-model="form.timeStart"
               label="Ora început"
-              type="time"
+              :options="timeOptions"
               :required="true"
               :error="submitted ? errors.timeStart : undefined"
             />
           </UiFormItem>
           <UiFormItem basis="140px">
-            <UiInput
+            <UiSelect
               id="campaign-time-end"
               v-model="form.timeEnd"
               label="Ora sfârșit"
-              type="time"
+              :options="timeOptions"
               :required="true"
               :error="submitted ? errors.timeEnd : undefined"
             />
@@ -276,11 +276,26 @@
           </UiFormItem>
         </UiFormRow>
 
+        <Transition name="error-banner">
+          <UiFormRow v-if="submitted && errorCount > 0">
+            <UiFormItem basis="100%">
+              <div class="campaign-form__error-banner" role="alert">
+                <AlertCircle :size="16" />
+                <span>
+                  {{ errorCount === 1 ? 'Un câmp necesită' : `${errorCount} câmpuri necesită` }} corectare.
+                </span>
+              </div>
+            </UiFormItem>
+          </UiFormRow>
+        </Transition>
+
         <UiFormRow>
           <UiFormItem basis="100%">
-            <UiButton type="submit" variant="primary" :block="true">
-              Continuă spre previzualizare
-            </UiButton>
+            <div :class="{ 'campaign-form__btn--shake': shaking }">
+              <UiButton type="submit" variant="primary" :block="true">
+                Continuă spre previzualizare
+              </UiButton>
+            </div>
           </UiFormItem>
         </UiFormRow>
       </div>
@@ -290,14 +305,6 @@
     <!-- STEP 2 — Preview                                               -->
     <!-- ============================================================ -->
     <template v-else>
-      <div class="campaign-form__preview-intro">
-        <h3 class="campaign-form__preview-title">Previzualizare campanie</h3>
-        <p class="campaign-form__preview-hint">
-          Așa va apărea campania ta pe pagina de campanii după aprobare.
-          Verifică datele înainte să trimiți.
-        </p>
-      </div>
-
       <CampaignCard :campaign="cardData" variant="pending" />
 
       <div class="campaign-form__preview-actions">
@@ -315,7 +322,9 @@
 
 <script setup lang="ts">
 import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
-import { Users, ArrowLeft } from 'lucide-vue-next'
+import { Users, ArrowLeft, AlertCircle } from 'lucide-vue-next'
+
+const emit = defineEmits<{ stepChange: [step: 1 | 2] }>()
 import type {
   CampaignCardData,
   CampaignFormState,
@@ -359,6 +368,11 @@ onMounted(() => {
 
 const todayISO = new Date().toISOString().slice(0, 10)
 
+const timeOptions = Array.from({ length: 24 }, (_, h) => {
+  const hh = h.toString().padStart(2, '0')
+  return { value: `${hh}:00`, label: `${hh}:00` }
+})
+
 const form = reactive<CampaignFormState>({
   organizationName: '',
   contactEmail: '',
@@ -371,8 +385,8 @@ const form = reactive<CampaignFormState>({
   dateStart: '',
   isMultiDay: false,
   dateEnd: '',
-  timeStart: '',
-  timeEnd: '',
+  timeStart: '08:00',
+  timeEnd: '20:00',
   hasDogs: false,
   hasCats: false,
   slotsDogs: undefined,
@@ -412,7 +426,9 @@ const waitingCountMessage = computed(() => {
 const step = ref<1 | 2>(1)
 const submitted = ref(false)
 const submitting = ref(false)
+const shaking = ref(false)
 const errors = ref<Record<string, string>>({})
+const errorCount = computed(() => Object.keys(errors.value).length)
 
 function validate(): boolean {
   const e: Record<string, string> = {}
@@ -502,7 +518,7 @@ const cardData = computed<CampaignCardData>(() => {
 
 function goBackToEdit() {
   step.value = 1
-  // Scroll back to top so the user lands at the start of the form.
+  emit('stepChange', 1)
   if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -510,12 +526,20 @@ async function handleSubmit() {
   // Step 1 — validate then advance to preview.
   if (step.value === 1) {
     submitted.value = true
-    if (!validate()) return
+    if (!validate()) {
+      await nextTick()
+      const firstError = document.querySelector<HTMLElement>('.ui-field--error')
+      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      shaking.value = true
+      setTimeout(() => { shaking.value = false }, 500)
+      return
+    }
     if (hcaptchaSiteKey && !hcaptchaToken.value) {
       captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
       return
     }
     step.value = 2
+    emit('stepChange', 2)
     if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
     return
   }
@@ -553,7 +577,7 @@ async function handleSubmit() {
     organizerSubmission.setSession({
       campaign: payload,
       countyName: countyName.value,
-      submissionId: response.submissionId,
+      campaignId: response.campaignId,
       status: response.status,
       stats: response.stats,
       submittedAt: new Date().toISOString(),
@@ -625,6 +649,41 @@ async function handleSubmit() {
   color: var(--color-error);
 }
 
+.campaign-form__error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-error);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.error-banner-enter-active,
+.error-banner-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.error-banner-enter-from,
+.error-banner-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes campaign-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.campaign-form__btn--shake {
+  animation: campaign-shake 0.45s ease;
+}
+
 .campaign-form__waiting {
   display: flex;
   align-items: center;
@@ -642,24 +701,6 @@ async function handleSubmit() {
 }
 
 /* ---- Preview step ---- */
-.campaign-form__preview-intro {
-  margin-bottom: var(--space-md);
-}
-
-.campaign-form__preview-title {
-  font-family: var(--font-heading);
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin: 0;
-}
-
-.campaign-form__preview-hint {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin-top: 2px;
-}
-
 .campaign-form__preview-actions {
   display: flex;
   flex-wrap: wrap;

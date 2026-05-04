@@ -37,8 +37,8 @@
         </div>
         <dl class="confirmare__meta">
           <div class="confirmare__meta-row">
-            <dt>Cod cerere</dt>
-            <dd><code>{{ session.submissionId }}</code></dd>
+            <dt>ID campanie</dt>
+            <dd><code>{{ session.campaignId }}</code></dd>
           </div>
           <div class="confirmare__meta-row">
             <dt>Trimisă</dt>
@@ -49,9 +49,16 @@
             <dd><span class="status-pill">În așteptarea aprobării</span></dd>
           </div>
         </dl>
-        <p class="confirmare__followup">
-          Păstrează codul cererii — îl folosim pentru orice corespondență.
-        </p>
+
+        <div class="confirmare__cta">
+          <NuxtLink :to="`/campanie/${session.campaignId}`" class="confirmare__cta-btn">
+            <ExternalLink :size="16" />
+            Vezi pagina campaniei tale
+          </NuxtLink>
+          <p class="confirmare__followup">
+            Urmărește când campania este aprobată și cum apare publicului.
+          </p>
+        </div>
       </section>
 
       <footer class="confirmare__footer">
@@ -62,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { CircleCheck, Users, Eye, ClipboardList } from 'lucide-vue-next'
+import { CircleCheck, Users, Eye, ClipboardList, ExternalLink } from 'lucide-vue-next'
 import type { CampaignCardData } from '~/types'
 
 definePageMeta({ layout: 'default' })
@@ -296,5 +303,34 @@ const submittedLabel = computed(() => {
   color: var(--color-primary);
   text-decoration: underline;
   font-weight: 500;
+}
+
+.confirmare__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.confirmare__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--color-primary);
+  color: var(--color-text-light);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.confirmare__cta-btn:hover {
+  background: var(--color-primary-hover);
+  text-decoration: none;
 }
 </style>
