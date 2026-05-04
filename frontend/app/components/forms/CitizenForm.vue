@@ -135,7 +135,7 @@
             :error="submitted ? errors.gdprConsent : undefined"
           >
             Sunt de acord cu
-            <NuxtLink to="/confidentialitate" target="_blank">politica de confidențialitate</NuxtLink>
+            <NuxtLink to="/politica-de-confidentialitate" target="_blank">politica de confidențialitate</NuxtLink>
             și prelucrarea datelor personale.
           </UiCheckbox>
         </UiFormItem>
