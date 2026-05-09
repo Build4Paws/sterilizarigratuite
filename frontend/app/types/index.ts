@@ -1,4 +1,4 @@
-export type { Campaign, Species } from './campaign'
+export type { Campaign, Species, CampaignStatus, CampaignCardData } from './campaign'
 export type {
   CitizenFormState,
   CitizenRegistration,
@@ -6,5 +6,10 @@ export type {
   CitizenRegistrationResponse,
   RegistrationStats,
 } from './citizen'
-export type { CampaignSubmission } from './organizer'
+export type {
+  CampaignSubmission,
+  CampaignSubmissionResponse,
+  LocalityWaitingStats,
+  CampaignFormState,
+} from './organizer'
 export type { County, Locality, JudeteData } from './location'

@@ -135,7 +135,7 @@
             :error="submitted ? errors.gdprConsent : undefined"
           >
             Sunt de acord cu
-            <NuxtLink to="/confidentialitate" target="_blank">politica de confidențialitate</NuxtLink>
+            <NuxtLink to="/politica-de-confidentialitate" target="_blank">politica de confidențialitate</NuxtLink>
             și prelucrarea datelor personale.
           </UiCheckbox>
         </UiFormItem>
@@ -158,11 +158,26 @@
         </UiFormItem>
       </UiFormRow>
 
+      <Transition name="error-banner">
+        <UiFormRow v-if="submitted && errorCount > 0">
+          <UiFormItem basis="100%">
+            <div class="citizen-form__error-banner" role="alert">
+              <AlertCircle :size="16" />
+              <span>
+                {{ errorCount === 1 ? 'Un câmp necesită' : `${errorCount} câmpuri necesită` }} corectare.
+              </span>
+            </div>
+          </UiFormItem>
+        </UiFormRow>
+      </Transition>
+
       <UiFormRow>
         <UiFormItem basis="100%">
-          <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
-            Înscrie-mă
-          </UiButton>
+          <div :class="{ 'citizen-form__btn--shake': shaking }">
+            <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
+              Înscrie-mă
+            </UiButton>
+          </div>
         </UiFormItem>
       </UiFormRow>
     </div>
@@ -171,6 +186,7 @@
 
 <script setup lang="ts">
 import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
+import { AlertCircle } from 'lucide-vue-next'
 import type { CitizenFormState, CitizenRegistration, CitizenRegistrationResponse } from '~/types'
 import type { ContactChannel } from '~/composables/useCitizenSession'
 
@@ -235,9 +251,11 @@ const catCountStr = computed({
 
 const submitting = ref(false)
 const submitted = ref(false)
+const shaking = ref(false)
 const toast = useToast()
 
 const errors = ref<Record<string, string>>({})
+const errorCount = computed(() => Object.keys(errors.value).length)
 
 const countOptions = Array.from({ length: 5 }, (_, i) => ({
   value: String(i + 1),
@@ -255,13 +273,10 @@ function validate(): boolean {
     e.phone = 'Completează telefonul sau emailul.'
     e.email = 'Completează telefonul sau emailul.'
   }
-  if (hasPhone) {
-    const stripped = form.phone!.replace(/\s/g, '')
-    if (!/^\+40[0-9]{9}$/.test(stripped)) {
-      e.phone = 'Introdu 9 cifre după +40 (ex: 7XX XXX XXX).'
-    }
+  if (hasPhone && !isValidPhone(form.phone)) {
+    e.phone = 'Introdu 9 cifre după +40 (ex: 7XX XXX XXX).'
   }
-  if (form.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+  if (hasEmail && !isValidEmail(form.email)) {
     e.email = 'Adresă de email invalidă.'
   }
   if (!form.county) e.county = 'Alege județul.'
@@ -286,7 +301,14 @@ function onCountyChange(code: string) {
 async function handleSubmit() {
   submitted.value = true
 
-  if (!validate()) return
+  if (!validate()) {
+    await nextTick()
+    const firstError = document.querySelector<HTMLElement>('.ui-field--error')
+    firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    shaking.value = true
+    setTimeout(() => { shaking.value = false }, 500)
+    return
+  }
 
   if (hcaptchaSiteKey && !hcaptchaToken.value) {
     captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
@@ -296,7 +318,7 @@ async function handleSubmit() {
   submitting.value = true
 
   try {
-    const phoneClean = form.phone?.replace(/\s/g, '') || undefined
+    const phoneClean = stripPhone(form.phone) || undefined
     const payload: CitizenRegistration = {
       name: form.name.trim(),
       phone: phoneClean,
@@ -341,25 +363,6 @@ async function handleSubmit() {
   } finally {
     submitting.value = false
   }
-}
-
-function extractApiError(err: unknown): string {
-  const fallback = 'A apărut o eroare. Te rugăm să încerci din nou.'
-  if (!err || typeof err !== 'object') return fallback
-
-  const e = err as { data?: unknown; statusMessage?: string; message?: string }
-
-  let data = e.data
-  if (typeof data === 'string') {
-    try { data = JSON.parse(data) } catch { return data || e.statusMessage || fallback }
-  }
-  if (data && typeof data === 'object') {
-    const d = data as { errors?: string[]; message?: string; error?: string }
-    if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
-    if (d.message) return d.message
-    if (d.error) return d.error
-  }
-  return e.statusMessage || e.message || fallback
 }
 </script>
 
@@ -418,5 +421,40 @@ function extractApiError(err: unknown): string {
 .citizen-form__error {
   font-size: var(--font-size-sm);
   color: var(--color-error);
+}
+
+.citizen-form__error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-error);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.error-banner-enter-active,
+.error-banner-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.error-banner-enter-from,
+.error-banner-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes citizen-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.citizen-form__btn--shake {
+  animation: citizen-shake 0.45s ease;
 }
 </style>

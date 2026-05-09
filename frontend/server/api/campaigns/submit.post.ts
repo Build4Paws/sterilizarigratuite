@@ -1,11 +1,18 @@
 import { AwsClient } from 'aws4fetch'
+import type { CampaignSubmissionResponse } from '~/types'
 
 interface HcaptchaVerifyResponse {
   success: boolean
   'error-codes'?: string[]
 }
 
-export default defineEventHandler(async (event) => {
+interface OrganizersApiResponse {
+  message?: string
+  campaignId?: string
+  [key: string]: unknown
+}
+
+export default defineEventHandler(async (event): Promise<CampaignSubmissionResponse> => {
   const config = useRuntimeConfig()
   const {
     awsAccessKeyId,
@@ -24,9 +31,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = (await readBody(event)) as Record<string, unknown> | null
-  const { hcaptchaToken, ...registration } = body ?? {}
+  const { hcaptchaToken, ...submission } = body ?? {}
 
-  // Fail-closed when the secret is configured; skip when it's empty (dev mode).
   const secret = hcaptchaSecretKey as string
   if (secret) {
     if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
@@ -62,10 +68,13 @@ export default defineEventHandler(async (event) => {
     ? (awsApiBase as string)
     : `https://${awsApiBase}`
 
-  const res = await aws.fetch(`${baseUrl}/register`, {
+  const res = await aws.fetch(`${baseUrl}/organizers`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(registration),
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(submission),
   })
 
   const text = await res.text()
@@ -78,10 +87,11 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  try {
-    return JSON.parse(text)
-  } catch {
-    setResponseHeader(event, 'content-type', res.headers.get('content-type') ?? 'application/json')
-    return text
+  const apiResponse: OrganizersApiResponse = JSON.parse(text)
+
+  return {
+    message: String(apiResponse.message ?? 'Submitted'),
+    campaignId: String(apiResponse.campaignId ?? crypto.randomUUID()),
+    status: 'pending',
   }
 })

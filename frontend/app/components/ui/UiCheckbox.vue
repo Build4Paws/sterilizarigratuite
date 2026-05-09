@@ -45,7 +45,7 @@ defineEmits<{
   gap: var(--space-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .ui-checkbox__input {
@@ -65,7 +65,14 @@ defineEmits<{
   align-items: center;
   justify-content: center;
   transition: background-color 0.15s, border-color 0.15s;
-  margin-top: 1px;
+  /* Centers the 20px box on the first text line regardless of font-size:
+     matches the optical center of a single line via the line-height unit. */
+  margin-top: calc((1lh - 20px) / 2);
+}
+
+.ui-checkbox__text {
+  /* Match the box's own line-height so flex-start alignment lands cleanly. */
+  line-height: 1.5;
 }
 
 .ui-checkbox__box svg {
