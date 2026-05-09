@@ -406,7 +406,7 @@ const slotsCatsStr = computed({
 
 // Live "people waiting" stats — re-fetches via the Nuxt server route
 // (mocked at /api/stats/locality) whenever county or locality change.
-const { localityCount, loading: waitingLoading } = useLocalityWaitingCount(
+const { localityCount, countyCount, loading: waitingLoading } = useLocalityWaitingCount(
   () => form.county,
   () => form.locality,
 )
@@ -414,13 +414,20 @@ const { localityCount, loading: waitingLoading } = useLocalityWaitingCount(
 const waitingCountMessage = computed(() => {
   if (!form.county || !form.locality) return ''
   if (waitingLoading.value) return 'Verificăm câți oameni așteaptă în zonă…'
-  if (localityCount.value === 0) {
-    return `Fii printre primii care anunță o campanie în <strong>${form.locality}</strong>.`
+
+  if (localityCount.value > 0) {
+    const n = localityCount.value
+    const word = n === 1 ? 'persoană' : 'persoane'
+    return `<strong>${n} ${word}</strong> din <strong>${form.locality}</strong> așteaptă o campanie.`
   }
-  if (localityCount.value === 1) {
-    return `<strong>1 persoană</strong> din <strong>${form.locality}</strong> așteaptă o campanie.`
+
+  if (countyCount.value > 0) {
+    const n = countyCount.value
+    const word = n === 1 ? 'persoană' : 'persoane'
+    return `<strong>${n} ${word}</strong> din județul <strong>${countyName.value}</strong> așteaptă o campanie.`
   }
-  return `<strong>${localityCount.value} persoane</strong> din <strong>${form.locality}</strong> așteaptă o campanie.`
+
+  return ''
 })
 
 const step = ref<1 | 2>(1)

@@ -1,16 +1,14 @@
+import { AwsClient } from 'aws4fetch'
 import type { LocalityWaitingStats } from '~/types'
 
-/**
- * MOCK — backend endpoint not yet implemented.
- *
- * When the real `GET /stats/locality?county=...&locality=...` endpoint is
- * available, replace the mock body below with the AwsClient SigV4 proxy
- * pattern from `server/api/register.post.ts` (read `awsApiBase` from
- * runtime config, sign+forward the request, return the parsed JSON).
- *
- * Mock contract matches docs/CAMPAIGNS-FLOW-PLAN.md §5.2.
- */
-export default defineEventHandler((event): LocalityWaitingStats => {
+interface RegistrationsResponse {
+  county: string
+  registeredInCounty: number
+  byLocality: Record<string, number>
+  bySpecies: Record<string, number>
+}
+
+export default defineEventHandler(async (event): Promise<LocalityWaitingStats> => {
   const query = getQuery(event)
   const county = String(query.county ?? '').trim()
   const locality = String(query.locality ?? '').trim()
@@ -22,24 +20,40 @@ export default defineEventHandler((event): LocalityWaitingStats => {
     })
   }
 
-  // Deterministic pseudo-random counts so the same locality always returns
-  // the same numbers during dev — easier to eyeball.
-  const localityCount = hashTo(`${county}:${locality}`, 25)
-  const extraInCounty = hashTo(`${county}#`, 60)
-  const countyCount = localityCount + extraInCounty
+  const config = useRuntimeConfig()
+  const { awsAccessKeyId, awsSecretAccessKey, awsSessionToken, awsRegion, awsApiBase } = config
+
+  const rawBase = (awsApiBase as string) || 'https://api.sterilizarigratuite.ro'
+  const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`
+  const upstreamUrl = `${baseUrl}/stats/registrations?county=${encodeURIComponent(county)}`
+
+  let data: RegistrationsResponse
+
+  if (awsAccessKeyId && awsSecretAccessKey) {
+    const aws = new AwsClient({
+      accessKeyId: awsAccessKeyId as string,
+      secretAccessKey: awsSecretAccessKey as string,
+      sessionToken: (awsSessionToken as string) || undefined,
+      region: (awsRegion as string) || 'eu-central-1',
+      service: 'execute-api',
+    })
+    const res = await aws.fetch(upstreamUrl)
+    if (!res.ok) {
+      throw createError({
+        statusCode: res.status,
+        statusMessage: res.statusText || 'Upstream error',
+        data: await res.text(),
+      })
+    }
+    data = (await res.json()) as RegistrationsResponse
+  } else {
+    data = await $fetch<RegistrationsResponse>(upstreamUrl)
+  }
 
   return {
-    county,
+    county: data.county,
     locality,
-    registeredInLocality: localityCount,
-    registeredInCounty: countyCount,
+    registeredInLocality: data.byLocality[locality] ?? 0,
+    registeredInCounty: data.registeredInCounty,
   }
 })
-
-function hashTo(input: string, ceiling: number): number {
-  let hash = 0
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0
-  }
-  return hash % ceiling
-}
