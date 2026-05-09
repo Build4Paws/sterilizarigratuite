@@ -16,39 +16,38 @@
       <span class="campaign-card__org">{{ campaign.organizationName }}</span>
     </div>
 
-    <ul class="campaign-card__meta">
-      <li class="campaign-card__meta-row">
-        <Calendar :size="15" class="campaign-card__icon" aria-hidden="true" />
-        <span class="campaign-card__row-label">Data:</span>
-        <span>{{ dateLabel }}</span>
-      </li>
-      <li class="campaign-card__meta-row">
-        <Clock :size="15" class="campaign-card__icon" aria-hidden="true" />
-        <span class="campaign-card__row-label">Ora de start:</span>
-        <span>{{ campaign.timeStart }}</span>
-      </li>
-      <li class="campaign-card__meta-row">
-        <Clock :size="15" class="campaign-card__icon" aria-hidden="true" />
-        <span class="campaign-card__row-label">Ora de încheiere:</span>
-        <span>{{ campaign.timeEnd }}</span>
-      </li>
-      <li class="campaign-card__meta-row campaign-card__meta-row--top">
-        <MapPin :size="15" class="campaign-card__icon" aria-hidden="true" />
-        <span class="campaign-card__row-label">Adresă:</span>
-        <span class="campaign-card__address">{{ campaign.address }}</span>
-      </li>
-    </ul>
+    <div class="campaign-card__when">
+      <Calendar :size="20" class="campaign-card__when-icon" aria-hidden="true" />
+      <span class="campaign-card__when-text">
+        {{ dateLabel }}, {{ campaign.timeStart }}–{{ campaign.timeEnd }}
+      </span>
+    </div>
+
+    <div class="campaign-card__address-row">
+      <MapPin :size="14" class="campaign-card__address-icon" aria-hidden="true" />
+      <span class="campaign-card__address">{{ campaign.address }}</span>
+    </div>
 
     <ul class="campaign-card__slots">
-      <li v-if="campaign.species.includes('dog') && campaign.slotsDogs" class="campaign-card__slot">
-        <Dog :size="16" class="campaign-card__slot-icon" aria-hidden="true" />
-        <span class="campaign-card__row-label">Locuri câini:</span>
-        <span>{{ campaign.slotsDogs }}</span>
+      <li
+        v-if="campaign.species.includes('dog') && campaign.slotsDogs"
+        class="campaign-card__slot campaign-card__slot--dog"
+      >
+        <Dog :size="32" class="campaign-card__slot-icon" aria-hidden="true" />
+        <div class="campaign-card__slot-info">
+          <span class="campaign-card__slot-count">{{ campaign.slotsDogs }}</span>
+          <span class="campaign-card__slot-label">{{ Number(campaign.slotsDogs) === 1 ? 'loc câine' : 'locuri câini' }}</span>
+        </div>
       </li>
-      <li v-if="campaign.species.includes('cat') && campaign.slotsCats" class="campaign-card__slot">
-        <Cat :size="16" class="campaign-card__slot-icon" aria-hidden="true" />
-        <span class="campaign-card__row-label">Locuri pisici:</span>
-        <span>{{ campaign.slotsCats }}</span>
+      <li
+        v-if="campaign.species.includes('cat') && campaign.slotsCats"
+        class="campaign-card__slot campaign-card__slot--cat"
+      >
+        <Cat :size="32" class="campaign-card__slot-icon" aria-hidden="true" />
+        <div class="campaign-card__slot-info">
+          <span class="campaign-card__slot-count">{{ campaign.slotsCats }}</span>
+          <span class="campaign-card__slot-label">{{ Number(campaign.slotsCats) === 1 ? 'loc pisică' : 'locuri pisici' }}</span>
+        </div>
       </li>
     </ul>
 
@@ -66,18 +65,29 @@
         </a>
       </div>
     </footer>
+
+    <a
+      v-if="showCallCta && campaign.phonePublic"
+      :href="`tel:${campaign.phonePublic}`"
+      class="campaign-card__cta"
+    >
+      <Phone :size="18" aria-hidden="true" />
+      <span>Sună organizatorul</span>
+    </a>
   </article>
 </template>
 
 <script setup lang="ts">
-import { Calendar, Clock, MapPin, Phone, Stethoscope, Dog, Cat, Building2 } from 'lucide-vue-next'
+import { Calendar, MapPin, Phone, Stethoscope, Dog, Cat, Building2 } from 'lucide-vue-next'
 import type { CampaignCardData, CampaignStatus } from '~/types'
 
 const props = withDefaults(defineProps<{
   campaign: CampaignCardData
   variant?: 'default' | 'pending'
+  showCallCta?: boolean
 }>(), {
   variant: 'default',
+  showCallCta: false,
 })
 
 const badge = computed<{ label: string; tone: 'neutral' | 'warning' | 'muted' } | null>(() => {
@@ -189,17 +199,12 @@ function formatDateRO(iso: string): string {
 
 /* ---- Shared row layout ---- */
 .campaign-card__org-row,
-.campaign-card__meta-row,
 .campaign-card__foot-row {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
   font-size: var(--font-size-base);
   color: var(--color-text);
-}
-
-.campaign-card__meta-row--top {
-  align-items: flex-start;
 }
 
 .campaign-card__icon {
@@ -222,47 +227,119 @@ function formatDateRO(iso: string): string {
   color: var(--color-text);
 }
 
-/* ---- Meta list ---- */
-.campaign-card__meta {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* ---- When (date + time) — primary "what's the deal" line ---- */
+.campaign-card__when {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  background: rgba(4, 26, 73, 0.04);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.campaign-card__when-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.campaign-card__when-text {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+}
+
+/* ---- Address — secondary detail ---- */
+.campaign-card__address-row {
+  display: flex;
+  align-items: flex-start;
   gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.campaign-card__address-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .campaign-card__address {
   line-height: 1.4;
 }
 
-/* ---- Slot chips ---- */
+/* ---- Slots — large color-coded blocks ---- */
 .campaign-card__slots {
   list-style: none;
   padding: var(--space-sm) 0 0;
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--space-sm);
   border-top: 1px solid var(--color-border-light, #e2e8f0);
 }
 
 .campaign-card__slot {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text);
-  background: rgba(249, 89, 5, 0.07);
-  border: 1px solid rgba(249, 89, 5, 0.18);
-  border-radius: 999px;
-  padding: 0.25rem 0.75rem;
+  gap: var(--space-md);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid transparent;
+}
+
+.campaign-card__slot--dog {
+  background: rgba(249, 89, 5, 0.08);
+  border-color: rgba(249, 89, 5, 0.18);
+}
+
+.campaign-card__slot--dog .campaign-card__slot-icon {
+  color: var(--color-accent);
+}
+
+.campaign-card__slot--dog .campaign-card__slot-count {
+  color: var(--color-accent);
+}
+
+.campaign-card__slot--cat {
+  background: rgba(4, 26, 73, 0.06);
+  border-color: rgba(4, 26, 73, 0.15);
+}
+
+.campaign-card__slot--cat .campaign-card__slot-icon {
+  color: var(--color-primary);
+}
+
+.campaign-card__slot--cat .campaign-card__slot-count {
+  color: var(--color-primary);
 }
 
 .campaign-card__slot-icon {
-  color: var(--color-accent, #f95905);
   flex-shrink: 0;
+}
+
+.campaign-card__slot-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.campaign-card__slot-count {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.campaign-card__slot-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: 1px;
 }
 
 /* ---- Footer ---- */
@@ -282,5 +359,33 @@ function formatDateRO(iso: string): string {
 
 .campaign-card__phone:hover {
   text-decoration: underline;
+}
+
+/* ---- Call CTA (listing page) ---- */
+.campaign-card__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  align-self: stretch;
+  background: var(--color-accent);
+  color: var(--color-text-light);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: var(--space-xs);
+}
+
+.campaign-card__cta:hover {
+  background: var(--color-accent-hover);
+  text-decoration: none;
+}
+
+.campaign-card__cta:active {
+  transform: translateY(1px);
 }
 </style>

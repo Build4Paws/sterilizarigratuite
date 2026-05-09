@@ -305,7 +305,7 @@
     <!-- STEP 2 — Preview                                               -->
     <!-- ============================================================ -->
     <template v-else>
-      <CampaignCard :campaign="cardData" variant="pending" />
+      <CampaignCard :campaign="cardData" :show-call-cta="true" />
 
       <div class="campaign-form__preview-actions">
         <UiButton type="button" variant="ghost" :disabled="submitting" @click="goBackToEdit">
@@ -512,7 +512,6 @@ const cardData = computed<CampaignCardData>(() => {
     slotsCats: form.hasCats ? form.slotsCats : undefined,
     doctor: form.doctor.trim() || undefined,
     phonePublic,
-    status: 'pending',
   }
 })
 

@@ -23,9 +23,15 @@ organizer directly — we don't proxy reservations.
 - No campaign detail page (`/campanii/[id]`) — defer to v2 unless we discover
   card UX is too cramped.
 - No map view.
-- No pagination at MVP — list is short enough for the foreseeable future.
-  Add when total approved+upcoming exceeds ~30.
 - No "subscribe" CTA inline on the page (homepage already owns that).
+
+**Pagination — client-virtual, then backend later.** First load shows
+**20 cards**; an IntersectionObserver sentinel at the bottom of the list
+appends another 20 each time it scrolls into view. The full result set
+arrives in one API call (the backend doesn't paginate today), so this is
+purely a render-side window. When approved+upcoming campaigns exceed ~80,
+revisit with a backend `?page=` / `?cursor=` contract — until then the
+in-memory window is the simplest correct UX.
 
 ---
 
@@ -118,44 +124,78 @@ rank for nothing.
 
 ### 4.1 Hero
 
-Compact (~`var(--space-2xl)` top/bottom). Navy bg, no curved divider —
-this is a utility page, not a landing. H1 + 1-line subtitle. Filters live
-on a sticky-ish bar **just below** the hero (not inside) so they're always
-near the list.
+Roomy (~`var(--space-3xl)` top/bottom). Navy bg, no curved divider — this
+is a utility page, not a landing, but the H1 needs breathing room since
+it carries the "what is this page" message. H1 + 1-line subtitle.
+Filters live on a sticky-ish bar **just below** the hero (not inside) so
+they're always near the list.
 
 ### 4.2 Filters
 
-- **Județ** — reuse `<UiCombobox>` (already searchable, used in forms),
-  options from `useLocationData().counties` plus a synthetic
-  "Toate județele" entry at top with `value: ''`.
-- **Specie** — `<UiSelect>` with three options: `Toate`, `Câini`, `Pisici`.
-- **Resetează** — small `<UiButton variant="ghost">` visible only when at
-  least one filter is set. Clears query params.
+- **Județ** — `<UiCombobox>` (searchable, also used in forms), options
+  from `useLocationData().counties`. Built-in clear → "all counties".
+- **Specie** — `<UiSelect>` with three options: `Toate speciile`,
+  `Câini`, `Pisici`.
+- **Resetează** — `<UiButton variant="ghost">` visible only when at least
+  one filter is set. Clears query params.
+
+Each filter capped at **`max-width: 280px`** so they don't stretch
+across the page on wide viewports — the bar reads as a compact toolbar,
+not a form. On mobile they stack to full-width.
 
 Active filters show as a count next to the section heading
 ("**N campanii** în **Alba** pentru **câini**") so the user always knows
 what they're seeing.
 
-### 4.3 Card
+### 4.3 Card layout — single column
 
-Reuse the existing `<CampaignCard variant="default">`. **One change:** add
-an optional, prominent CTA button to the footer next to the existing
-`tel:` link — "Sună organizatorul" — full-width on mobile.
+The list is **always single-column** (cards take full available width up
+to `max-width: 720px`, centered). This is a phone-first design — the
+target user is on mobile, looking at one campaign at a time, deciding
+whether to call. Multi-column grid was tested and felt cluttered: too
+many decisions per screen, harder to scan, awkward when card content
+varies (multi-day vs single-day, multi-species vs one).
 
-Add a new variant `'listing'` (or a `showCallCta` prop) so the card stays
-unchanged on the organizer preview/confirmation pages. Inside the card:
+### 4.4 Card content — prominent slots + CTA
 
-```html
-<a class="campaign-card__cta" :href="`tel:${campaign.phonePublic}`">
-  <Phone /> Sună organizatorul
-</a>
-```
+Reuse `<CampaignCard variant="default">` with an opt-in `showCallCta`
+prop (orange "Sună organizatorul" button at the bottom of the card,
+full-width).
 
-Styling: orange (`--color-accent`) bg, white text, full width on
-`max-width: 540px`. Keep the existing inline `tel:` link too (for the
-`copy phone number` use case) but it becomes a secondary text link.
+**Slot section is the visual focal point** — this is what tells the
+citizen *"can I bring my animal?"*. Restyle the existing
+`campaign-card__slots` block:
 
-### 4.4 Empty / loading / error states
+- Each slot becomes a large, color-tinted block (not a small chip).
+- Big icon (~28px), big number (~1.5rem, heavy weight), small label
+  underneath.
+- **Dog vs cat have distinct colors** so the eye instantly maps icon →
+  category:
+  - 🐶 Dogs: orange tint (`--color-accent` family)
+  - 🐱 Cats: navy tint (`--color-primary` family)
+- Two-up grid when both are present, single full-width when only one.
+
+This change applies to all `<CampaignCard>` usages (organizer preview,
+confirmation, listing) — desirable everywhere; the slots are always the
+most actionable info on the card.
+
+Keep the existing inline `tel:` text link in the footer as a secondary
+"copy this number" affordance.
+
+### 4.5 Infinite scroll
+
+- Page-level constant `PAGE_SIZE = 20`.
+- Render only the first `displayedCount` items of `campaigns.value`.
+- Sentinel `<div ref="sentinelRef">` rendered at the bottom of the list
+  *only when* `displayedCount < campaigns.value.length`.
+- `useIntersectionObserver` (from `@vueuse/nuxt`) bumps `displayedCount`
+  by `PAGE_SIZE` when the sentinel scrolls into view.
+- Reset `displayedCount` to `PAGE_SIZE` whenever filters change.
+- **JSON-LD covers the full result set**, not just the visible window —
+  Google indexes everything even when JS doesn't run; user only paints
+  the first 20 to keep initial render light.
+
+### 4.6 Empty / loading / error states
 
 - **Loading** — 3 skeleton cards (CSS shimmer, no extra dep).
 - **Empty (no filters)** — *"Nu sunt campanii programate momentan.

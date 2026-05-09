@@ -16,7 +16,7 @@
           <Eye :size="20" />
           <h2>Așa va apărea campania ta după aprobare</h2>
         </div>
-        <CampaignCard :campaign="cardData" variant="pending" />
+        <CampaignCard :campaign="cardData" :show-call-cta="true" />
       </section>
 
       <section v-if="hasStats" class="confirmare__block confirmare__block--stats">
@@ -102,7 +102,6 @@ const cardData = computed<CampaignCardData>(() => {
     slotsCats: c.slotsCats,
     doctor: c.doctor,
     phonePublic: c.phonePublic,
-    status: 'pending',
   }
 })
 

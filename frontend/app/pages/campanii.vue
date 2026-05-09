@@ -1,45 +1,654 @@
 <template>
-  <div class="container page-campanii">
-    <h1>Campanii de sterilizare gratuită</h1>
-    <p class="page-campanii__intro">
-      Toate campaniile de sterilizare gratuită aprobate, din toată România.
-    </p>
+  <div class="page-campanii">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero__inner">
+        <h1 class="hero__title">Campanii de sterilizare gratuită</h1>
+        <p class="hero__subtitle">
+          Găsește o campanie de sterilizare aproape de tine. Sună direct la organizator pentru a-ți programa animalul.
+        </p>
+      </div>
+    </section>
 
-    <!-- County filter + campaign list will be added in Phase 2/3 -->
-    <p class="placeholder">[Filtru județ + listă campanii — Phase 2/3]</p>
+    <!-- Filter bar -->
+    <section class="filters">
+      <div class="container filters__inner">
+        <div class="filters__group">
+          <UiCombobox
+            id="filter-county"
+            :model-value="countyCode"
+            label="Județ"
+            placeholder="Toate județele"
+            :options="counties"
+            @update:model-value="onCountyChange"
+          />
+        </div>
+        <div class="filters__group">
+          <UiSelect
+            id="filter-species"
+            :model-value="speciesUrl"
+            label="Specie"
+            :options="speciesOptions"
+            @update:model-value="onSpeciesChange"
+          />
+        </div>
+        <div v-if="hasActiveFilters" class="filters__reset">
+          <UiButton variant="ghost" @click="resetFilters">
+            <RotateCcw :size="16" aria-hidden="true" />
+            Resetează filtrele
+          </UiButton>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="list">
+      <div class="container">
+        <header class="list__header">
+          <Calendar :size="22" class="list__icon" aria-hidden="true" />
+          <h2 class="list__title">{{ headingText }}</h2>
+        </header>
+
+        <!-- Loading -->
+        <ul v-if="loading" class="list__items" aria-busy="true">
+          <li v-for="i in 3" :key="i">
+            <div class="skeleton-card" aria-hidden="true">
+              <div class="skeleton-card__head" />
+              <div class="skeleton-card__line" />
+              <div class="skeleton-card__line" />
+              <div class="skeleton-card__line skeleton-card__line--short" />
+              <div class="skeleton-card__cta" />
+            </div>
+          </li>
+        </ul>
+
+        <!-- Error -->
+        <div v-else-if="error" class="list__error">
+          <UiAlert variant="error">{{ errorMessage }}</UiAlert>
+          <UiButton variant="secondary" @click="refresh()">
+            Reîncearcă
+          </UiButton>
+        </div>
+
+        <!-- Empty -->
+        <div v-else-if="campaigns.length === 0" class="empty">
+          <Inbox :size="40" class="empty__icon" aria-hidden="true" />
+          <p class="empty__title">{{ emptyTitle }}</p>
+          <p class="empty__text">{{ emptyText }}</p>
+          <div class="empty__actions">
+            <NuxtLink v-if="hasActiveFilters" to="/campanii" class="empty__link">
+              Vezi toate campaniile
+            </NuxtLink>
+            <NuxtLink to="/" class="empty__cta">
+              Înscrie-te să fii anunțat
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Cards -->
+        <ul v-else class="list__items">
+          <li v-for="c in displayedCampaigns" :key="c.id">
+            <CampaignCard :campaign="toCardData(c)" :show-call-cta="true" />
+          </li>
+        </ul>
+
+        <!-- Infinite-scroll sentinel -->
+        <div
+          v-if="hasMore"
+          ref="sentinelRef"
+          class="list__sentinel"
+          aria-hidden="true"
+        />
+        <p v-if="hasMore" class="list__loading-more" role="status">
+          Se încarcă mai multe campanii…
+        </p>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-useSeoMeta({
-  title: 'Campanii de sterilizare gratuită — Sterilizări Gratuite',
-  description: 'Vezi toate campaniile de sterilizare gratuită pentru câini și pisici din România. Filtrează după județ și găsește campania cea mai apropiată.',
-  ogTitle: 'Campanii de sterilizare gratuită',
-  ogDescription: 'Găsește campanii de sterilizare gratuită pentru câini și pisici lângă tine.',
+import { Calendar, Inbox, RotateCcw } from 'lucide-vue-next'
+import type { Campaign, CampaignCardData, Species } from '~/types'
+
+definePageMeta({ layout: 'default' })
+
+const route = useRoute()
+const router = useRouter()
+const siteConfig = useSiteConfig()
+
+// Load county indexes + names once for sync template lookups.
+await ensureLocationIndexes()
+const { counties, init: initCounties } = useLocationData()
+await initCounties()
+
+// URL ↔ internal species mapping.
+const URL_TO_SPECIES: Record<string, Species> = { caine: 'dog', pisica: 'cat' }
+
+const speciesOptions = [
+  { value: '', label: 'Toate speciile' },
+  { value: 'caine', label: 'Câini' },
+  { value: 'pisica', label: 'Pisici' },
+]
+
+// URL-derived state.
+const judetSlug = computed(() => String(route.query.judet ?? '').toLowerCase())
+const speciesUrl = computed(() => String(route.query.specie ?? '').toLowerCase())
+
+const countyCode = computed(() => slugToCountyCodeSync(judetSlug.value))
+const countyName = computed(() => countyCodeToNameSync(countyCode.value))
+const species = computed<Species | ''>(() => URL_TO_SPECIES[speciesUrl.value] ?? '')
+
+// Fetch + filter.
+const { campaigns, loading, error, refresh } = useCampaigns({
+  countyCode,
+  species,
 })
+
+// Infinite scroll — render-side window over the full result set. Backend
+// pagination isn't supported yet; revisit when totals exceed ~80.
+const PAGE_SIZE = 20
+const displayedCount = ref(PAGE_SIZE)
+const sentinelRef = ref<HTMLElement | null>(null)
+
+const displayedCampaigns = computed(() =>
+  campaigns.value.slice(0, displayedCount.value),
+)
+const hasMore = computed(() => displayedCount.value < campaigns.value.length)
+
+useIntersectionObserver(
+  sentinelRef,
+  ([entry]) => {
+    if (entry?.isIntersecting && hasMore.value) {
+      displayedCount.value = Math.min(
+        displayedCount.value + PAGE_SIZE,
+        campaigns.value.length,
+      )
+    }
+  },
+  { rootMargin: '200px' },
+)
+
+// Reset window whenever the filtered result set changes (filter or refetch).
+watch([countyCode, species], () => {
+  displayedCount.value = PAGE_SIZE
+})
+
+const errorMessage = computed(() => extractApiError(error.value))
+
+const hasActiveFilters = computed(() => !!countyCode.value || !!species.value)
+
+// Heading text — adapts to active filters.
+const headingText = computed(() => {
+  const n = campaigns.value.length
+  const noun = n === 1 ? 'campanie viitoare' : 'campanii viitoare'
+
+  if (countyName.value && species.value) {
+    const sp = species.value === 'dog' ? 'câini' : 'pisici'
+    return `${n} ${noun} pentru ${sp} în ${countyName.value}`
+  }
+  if (countyName.value) {
+    return `${n} ${noun} în ${countyName.value}`
+  }
+  if (species.value) {
+    const sp = species.value === 'dog' ? 'câini' : 'pisici'
+    return `${n} ${noun} pentru ${sp}`
+  }
+  return `${n} ${noun} în toată țara`
+})
+
+// Empty-state copy.
+const emptyTitle = computed(() => {
+  if (!hasActiveFilters.value) return 'Nu sunt campanii programate momentan'
+  if (countyName.value && species.value) {
+    const sp = species.value === 'dog' ? 'câini' : 'pisici'
+    return `Nu sunt campanii pentru ${sp} în ${countyName.value}`
+  }
+  if (countyName.value) return `Nu sunt campanii viitoare în ${countyName.value}`
+  const sp = species.value === 'dog' ? 'câini' : 'pisici'
+  return `Nu sunt campanii pentru ${sp} momentan`
+})
+
+const emptyText = computed(() =>
+  hasActiveFilters.value
+    ? 'Încearcă să schimbi filtrele sau înscrie-te să fii anunțat când apare o campanie în zona ta.'
+    : 'Înscrie-te pe pagina principală și te anunțăm prin SMS și email când apare o campanie în zona ta.',
+)
+
+// Filter handlers — write to URL; refs follow reactively.
+function onCountyChange(code: string) {
+  const slug = code ? countyCodeToSlugSync(code) : ''
+  syncUrl({ judet: slug, specie: speciesUrl.value })
+}
+
+function onSpeciesChange(value: string) {
+  syncUrl({ judet: judetSlug.value, specie: value })
+}
+
+function resetFilters() {
+  syncUrl({})
+}
+
+function syncUrl(query: { judet?: string; specie?: string }) {
+  const cleaned: Record<string, string> = {}
+  if (query.judet) cleaned.judet = query.judet
+  if (query.specie) cleaned.specie = query.specie
+  router.replace({ query: cleaned })
+}
+
+// Sync card data — indexes are loaded so countyCodeToNameSync resolves.
+function toCardData(c: Campaign): CampaignCardData {
+  return {
+    organizationName: c.organizationName,
+    countyName: countyCodeToNameSync(c.county) || c.county,
+    locality: c.locality,
+    address: c.address,
+    dateStart: c.dateStart,
+    dateEnd: c.dateEnd,
+    timeStart: c.timeStart,
+    timeEnd: c.timeEnd,
+    species: c.species,
+    slotsDogs: c.slotsDogs,
+    slotsCats: c.slotsCats,
+    doctor: c.doctor,
+    phonePublic: c.phonePublic,
+    status: c.status,
+  }
+}
+
+// ---- SEO ---------------------------------------------------------------
+const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizarigratuite.ro'
+
+const canonicalHref = computed(() => {
+  // Specie variants canonicalize to the no-specie URL — avoids duplicate content.
+  const u = new URL('/campanii', siteUrl)
+  if (judetSlug.value) u.searchParams.set('judet', judetSlug.value)
+  return u.toString()
+})
+
+const robotsValue = computed(() =>
+  speciesUrl.value ? 'noindex, follow' : 'index, follow',
+)
+
+const seoTitle = computed(() => {
+  if (countyName.value) {
+    return `Campanii de sterilizare gratuită în ${countyName.value} — Sterilizări Gratuite`
+  }
+  return 'Campanii de sterilizare gratuită — toate județele active în România'
+})
+
+const seoDescription = computed(() => {
+  if (countyName.value) {
+    return `Vezi campaniile de sterilizare gratuită programate în ${countyName.value}. Câini și pisici. Sună direct la organizator pentru programare.`
+  }
+  return 'Toate campaniile de sterilizare gratuită active în România. Filtrează după județ și sună direct la organizator pentru programare.'
+})
+
+useSeoMeta({
+  title: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogTitle: () => seoTitle.value,
+  ogDescription: () => seoDescription.value,
+  robots: () => robotsValue.value,
+})
+
+useHead(() => ({
+  link: [{ rel: 'canonical', href: canonicalHref.value }],
+}))
+
+// ---- JSON-LD ------------------------------------------------------------
+function pad(n: number) { return String(n).padStart(2, '0') }
+function isoDateTime(date: string, time: string): string {
+  // We don't know timezone reliably — leave naive (no Z). Crawlers tolerate this.
+  const t = (time || '00:00').padEnd(5, '0')
+  return `${date}T${t}:00`
+}
+
+const eventsLd = computed(() => {
+  return campaigns.value.map((c) => ({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: `Campanie sterilizare gratuită — ${c.locality}`,
+    startDate: isoDateTime(c.dateStart, c.timeStart),
+    endDate: isoDateTime(c.dateEnd || c.dateStart, c.timeEnd),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: {
+      '@type': 'Place',
+      name: c.locality,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: c.address,
+        addressLocality: c.locality,
+        addressRegion: countyCodeToNameSync(c.county) || c.county,
+        addressCountry: 'RO',
+      },
+    },
+    organizer: {
+      '@type': 'Organization',
+      name: c.organizationName,
+      telephone: c.phonePublic,
+    },
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'RON',
+      availability: 'https://schema.org/InStock',
+      url: canonicalHref.value,
+    },
+  }))
+})
+
+const breadcrumbLd = computed(() => {
+  const items: Record<string, unknown>[] = [
+    { '@type': 'ListItem', position: 1, name: 'Acasă', item: `${siteUrl}/` },
+    { '@type': 'ListItem', position: 2, name: 'Campanii', item: `${siteUrl}/campanii` },
+  ]
+  if (countyName.value) {
+    items.push({
+      '@type': 'ListItem',
+      position: 3,
+      name: countyName.value,
+      item: canonicalHref.value,
+    })
+  }
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items,
+  }
+})
+
+useHead(() => ({
+  script: [
+    ...eventsLd.value.map((e, i) => ({
+      type: 'application/ld+json',
+      key: `event-${i}`,
+      innerHTML: JSON.stringify(e),
+    })),
+    {
+      type: 'application/ld+json',
+      key: 'breadcrumbs',
+      innerHTML: JSON.stringify(breadcrumbLd.value),
+    },
+  ],
+}))
+
 </script>
 
 <style scoped>
 .page-campanii {
-  padding: var(--space-2xl) 0;
+  background: var(--color-bg-muted);
+  min-height: 100vh;
 }
 
-.page-campanii h1 {
+/* ---- Hero ---- */
+.hero {
+  background: var(--color-primary);
+  color: var(--color-text-light);
+  padding: var(--space-3xl) 0;
+  text-align: center;
+}
+
+.hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.hero__title {
+  font-family: var(--font-heading);
   font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-light);
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.15;
+}
+
+.hero__subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-slate-300);
+  font-weight: 400;
+  max-width: 620px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---- Filter bar ---- */
+.filters {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.filters__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  /* Align with the 720px-wide list column below. */
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.filters__group {
+  flex: 0 1 240px;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.filters__reset {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 2px;
+  margin-left: auto;
+}
+
+/* ---- List ---- */
+.list {
+  padding: var(--space-xl) 0 var(--space-3xl);
+}
+
+.list__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 auto var(--space-lg);
+  max-width: 720px;
+}
+
+.list__icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.list__title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.list__items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.list__sentinel {
+  height: 1px;
+  margin-top: var(--space-lg);
+}
+
+.list__loading-more {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: var(--space-md) 0 0;
+}
+
+/* ---- Skeleton ---- */
+.skeleton-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-height: 280px;
+}
+
+.skeleton-card > * {
+  background: linear-gradient(90deg, #eef2f7 0%, #f8fafc 50%, #eef2f7 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-card__head {
+  height: 26px;
+  width: 60%;
+}
+
+.skeleton-card__line {
+  height: 14px;
+  width: 90%;
+}
+
+.skeleton-card__line--short {
+  width: 50%;
+}
+
+.skeleton-card__cta {
+  height: 44px;
+  width: 100%;
+  margin-top: auto;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Empty ---- */
+.empty {
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.empty__icon {
+  color: var(--color-text-muted);
   margin-bottom: var(--space-sm);
 }
 
-.page-campanii__intro {
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-xl);
+.empty__title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  margin: 0;
+  font-weight: 700;
 }
 
-.placeholder {
-  padding: var(--space-xl);
-  background: var(--color-bg-muted);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
+.empty__text {
   color: var(--color-text-muted);
-  text-align: center;
+  margin: 0;
+  max-width: 480px;
+  line-height: 1.5;
+}
+
+.empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.empty__link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  font-weight: 500;
+  align-self: center;
+}
+
+.empty__cta {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-accent);
+  color: var(--color-text-light);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.empty__cta:hover {
+  background: var(--color-accent-hover);
+}
+
+/* ---- Error ---- */
+.list__error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-items: flex-start;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ---- Responsive hero ---- */
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-xl) 0;
+  }
+
+  .hero__title {
+    font-size: 1.5rem;
+  }
+
+  .hero__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .filters__inner {
+    padding: var(--space-md);
+  }
+
+  .filters__group {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .filters__reset {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
 }
 </style>
