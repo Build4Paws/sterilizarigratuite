@@ -64,6 +64,13 @@ const channelMessage = computed(() => {
   }
 })
 
+// Live fallback for when POST /register didn't return stats in its response.
+// The GET endpoint counts include the current user, so no +1 adjustment needed.
+const { localityCount: liveLocalityCount, countyCount: liveCountyCount } = useLocalityWaitingCount(
+  () => session.value?.countyCode ?? '',
+  () => session.value?.locality ?? '',
+)
+
 const FEMININE_ORDINALS: Record<number, string> = {
   1: 'prima',
   2: 'a doua',
@@ -87,10 +94,18 @@ const rankMessage = computed(() => {
   const locality = `<strong>${s.locality}</strong>`
   const county = `<strong>${s.countyName}</strong>`
 
-  // stats counts represent OTHERS already registered (excluding the current user),
-  // so the user's own rank is count + 1.
-  const localityRank = (s.stats?.registeredInLocality ?? 0) + 1
-  const countyRank = (s.stats?.registeredInCounty ?? 0) + 1
+  let localityRank: number
+  let countyRank: number
+
+  if (s.stats) {
+    // POST /register returns counts of OTHERS registered before this user → rank = count + 1.
+    localityRank = s.stats.registeredInLocality + 1
+    countyRank = s.stats.registeredInCounty + 1
+  } else {
+    // Fallback: live GET stats already include the current user → rank = count as-is.
+    localityRank = liveLocalityCount.value || 1
+    countyRank = liveCountyCount.value || 1
+  }
 
   if (countyRank === 1) {
     return `Ești <strong>prima persoană</strong> din județul ${county} care s-a înscris.`
