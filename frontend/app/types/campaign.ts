@@ -9,17 +9,19 @@ export interface Campaign {
   timeStart: string
   timeEnd: string
   species: Species[]
-  slotsDogs?: number
-  slotsCats?: number
+  slotsDogs?: number | string
+  slotsCats?: number | string
   doctor?: string
   phonePublic: string
   status: CampaignStatus
+  isSoldOut?: boolean
   createdAt: string
 }
 
 export type Species = 'dog' | 'cat'
 
-export type CampaignStatus = 'pending' | 'approved' | 'soldout' | 'completed'
+// Backend returns uppercase. Keep uppercase here to match the wire format.
+export type CampaignStatus = 'PENDING' | 'APPROVED' | 'SOLDOUT' | 'COMPLETED'
 
 /**
  * Shape consumed by `<CampaignCard>` — the card is reused on /campanii (where
@@ -41,4 +43,5 @@ export interface CampaignCardData {
   doctor?: string
   phonePublic: string
   status?: CampaignStatus
+  isSoldOut?: boolean
 }

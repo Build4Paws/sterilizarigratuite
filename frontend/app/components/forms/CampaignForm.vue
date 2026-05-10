@@ -508,7 +508,7 @@ const cardData = computed<CampaignCardData>(() => {
     locality: form.locality,
     address: form.address.trim(),
     dateStart: form.dateStart,
-    dateEnd: form.isMultiDay ? form.dateEnd : undefined,
+    dateEnd: form.isMultiDay ? form.dateEnd : form.dateStart,
     timeStart: form.timeStart,
     timeEnd: form.timeEnd,
     species: [
@@ -562,7 +562,7 @@ async function handleSubmit() {
       locality: form.locality,
       address: form.address.trim(),
       dateStart: form.dateStart,
-      dateEnd: form.isMultiDay ? form.dateEnd : undefined,
+      dateEnd: form.isMultiDay ? form.dateEnd : form.dateStart,
       timeStart: form.timeStart,
       timeEnd: form.timeEnd,
       species: [

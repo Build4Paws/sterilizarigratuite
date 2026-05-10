@@ -24,7 +24,7 @@
           <nav class="footer__col-links" aria-label="Navigare site">
             <NuxtLink to="/campanii">Campanii</NuxtLink>
             <NuxtLink to="/organizatori">Organizatori</NuxtLink>
-            <NuxtLink to="/despre">Despre noi</NuxtLink>
+            <NuxtLink to="/harta">Harta</NuxtLink>
           </nav>
         </div>
 
