@@ -28,3 +28,8 @@ export function speciesLabel(species: ('dog' | 'cat')[]): string {
   if (species.includes('dog')) return 'Câini'
   return 'Pisici'
 }
+
+// Escapes `<` so a `</script>` in the data cannot break out of the surrounding <script> element.
+export function safeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, '\\u003c')
+}

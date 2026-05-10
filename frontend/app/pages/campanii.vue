@@ -366,12 +366,12 @@ useHead(() => ({
     ...eventsLd.value.map((e, i) => ({
       type: 'application/ld+json',
       key: `event-${i}`,
-      innerHTML: JSON.stringify(e),
+      innerHTML: safeJsonLd(e),
     })),
     {
       type: 'application/ld+json',
       key: 'breadcrumbs',
-      innerHTML: JSON.stringify(breadcrumbLd.value),
+      innerHTML: safeJsonLd(breadcrumbLd.value),
     },
   ],
 }))
