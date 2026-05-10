@@ -248,11 +248,12 @@ function toCardData(c: Campaign): CampaignCardData {
     timeStart: c.timeStart,
     timeEnd: c.timeEnd,
     species: c.species,
-    slotsDogs: c.slotsDogs,
-    slotsCats: c.slotsCats,
+    slotsDogs: c.slotsDogs !== undefined ? Number(c.slotsDogs) : undefined,
+    slotsCats: c.slotsCats !== undefined ? Number(c.slotsCats) : undefined,
     doctor: c.doctor,
     phonePublic: c.phonePublic,
     status: c.status,
+    isSoldOut: c.isSoldOut,
   }
 }
 

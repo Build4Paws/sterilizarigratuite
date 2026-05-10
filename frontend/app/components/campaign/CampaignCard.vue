@@ -67,7 +67,7 @@
     </footer>
 
     <a
-      v-if="showCallCta && campaign.phonePublic"
+      v-if="showCta"
       :href="`tel:${campaign.phonePublic}`"
       class="campaign-card__cta"
     >
@@ -79,7 +79,10 @@
 
 <script setup lang="ts">
 import { Calendar, MapPin, Phone, Stethoscope, Dog, Cat, Building2 } from 'lucide-vue-next'
-import type { CampaignCardData, CampaignStatus } from '~/types'
+import type { CampaignCardData } from '~/types'
+
+type BadgeTone = 'upcoming' | 'ongoing' | 'warning' | 'muted' | 'neutral'
+interface Badge { label: string; tone: BadgeTone }
 
 const props = withDefaults(defineProps<{
   campaign: CampaignCardData
@@ -90,17 +93,48 @@ const props = withDefaults(defineProps<{
   showCallCta: false,
 })
 
-const badge = computed<{ label: string; tone: 'neutral' | 'warning' | 'muted' } | null>(() => {
-  // Pending variant always shows the pending badge regardless of status payload.
+/** Today as YYYY-MM-DD in local time — safe for string comparison with API date fields. */
+function localToday(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const badge = computed<Badge | null>(() => {
+  // Organizer preview — fixed badge, no date logic.
   if (props.variant === 'pending') {
     return { label: 'În așteptarea aprobării', tone: 'neutral' }
   }
-  const status: CampaignStatus | undefined = props.campaign.status
-  if (!status || status === 'approved') return null
-  if (status === 'soldout') return { label: 'Locuri epuizate', tone: 'warning' }
-  if (status === 'completed') return { label: 'Finalizat', tone: 'muted' }
-  return { label: 'În așteptare', tone: 'neutral' }
+
+  const { status, dateStart, dateEnd, isSoldOut } = props.campaign
+
+  // Sold-out overrides everything else.
+  if (isSoldOut) return { label: 'Locuri epuizate', tone: 'warning' }
+
+  const today = localToday()
+  // For single-day campaigns dateEnd is omitted — treat end === start.
+  const effectiveEnd = dateEnd || dateStart
+
+  const isApproved = status?.toUpperCase() === 'APPROVED'
+
+  if (!isApproved) return { label: 'În așteptare', tone: 'neutral' }
+
+  // APPROVED + dateEnd already passed → closed.
+  if (effectiveEnd < today) return { label: 'Finalizată', tone: 'muted' }
+
+  // APPROVED + dateStart in the future → upcoming, confirmed.
+  if (dateStart > today) return { label: 'Confirmată', tone: 'upcoming' }
+
+  // APPROVED + dateStart <= today AND dateEnd >= today → happening now.
+  return { label: 'În desfășurare', tone: 'ongoing' }
 })
+
+/** Only confirmed-upcoming campaigns make sense to call about. */
+const showCta = computed(() =>
+  props.showCallCta && ['ongoing', 'upcoming'].includes(badge.value?.tone || '') && !!props.campaign.phonePublic,
+)
 
 const dateLabel = computed(() => {
   const start = formatDateRO(props.campaign.dateStart)
@@ -182,19 +216,34 @@ function formatDateRO(iso: string): string {
   white-space: nowrap;
 }
 
-.campaign-card__badge--neutral {
-  background: rgba(4, 26, 73, 0.08);
-  color: var(--color-primary);
+/* Confirmată — upcoming, confirmed */
+.campaign-card__badge--upcoming {
+  background: #dbeafe;
+  color: #1e40af;
 }
 
+/* În desfășurare — happening now */
+.campaign-card__badge--ongoing {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Locuri epuizate — sold out */
 .campaign-card__badge--warning {
   background: #fef3c7;
   color: #92400e;
 }
 
+/* Finalizată — past */
 .campaign-card__badge--muted {
   background: #f1f5f9;
   color: #64748b;
+}
+
+/* În așteptare / În așteptarea aprobării — pending */
+.campaign-card__badge--neutral {
+  background: rgba(4, 26, 73, 0.07);
+  color: var(--color-primary);
 }
 
 /* ---- Shared row layout ---- */

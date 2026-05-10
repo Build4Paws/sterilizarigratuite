@@ -102,34 +102,55 @@
       </template>
 
       <template v-else>
-        <template v-if="topTen.length">
-          <div
-            v-for="(item, i) in visibleTopTen"
-            :key="item.code"
-            class="side-panel__top-row"
-            role="button"
-            tabindex="0"
-            @click="emit('select', item.code)"
-            @keydown.enter.prevent="emit('select', item.code)"
-            @keydown.space.prevent="emit('select', item.code)"
-          >
-            <span class="side-panel__rank">{{ i + 1 }}</span>
-            <span class="side-panel__county-name">{{ codeToName(item.code) }}</span>
-            <span class="side-panel__bar-wrap">
-              <span class="side-panel__bar" :style="{ width: barWidth(item.value) + '%' }" />
-            </span>
-            <span class="side-panel__value">{{ item.value.toLocaleString('ro-RO') }}</span>
-          </div>
-
+        <!-- Sort controls — only meaningful for Cerere (species data available) -->
+        <div v-if="view === 'cerere' && topTen.length" class="side-panel__sort">
           <button
-            v-if="topTen.length > 10 && !showAll"
-            class="side-panel__show-all"
-            @click="showAll = true"
+            v-for="opt in SORT_OPTIONS"
+            :key="opt.key"
+            :class="['side-panel__sort-btn', { 'is-active': sortBy === opt.key }]"
+            @click="sortBy = opt.key"
           >
-            Vezi toate județele ({{ topTen.length }}) →
+            <Dog v-if="opt.key === 'dog'" :size="12" aria-hidden="true" />
+            <Cat v-if="opt.key === 'cat'" :size="12" aria-hidden="true" />
+            {{ opt.label }}
           </button>
-        </template>
-        <p v-else class="side-panel__empty">Niciun județ înregistrat încă.</p>
+        </div>
+
+        <div class="side-panel__list">
+          <template v-if="topTen.length">
+            <div
+              v-for="(item, i) in visibleTopTen"
+              :key="item.code"
+              class="side-panel__top-row"
+              role="button"
+              tabindex="0"
+              @click="emit('select', item.code)"
+              @keydown.enter.prevent="emit('select', item.code)"
+              @keydown.space.prevent="emit('select', item.code)"
+            >
+              <span class="side-panel__rank">{{ i + 1 }}</span>
+              <span class="side-panel__county-name">{{ codeToName(item.code) }}</span>
+              <template v-if="view === 'cerere'">
+                <span class="side-panel__species-cell">
+                  <Dog :size="13" aria-hidden="true" />{{ speciesDog(item.code) }}
+                </span>
+                <span class="side-panel__species-cell">
+                  <Cat :size="13" aria-hidden="true" />{{ speciesCat(item.code) }}
+                </span>
+              </template>
+              <span class="side-panel__value">{{ item.value.toLocaleString('ro-RO') }}</span>
+            </div>
+
+            <button
+              v-if="topTen.length > 10 && !showAll"
+              class="side-panel__show-all"
+              @click="showAll = true"
+            >
+              Vezi toate județele ({{ topTen.length }}) →
+            </button>
+          </template>
+          <p v-else class="side-panel__empty">Niciun județ înregistrat încă.</p>
+        </div>
       </template>
     </template>
 
@@ -165,16 +186,44 @@ function codeToName(code: string) {
   return countyCodeToNameSync(code)
 }
 
-// ── Top-10 list ──────────────────────────────────────────────────────────────
+// ── Top-10 list — sort ───────────────────────────────────────────────────────
+
+type SortKey = 'total' | 'dog' | 'cat'
+const sortBy = ref<SortKey>('total')
+
+// Reset sort + pagination when the view tab changes.
+watch(() => props.view, () => {
+  sortBy.value = 'total'
+  showAll.value = false
+})
+watch(sortBy, () => { showAll.value = false })
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'total', label: 'Total' },
+  { key: 'dog',   label: 'Câini' },
+  { key: 'cat',   label: 'Pisici' },
+]
+
+const sortedTopTen = computed(() => {
+  if (sortBy.value === 'total' || props.view !== 'cerere') return props.topTen
+  return [...props.topTen].sort((a, b) => {
+    const get = (code: string) =>
+      sortBy.value === 'dog'
+        ? (props.cerereByCounty?.[code]?.species?.dog ?? 0)
+        : (props.cerereByCounty?.[code]?.species?.cat ?? 0)
+    return get(b.code) - get(a.code)
+  })
+})
 
 const visibleTopTen = computed(() =>
-  showAll.value ? props.topTen : props.topTen.slice(0, 10),
+  showAll.value ? sortedTopTen.value : sortedTopTen.value.slice(0, 10),
 )
 
-const maxVal = computed(() => props.topTen[0]?.value ?? 1)
-
-function barWidth(val: number) {
-  return Math.round((val / maxVal.value) * 100)
+function speciesDog(code: string) {
+  return props.cerereByCounty?.[code]?.species?.dog ?? 0
+}
+function speciesCat(code: string) {
+  return props.cerereByCounty?.[code]?.species?.cat ?? 0
 }
 
 const defaultTitle = computed(() => {
@@ -245,12 +294,13 @@ function formatDate(iso: string) {
 }
 
 .side-panel__title--default {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   font-family: var(--font-body);
+  text-align: left;
 }
 
 .side-panel__close {
@@ -368,17 +418,59 @@ function formatDate(iso: string) {
   text-decoration: underline;
 }
 
-/* ── Top-10 list ── */
-.side-panel__top-row {
-  display: grid;
-  grid-template-columns: 1.5rem 1fr auto auto;
+/* ── Sort controls ── */
+.side-panel__sort {
+  display: flex;
+  gap: 4px;
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: 2px;
+}
+
+.side-panel__sort-btn {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: 5px var(--space-xs);
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
   cursor: pointer;
-  transition: background 0.12s;
+  transition: color 0.12s, background 0.12s, border-color 0.12s;
+  line-height: 1.4;
+}
+
+.side-panel__sort-btn:hover {
+  color: var(--color-text);
+  background: var(--color-bg-muted);
+}
+
+.side-panel__sort-btn.is-active {
+  color: var(--color-primary);
+  background: rgba(4, 26, 73, 0.06);
+  border-color: rgba(4, 26, 73, 0.15);
+  font-weight: 600;
+}
+
+/* ── Top-10 list — full-width rows, per-row hover ── */
+.side-panel__list {
+  /* Break out of the panel's horizontal padding so the hover bg reaches the edges. */
+  margin-inline: calc(-1 * var(--space-lg));
+}
+
+.side-panel__top-row {
+  /* rank | name | dog-cell | cat-cell | total */
+  display: grid;
+  grid-template-columns: 1.4rem 1fr auto auto auto;
+  align-items: center;
+  column-gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
   outline: none;
+  transition: background 0.12s;
 }
 
 .side-panel__top-row:hover,
@@ -387,43 +479,45 @@ function formatDate(iso: string) {
 }
 
 .side-panel__rank {
-  font-size: var(--font-size-sm);
+  font-size: 0.72rem;
   color: var(--color-text-muted);
-  font-weight: 600;
+  font-weight: 500;
   text-align: right;
+  line-height: 1;
 }
 
 .side-panel__county-name {
   font-size: var(--font-size-sm);
+  font-weight: 600;
   color: var(--color-text);
-  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: left;
 }
 
-.side-panel__bar-wrap {
-  width: 60px;
-  height: 6px;
-  background: var(--color-border-light);
-  border-radius: var(--radius-full);
-  overflow: hidden;
+.side-panel__species-cell {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  line-height: 1;
 }
 
-.side-panel__bar {
-  display: block;
-  height: 100%;
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
-  transition: width 300ms ease;
+.side-panel__species-cell svg {
+  opacity: 0.5;
+  flex-shrink: 0;
 }
 
 .side-panel__value {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  font-weight: 600;
-  min-width: 2.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
   text-align: right;
+  white-space: nowrap;
+  min-width: 1.8rem;
 }
 
 /* ── Campaigns list ── */
@@ -466,12 +560,15 @@ function formatDate(iso: string) {
   color: var(--color-accent);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  padding: var(--space-xs) 0;
+  padding: 6px 10px;
   text-align: left;
-  transition: color 0.15s;
+  display: block;
+  width: 100%;
+  transition: color 0.15s, background 0.12s;
 }
 
 .side-panel__show-all:hover {
+  background: var(--color-bg-muted);
   color: var(--color-accent-hover);
 }
 
