@@ -50,7 +50,7 @@ const steps = [
   display: flex;
   align-items: center;
   gap: var(--space-lg);
-  margin-top: var(--space-md);
+  margin-top: var(--space-2xl);
   padding: var(--space-sm) var(--space-md);
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--color-border-light);

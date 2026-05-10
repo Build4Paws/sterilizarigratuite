@@ -27,28 +27,29 @@ export default defineEventHandler(async (event): Promise<LocalityWaitingStats> =
   const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`
   const upstreamUrl = `${baseUrl}/stats/registrations?county=${encodeURIComponent(county)}`
 
-  let data: RegistrationsResponse
-
-  if (awsAccessKeyId && awsSecretAccessKey) {
-    const aws = new AwsClient({
-      accessKeyId: awsAccessKeyId as string,
-      secretAccessKey: awsSecretAccessKey as string,
-      sessionToken: (awsSessionToken as string) || undefined,
-      region: (awsRegion as string) || 'eu-central-1',
-      service: 'execute-api',
+  if (!awsAccessKeyId || !awsSecretAccessKey || !awsApiBase) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Server is missing AWS credentials or API base URL',
     })
-    const res = await aws.fetch(upstreamUrl)
-    if (!res.ok) {
-      throw createError({
-        statusCode: res.status,
-        statusMessage: res.statusText || 'Upstream error',
-        data: await res.text(),
-      })
-    }
-    data = (await res.json()) as RegistrationsResponse
-  } else {
-    data = await $fetch<RegistrationsResponse>(upstreamUrl)
   }
+
+  const aws = new AwsClient({
+    accessKeyId: awsAccessKeyId as string,
+    secretAccessKey: awsSecretAccessKey as string,
+    sessionToken: (awsSessionToken as string) || undefined,
+    region: (awsRegion as string) || 'eu-central-1',
+    service: 'execute-api',
+  })
+  const res = await aws.fetch(upstreamUrl)
+  if (!res.ok) {
+    throw createError({
+      statusCode: res.status,
+      statusMessage: res.statusText || 'Upstream error',
+      data: await res.text(),
+    })
+  }
+  const data = (await res.json()) as RegistrationsResponse
 
   return {
     county: data.county,
