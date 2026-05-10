@@ -30,7 +30,9 @@
       "WebSearch",
       "Bash(curl -s --max-time 15 \"http://localhost:3002/harta\")",
       "Bash(pkill -f \"nuxt dev\")",
-      "Bash(rm -rf \"C:/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/.nuxt\")"
+      "Bash(rm -rf \"C:/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/.nuxt\")",
+      "Bash(New-Item *)",
+      "PowerShell(New-Item *)"
     ]
   }
 }
