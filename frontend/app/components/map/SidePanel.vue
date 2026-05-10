@@ -131,14 +131,14 @@
               <span class="side-panel__rank">{{ i + 1 }}</span>
               <span class="side-panel__county-name">{{ codeToName(item.code) }}</span>
               <template v-if="view === 'cerere'">
-                <span class="side-panel__species-cell">
+                <span class="side-panel__species-cell" :class="{ 'is-sort-key': sortBy === 'dog' }">
                   <Dog :size="13" aria-hidden="true" />{{ speciesDog(item.code) }}
                 </span>
-                <span class="side-panel__species-cell">
+                <span class="side-panel__species-cell" :class="{ 'is-sort-key': sortBy === 'cat' }">
                   <Cat :size="13" aria-hidden="true" />{{ speciesCat(item.code) }}
                 </span>
               </template>
-              <span class="side-panel__value">{{ item.value.toLocaleString('ro-RO') }}</span>
+              <span class="side-panel__value" :class="{ 'is-sort-key': sortBy === 'total' }">{{ item.value.toLocaleString('ro-RO') }}</span>
             </div>
 
             <button
@@ -501,23 +501,38 @@ function formatDate(iso: string) {
   align-items: center;
   gap: 3px;
   font-size: 0.75rem;
+  font-weight: 400;
   color: var(--color-text-muted);
   white-space: nowrap;
   line-height: 1;
+  transition: color 0.12s, font-weight 0.12s;
 }
 
 .side-panel__species-cell svg {
-  opacity: 0.5;
+  opacity: 0.45;
   flex-shrink: 0;
+  transition: opacity 0.12s;
 }
 
 .side-panel__value {
   font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--color-primary);
+  font-weight: 400;
+  color: var(--color-text-muted);
   text-align: right;
   white-space: nowrap;
   min-width: 1.8rem;
+  transition: color 0.12s, font-weight 0.12s;
+}
+
+/* Active sort column — bold + primary color */
+.side-panel__species-cell.is-sort-key,
+.side-panel__value.is-sort-key {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.side-panel__species-cell.is-sort-key svg {
+  opacity: 0.8;
 }
 
 /* ── Campaigns list ── */
