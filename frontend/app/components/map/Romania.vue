@@ -140,18 +140,18 @@ function onWrapperMouseLeave() {
 }
 
 .county:hover {
-  opacity: 0.85;
-  fill: var(--color-accent) !important;
+  fill: var(--color-primary) !important;
+  opacity: 0.9;
 }
 
 .county.is-selected {
-  fill: var(--color-accent) !important;
-  stroke: var(--color-primary);
-  stroke-width: 1.2;
+  fill: var(--color-primary) !important;
+  stroke: var(--color-accent);
+  stroke-width: 1.4;
 }
 
 .county:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-primary);
   outline-offset: 1px;
 }
 

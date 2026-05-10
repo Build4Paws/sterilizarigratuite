@@ -10,19 +10,35 @@
         </button>
       </div>
 
-      <!-- Cerere selected -->
-      <template v-if="view === 'cerere' && countyData">
+      <!-- Cerere selected — no data -->
+      <template v-if="view === 'cerere' && (!countyData || countyData.total === 0)">
+        <p class="side-panel__empty-county">
+          Nicio cerere înregistrată din acest județ momentan.
+        </p>
+        <NuxtLink to="/" class="side-panel__cta">
+          Înscrie-te pentru a fi notificat →
+        </NuxtLink>
+      </template>
+
+      <!-- Cerere selected — has data -->
+      <template v-else-if="view === 'cerere' && countyData">
         <p class="side-panel__big-number">{{ countyData.total.toLocaleString('ro-RO') }}</p>
         <p class="side-panel__unit">persoane înscrise</p>
 
         <div class="side-panel__species">
           <div class="side-panel__species-row">
-            <span>Câini</span>
-            <strong>{{ countyData.species?.dog?.toLocaleString('ro-RO') ?? 0 }}</strong>
+            <span class="side-panel__species-label">
+              <Dog :size="15" class="side-panel__species-icon" />
+              Câini
+            </span>
+            <strong>{{ (countyData.species?.dog ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
           <div class="side-panel__species-row">
-            <span>Pisici</span>
-            <strong>{{ countyData.species?.cat?.toLocaleString('ro-RO') ?? 0 }}</strong>
+            <span class="side-panel__species-label">
+              <Cat :size="15" class="side-panel__species-icon" />
+              Pisici
+            </span>
+            <strong>{{ (countyData.species?.cat ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
         </div>
 
@@ -121,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { X } from 'lucide-vue-next'
+import { X, Dog, Cat } from 'lucide-vue-next'
 import type { Campaign, CountyStats } from '~/types'
 import { countyCodeToNameSync, countyCodeToSlugSync } from '~/composables/useLocationData'
 
@@ -282,13 +298,32 @@ function formatDate(iso: string) {
 .side-panel__species-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
+}
+
+.side-panel__species-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.side-panel__species-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .side-panel__species-row strong {
   color: var(--color-text);
   font-weight: 600;
+}
+
+.side-panel__empty-county {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  font-style: italic;
 }
 
 /* ── Top localities ── */
