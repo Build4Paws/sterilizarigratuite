@@ -43,10 +43,8 @@ const props = withDefaults(defineProps<{
   metric: Record<string, number>
   unit: string
   selected?: string
-  scale?: 'quintile' | 'linear'
 }>(), {
   selected: undefined,
-  scale: 'quintile',
 })
 
 const emit = defineEmits<{
@@ -54,36 +52,35 @@ const emit = defineEmits<{
   select: [code: string]
 }>()
 
-// ── Color scale ──────────────────────────────────────────────────────────────
+// ── Color scale — 4 buckets, 20/30/30/20 percentile split ───────────────────
+// puțină → multă:  albastru | portocaliu | roșu | vișiniu
 
-const FILLS = ['var(--map-q1)', 'var(--map-q2)', 'var(--map-q3)', 'var(--map-q4)', 'var(--map-q5)']
+const FILLS = [
+  'var(--map-low)',      // bottom 20%
+  'var(--map-mid-low)', // 20–50%
+  'var(--map-mid-high)',// 50–80%
+  'var(--map-high)',    // top 20%
+] as const
 
-const bins = computed<number[]>(() => {
-  const vals = Object.values(props.metric).filter(v => v > 0)
-  if (!vals.length) return [1, 2, 3, 4]
-  if (props.scale === 'linear') {
-    const max = Math.max(...vals)
-    return [max * 0.2, max * 0.4, max * 0.6, max * 0.8]
-  }
-  const sorted = [...vals].sort((a, b) => a - b)
-  const n = sorted.length
-  return [
-    sorted[Math.floor(n * 0.2)] ?? 0,
-    sorted[Math.floor(n * 0.4)] ?? 0,
-    sorted[Math.floor(n * 0.6)] ?? 0,
-    sorted[Math.floor(n * 0.8)] ?? 0,
-  ]
+/**
+ * Returns the three cut-points [p20, p50, p80] from the non-zero values.
+ * Scale auto-recalibrates as data grows — no manual tuning needed.
+ */
+const cutPoints = computed<[number, number, number]>(() => {
+  const vals = Object.values(props.metric).filter(v => v > 0).sort((a, b) => a - b)
+  if (!vals.length) return [1, 2, 3]
+  const p = (pct: number) => vals[Math.max(0, Math.ceil(vals.length * pct) - 1)] ?? 0
+  return [p(0.2), p(0.5), p(0.8)]
 })
 
 function fillFor(code: string): string {
   const val = props.metric[code] ?? 0
-  if (!val) return 'var(--map-q0)'
-  const b = bins.value
-  if (val <= (b[0] ?? 0)) return FILLS[0]!
-  if (val <= (b[1] ?? 0)) return FILLS[1]!
-  if (val <= (b[2] ?? 0)) return FILLS[2]!
-  if (val <= (b[3] ?? 0)) return FILLS[3]!
-  return FILLS[4]!
+  if (!val) return 'var(--map-none)'
+  const [p20, p50, p80] = cutPoints.value
+  if (val <= p20) return FILLS[0]
+  if (val <= p50) return FILLS[1]
+  if (val <= p80) return FILLS[2]
+  return FILLS[3]
 }
 
 // ── Tooltip ──────────────────────────────────────────────────────────────────
@@ -118,6 +115,7 @@ function onWrapperMouseLeave() {
   tooltip.visible = false
   emit('hover', null)
 }
+
 </script>
 
 <style scoped>

@@ -60,13 +60,12 @@
   /* Layout */
   --max-width: 1140px;
 
-  /* Map choropleth — 5-step navy quintile ramp */
-  --map-q0: #E8ECF4;
-  --map-q1: #C2CDDF;
-  --map-q2: #8FA0C0;
-  --map-q3: #4D68A0;
-  --map-q4: #1F3E7A;
-  --map-q5: #041A49;
+  /* Map choropleth — Cerere scale (puțină → multă) */
+  --map-none:     #D6DCE8;   /* no data — neutral gray-blue */
+  --map-low:      #4A90D9;   /* albastru  — bottom 20%    */
+  --map-mid-low:  #F97316;   /* portocaliu — 20–50%       */
+  --map-mid-high: #DC2626;   /* roșu      — 50–80%        */
+  --map-high:     #7F1D1D;   /* vișiniu   — top 20%       */
 }
 
 /* ==========================================================================

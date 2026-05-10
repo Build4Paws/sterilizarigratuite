@@ -47,6 +47,11 @@
             @hover="hoveredCode = $event"
             @select="onCountySelect"
           />
+          <MapLegend
+            v-if="activeView !== 'istoric'"
+            :metric="activeMetric"
+            :unit="activeUnit"
+          />
         </div>
 
         <!-- Side panel -->
