@@ -59,6 +59,14 @@
 
   /* Layout */
   --max-width: 1140px;
+
+  /* Map choropleth — 5-step navy quintile ramp */
+  --map-q0: #E8ECF4;
+  --map-q1: #C2CDDF;
+  --map-q2: #8FA0C0;
+  --map-q3: #4D68A0;
+  --map-q4: #1F3E7A;
+  --map-q5: #041A49;
 }
 
 /* ==========================================================================

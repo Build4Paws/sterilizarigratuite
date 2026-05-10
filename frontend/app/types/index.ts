@@ -13,3 +13,4 @@ export type {
   CampaignFormState,
 } from './organizer'
 export type { County, Locality, JudeteData } from './location'
+export type { CountyMetric, CountyStats, RegistrationsCountryResponse } from './map'

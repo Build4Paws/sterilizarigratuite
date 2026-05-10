@@ -76,7 +76,9 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { prerender: true },
     '/campanii': { swr: 300 },
+    '/harta': { swr: 300 },
     '/organizatori': { prerender: true },
+    '/despre': { redirect: '/harta' },
     '/confirmare': { robots: false, ssr: false },
     '/confirmare-campanie': { robots: false },
     '/m/**': { robots: false },

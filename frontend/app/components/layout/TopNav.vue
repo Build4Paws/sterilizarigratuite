@@ -36,7 +36,7 @@ const links = [
   { to: '/', label: 'Acasă' },
   { to: '/campanii', label: 'Campanii' },
   { to: '/organizatori', label: 'Organizatori' },
-  { to: '/despre', label: 'Despre noi' },
+  { to: '/harta', label: 'Harta' },
 ]
 </script>
 
