@@ -12,7 +12,11 @@
           <Users :size="20" />
           <h2>În zona ta</h2>
         </div>
-        <p v-html="rankMessage" />
+        <p>
+          <template v-for="(seg, i) in rankParts" :key="i">
+            <strong v-if="seg.b">{{ seg.t }}</strong><template v-else>{{ seg.t }}</template>
+          </template>
+        </p>
         <p class="confirmare__followup">
           Când strângem suficiente persoane din zona ta, organizăm o campanie și te anunțăm.
         </p>
@@ -88,11 +92,11 @@ function feminineOrdinal(n: number): string {
   return FEMININE_ORDINALS[n] ?? `a ${n}-a`
 }
 
-const rankMessage = computed(() => {
+interface Seg { t: string; b?: true }
+
+const rankParts = computed<Seg[]>(() => {
   const s = session.value
-  if (!s) return ''
-  const locality = `<strong>${s.locality}</strong>`
-  const county = `<strong>${s.countyName}</strong>`
+  if (!s) return []
 
   let localityRank: number
   let countyRank: number
@@ -108,18 +112,58 @@ const rankMessage = computed(() => {
   }
 
   if (countyRank === 1) {
-    return `Ești <strong>prima persoană</strong> din județul ${county} care s-a înscris.`
+    return [
+      { t: 'Ești ' },
+      { t: 'prima persoană', b: true },
+      { t: ' din județul ' },
+      { t: s.countyName, b: true },
+      { t: ' care s-a înscris.' },
+    ]
   }
   if (localityRank > 5) {
-    return `Ești <strong>${feminineOrdinal(localityRank)} persoană</strong> din ${locality} care s-a înscris.`
+    return [
+      { t: 'Ești ' },
+      { t: `${feminineOrdinal(localityRank)} persoană`, b: true },
+      { t: ' din ' },
+      { t: s.locality, b: true },
+      { t: ' care s-a înscris.' },
+    ]
   }
   if (localityRank === 1) {
-    return `Ești <strong>prima persoană</strong> din ${locality} și printre primele <strong>${countyRank}</strong> din județul ${county} care s-au înscris.`
+    return [
+      { t: 'Ești ' },
+      { t: 'prima persoană', b: true },
+      { t: ' din ' },
+      { t: s.locality, b: true },
+      { t: ' și printre primele ' },
+      { t: String(countyRank), b: true },
+      { t: ' din județul ' },
+      { t: s.countyName, b: true },
+      { t: ' care s-au înscris.' },
+    ]
   }
   if (countyRank > localityRank) {
-    return `Ești <strong>${feminineOrdinal(localityRank)} persoană</strong> din ${locality}, și printre primele <strong>${countyRank}</strong> din județul ${county} care s-au înscris.`
+    return [
+      { t: 'Ești ' },
+      { t: `${feminineOrdinal(localityRank)} persoană`, b: true },
+      { t: ' din ' },
+      { t: s.locality, b: true },
+      { t: ', și printre primele ' },
+      { t: String(countyRank), b: true },
+      { t: ' din județul ' },
+      { t: s.countyName, b: true },
+      { t: ' care s-au înscris.' },
+    ]
   }
-  return `Ești <strong>${feminineOrdinal(localityRank)} persoană</strong> din ${locality} și din județul ${county} care s-au înscris.`
+  return [
+    { t: 'Ești ' },
+    { t: `${feminineOrdinal(localityRank)} persoană`, b: true },
+    { t: ' din ' },
+    { t: s.locality, b: true },
+    { t: ' și din județul ' },
+    { t: s.countyName, b: true },
+    { t: ' care s-au înscris.' },
+  ]
 })
 
 const { clinics } = useClinics(

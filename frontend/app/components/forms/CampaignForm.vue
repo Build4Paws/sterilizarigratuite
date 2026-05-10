@@ -76,9 +76,13 @@
             />
           </UiFormItem>
         </UiFormRow>
-        <p v-if="waitingCountMessage" class="campaign-form__waiting" role="status">
+        <p v-if="waitingParts.length" class="campaign-form__waiting" role="status">
           <Users :size="16" />
-          <span v-html="waitingCountMessage" />
+          <span>
+            <template v-for="(seg, i) in waitingParts" :key="i">
+              <strong v-if="seg.b">{{ seg.t }}</strong><template v-else>{{ seg.t }}</template>
+            </template>
+          </span>
         </p>
         <UiFormRow>
           <UiFormItem>
@@ -411,23 +415,33 @@ const { localityCount, countyCount, loading: waitingLoading } = useLocalityWaiti
   () => form.locality,
 )
 
-const waitingCountMessage = computed(() => {
-  if (!form.county || !form.locality) return ''
-  if (waitingLoading.value) return 'Verificăm câți oameni așteaptă în zonă…'
+interface Seg { t: string; b?: true }
+
+const waitingParts = computed<Seg[]>(() => {
+  if (!form.county || !form.locality) return []
+  if (waitingLoading.value) return [{ t: 'Verificăm câți oameni așteaptă în zonă…' }]
 
   if (localityCount.value > 0) {
     const n = localityCount.value
     const word = n === 1 ? 'persoană' : 'persoane'
-    return `<strong>${n} ${word}</strong> din <strong>${form.locality}</strong> așteaptă o campanie.`
+    return [
+      { t: `${n} ${word}`, b: true },
+      { t: ' din ' },
+      { t: form.locality, b: true },
+      { t: ' așteaptă o campanie.' },
+    ]
   }
-
   if (countyCount.value > 0) {
     const n = countyCount.value
     const word = n === 1 ? 'persoană' : 'persoane'
-    return `<strong>${n} ${word}</strong> din județul <strong>${countyName.value}</strong> așteaptă o campanie.`
+    return [
+      { t: `${n} ${word}`, b: true },
+      { t: ' din județul ' },
+      { t: countyName.value, b: true },
+      { t: ' așteaptă o campanie.' },
+    ]
   }
-
-  return ''
+  return []
 })
 
 const step = ref<1 | 2>(1)

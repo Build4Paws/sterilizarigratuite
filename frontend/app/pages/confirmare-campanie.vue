@@ -24,7 +24,11 @@
           <Users :size="20" />
           <h2>În zona ta</h2>
         </div>
-        <p v-html="reachMessage" />
+        <p>
+          <template v-for="(seg, i) in reachParts" :key="i">
+            <strong v-if="seg.b">{{ seg.t }}</strong><template v-else>{{ seg.t }}</template>
+          </template>
+        </p>
         <p class="confirmare__followup">
           Imediat ce campania este aprobată, îi anunțăm prin SMS și email.
         </p>
@@ -101,21 +105,46 @@ const hasStats = computed(() => {
   return !!stats && (stats.registeredInLocality > 0 || stats.registeredInCounty > 0)
 })
 
-const reachMessage = computed(() => {
+interface Seg { t: string; b?: true }
+
+const reachParts = computed<Seg[]>(() => {
   const s = session.value
-  if (!s?.stats) return ''
-  const locality = `<strong>${s.campaign.locality}</strong>`
-  const county = `<strong>${s.countyName}</strong>`
+  if (!s?.stats) return []
   const inLocality = s.stats.registeredInLocality
   const inCounty = s.stats.registeredInCounty
+  const locality = s.campaign.locality
+  const county = s.countyName
 
   if (inLocality === 0 && inCounty > 0) {
-    return `În ${locality} nu așteaptă încă nimeni o campanie, dar sunt <strong>${inCounty} ${peopleWord(inCounty)}</strong> înregistrate în județul ${county}.`
+    return [
+      { t: 'În ' },
+      { t: locality, b: true },
+      { t: ' nu așteaptă încă nimeni o campanie, dar sunt ' },
+      { t: `${inCounty} ${peopleWord(inCounty)}`, b: true },
+      { t: ' înregistrate în județul ' },
+      { t: county, b: true },
+      { t: '.' },
+    ]
   }
   if (inLocality === 1) {
-    return `<strong>1 persoană</strong> din ${locality} așteaptă o campanie de sterilizare. O vom anunța imediat ce campania ta este aprobată.`
+    return [
+      { t: '1 persoană', b: true },
+      { t: ' din ' },
+      { t: locality, b: true },
+      { t: ' așteaptă o campanie de sterilizare. O vom anunța imediat ce campania ta este aprobată.' },
+    ]
   }
-  return `<strong>${inLocality} ${peopleWord(inLocality)}</strong> din ${locality} și încă <strong>${Math.max(inCounty - inLocality, 0)}</strong> din restul județului ${county} așteaptă o campanie. Le anunțăm imediat ce campania ta este aprobată.`
+  const extra = Math.max(inCounty - inLocality, 0)
+  return [
+    { t: `${inLocality} ${peopleWord(inLocality)}`, b: true },
+    { t: ' din ' },
+    { t: locality, b: true },
+    { t: ' și încă ' },
+    { t: String(extra), b: true },
+    { t: ' din restul județului ' },
+    { t: county, b: true },
+    { t: ' așteaptă o campanie. Le anunțăm imediat ce campania ta este aprobată.' },
+  ]
 })
 
 function peopleWord(n: number): string {
