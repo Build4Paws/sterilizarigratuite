@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 defineProps<{
-  modelValue: string
+  modelValue?: string
   label: string
   id: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local'

@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue: string
+  modelValue?: string
   label: string
   id: string
   required?: boolean
@@ -73,7 +73,7 @@ function rawToDigits(raw: string): string {
 }
 
 const displayValue = computed(() => {
-  const digits = rawToDigits(props.modelValue)
+  const digits = rawToDigits(props.modelValue ?? '')
   return formatDigits(digits)
 })
 

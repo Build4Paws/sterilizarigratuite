@@ -14,7 +14,7 @@
         </a>
         <p class="footer__tagline">
           Platformă digitală pentru campanii de sterilizare gratuită a animalelor de companie din România.
-          Un proiect <a href="https://build4paws.ro" target="_blank" rel="noopener">Build4Paws</a>.
+          <br />Un proiect <a href="https://build4paws.ro" target="_blank" rel="noopener">Build4Paws</a>.
         </p>
       </div>
 

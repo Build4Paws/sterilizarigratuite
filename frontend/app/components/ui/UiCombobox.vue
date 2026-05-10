@@ -215,7 +215,7 @@ function onKeydown(e: KeyboardEvent) {
     case 'Enter':
       e.preventDefault()
       if (activeIndex.value >= 0 && activeIndex.value < filtered.value.length) {
-        select(filtered.value[activeIndex.value])
+        select(filtered.value[activeIndex.value]!)
       }
       break
     case 'Escape':

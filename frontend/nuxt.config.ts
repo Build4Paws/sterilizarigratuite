@@ -74,6 +74,26 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
+    '/**': {
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+        'Content-Security-Policy': [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://hcaptcha.com",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' https://fonts.gstatic.com data:",
+          "img-src 'self' data: https:",
+          "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com https://api.sterilizarigratuite.ro",
+          "frame-src https://*.hcaptcha.com https://hcaptcha.com",
+          "frame-ancestors 'none'",
+          "base-uri 'self'",
+        ].join('; '),
+      },
+    },
     '/': { prerender: true },
     '/campanii': { swr: 300 },
     '/harta': { swr: 300 },
@@ -86,10 +106,6 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
-
-  image: {
-    provider: 'none',
-  },
 
   ogImage: {
     enabled: false,
