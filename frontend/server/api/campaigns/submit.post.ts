@@ -34,6 +34,9 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
   const { hcaptchaToken, ...submission } = body ?? {}
 
   const secret = hcaptchaSecretKey as string
+  if (!secret && !import.meta.dev) {
+    throw createError({ statusCode: 500, statusMessage: 'Captcha not configured.' })
+  }
   if (secret) {
     if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
       throw createError({

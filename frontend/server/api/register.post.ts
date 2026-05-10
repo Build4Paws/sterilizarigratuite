@@ -26,8 +26,10 @@ export default defineEventHandler(async (event) => {
   const body = (await readBody(event)) as Record<string, unknown> | null
   const { hcaptchaToken, ...registration } = body ?? {}
 
-  // Fail-closed when the secret is configured; skip when it's empty (dev mode).
   const secret = hcaptchaSecretKey as string
+  if (!secret && !import.meta.dev) {
+    throw createError({ statusCode: 500, statusMessage: 'Captcha not configured.' })
+  }
   if (secret) {
     if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
       throw createError({
