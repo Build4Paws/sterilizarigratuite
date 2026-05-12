@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
     ? `${baseUrl}/campaigns?county=${encodeURIComponent(county)}`
     : `${baseUrl}/campaigns`
 
-  const res = await aws.fetch(url, {
+  const res = await fetchUpstream(aws, url, {
     method: 'GET',
     headers: { Accept: 'application/json' },
   })

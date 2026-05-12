@@ -38,11 +38,20 @@ export default defineEventHandler(async (event) => {
         data: { error: 'captcha_failed' },
       })
     }
-    const verify = await $fetch<HcaptchaVerifyResponse>('https://api.hcaptcha.com/siteverify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ secret, response: hcaptchaToken }).toString(),
-    })
+    let verify: HcaptchaVerifyResponse
+    try {
+      verify = await $fetch<HcaptchaVerifyResponse>('https://api.hcaptcha.com/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ secret, response: hcaptchaToken }).toString(),
+        signal: AbortSignal.timeout(5_000),
+      })
+    } catch (err) {
+      if (err instanceof Error && err.name === 'TimeoutError') {
+        throw createError({ statusCode: 503, statusMessage: 'Upstream timeout.', data: { error: 'server_error' } })
+      }
+      throw err
+    }
     if (!verify.success) {
       throw createError({
         statusCode: 400,
@@ -64,7 +73,7 @@ export default defineEventHandler(async (event) => {
     ? (awsApiBase as string)
     : `https://${awsApiBase}`
 
-  const res = await aws.fetch(`${baseUrl}/register`, {
+  const res = await fetchUpstream(aws, `${baseUrl}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(registration),

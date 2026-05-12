@@ -41,7 +41,7 @@ export default defineEventHandler(async (event): Promise<LocalityWaitingStats> =
     region: (awsRegion as string) || 'eu-central-1',
     service: 'execute-api',
   })
-  const res = await aws.fetch(upstreamUrl)
+  const res = await fetchUpstream(aws, upstreamUrl)
   if (!res.ok) {
     throw createError({
       statusCode: res.status,
