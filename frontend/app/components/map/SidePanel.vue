@@ -44,7 +44,14 @@
 
         <div v-if="topLocalities.length" class="side-panel__localities">
           <p class="side-panel__section-label">Top localități</p>
-          <div v-for="[loc, n] in topLocalities" :key="loc" class="side-panel__loc-row">
+          <div
+            v-for="[loc, n] in topLocalities"
+            :key="loc"
+            :class="['side-panel__loc-row', { 'is-pinned': pinnedLocality === loc }]"
+            @mouseenter="emit('hover-locality', loc)"
+            @mouseleave="emit('hover-locality', null)"
+            @click="onLocalityClick(loc)"
+          >
             <span class="side-panel__loc-name">{{ loc }}</span>
             <span class="side-panel__loc-count">{{ n }}</span>
           </div>
@@ -175,7 +182,18 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [code: string]
   clear: []
+  'hover-locality': [name: string | null]
+  'toggle-locality': [name: string]
 }>()
+
+// Pinned locality (toggled by click; cleared when the county changes)
+const pinnedLocality = ref<string | null>(null)
+watch(() => props.selected, () => { pinnedLocality.value = null })
+
+function onLocalityClick(name: string) {
+  pinnedLocality.value = pinnedLocality.value === name ? null : name
+  emit('toggle-locality', name)
+}
 
 const showAll = ref(false)
 
@@ -389,8 +407,22 @@ function formatDate(iso: string) {
 .side-panel__loc-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: var(--font-size-sm);
-  padding: 2px 0;
+  padding: 2px var(--space-xs);
+  margin: 0 calc(-1 * var(--space-xs));
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.side-panel__loc-row:hover,
+.side-panel__loc-row.is-pinned {
+  background-color: var(--color-bg-muted);
+}
+
+.side-panel__loc-row.is-pinned .side-panel__loc-name {
+  color: var(--color-accent);
 }
 
 .side-panel__loc-name {

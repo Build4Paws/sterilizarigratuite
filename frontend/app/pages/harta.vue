@@ -44,8 +44,11 @@
             :metric="activeMetric"
             :unit="activeUnit"
             :selected="selectedCode"
+            :locality-registrations="selectedCountyData?.localities"
+            :highlighted-locality="highlightedLocality"
             @hover="hoveredCode = $event"
             @select="onCountySelect"
+            @clear="onClear"
           />
           <MapLegend
             v-if="activeView !== 'istoric'"
@@ -66,6 +69,8 @@
             :oferta-by-county="ofertaByCounty"
             @select="onCountySelect"
             @clear="onClear"
+            @hover-locality="hoveredLocality = $event"
+            @toggle-locality="onToggleLocality"
           />
         </div>
 
@@ -180,13 +185,28 @@ const selectedCampaigns = computed<Campaign[]>(() => {
 const hoveredCode = ref<string | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 
+// Highlighted locality (hover takes priority over the pinned/toggled one)
+const hoveredLocality = ref<string | null>(null)
+const pinnedLocality = ref<string | null>(null)
+const highlightedLocality = computed(() => hoveredLocality.value || pinnedLocality.value)
+
+function onToggleLocality(name: string) {
+  pinnedLocality.value = pinnedLocality.value === name ? null : name
+}
+
+// Reset locality highlight when the county changes
+watch(() => selectedCode.value, () => {
+  hoveredLocality.value = null
+  pinnedLocality.value = null
+})
+
 async function onCountySelect(code: string) {
   selectedCode.value = code
   const slug = await countyCodeToSlug(code)
   await router.replace({ query: { ...route.query, judet: slug } })
 
-  // On mobile: scroll to panel
-  if (import.meta.client && window.innerWidth < 768) {
+  // On stacked layout: scroll to panel
+  if (import.meta.client && window.innerWidth < 1300) {
     await nextTick()
     panelRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -202,7 +222,10 @@ async function onClear() {
 async function setView(view: ActiveView) {
   if (view === 'istoric') return
   activeView.value = view
+  // Switching tabs resets the map to the full-country view
+  selectedCode.value = ''
   const q = { ...route.query } as Record<string, string | undefined>
+  delete q.judet
   if (view === 'cerere') {
     delete q.view
   } else {
@@ -364,12 +387,8 @@ useSeoMeta({
   text-decoration: underline;
 }
 
-/* ── Mobile ── */
-@media (max-width: 768px) {
-  .harta-hero__title {
-    font-size: 1.5rem;
-  }
-
+/* ── Stacked layout (anything below 1300px) ── */
+@media (max-width: 1300px) {
   .harta-body__inner {
     grid-template-columns: 1fr;
   }
@@ -380,6 +399,12 @@ useSeoMeta({
 
   .harta-tabs {
     overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .harta-hero__title {
+    font-size: 1.5rem;
   }
 }
 </style>

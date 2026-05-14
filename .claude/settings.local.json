@@ -32,7 +32,15 @@
       "Bash(pkill -f \"nuxt dev\")",
       "Bash(rm -rf \"C:/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/.nuxt\")",
       "Bash(New-Item *)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "PowerShell(Test-Path *)",
+      "Bash(awk -F'\\\\t' '$7==\"P\" && \\($8==\"PPLC\" || $8==\"PPLA\" || $8==\"PPLA2\" || $8==\"PPLA3\" || $8==\"PPLA4\" || $8==\"PPL\"\\)' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
+      "Bash(awk -F'\\\\t' '$7==\"P\"' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
+      "Bash(awk -F'\\\\t' '$7==\"P\" {print $8}' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
+      "PowerShell(Join-Path *)",
+      "Bash(awk -F'\\\\t' '$8==\"PPLC\"' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
+      "Bash(awk -F'\\\\t' '$8==\"PPLA\" && $11==\"10\"' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
+      "Bash(awk *)"
     ]
   }
 }
