@@ -21,11 +21,11 @@
     </section>
 
     <!-- Curved divider -->
-    <!-- <div class="divider" aria-hidden="true">
+    <div class="divider" aria-hidden="true">
       <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M0,0 L0,60 Q360,120 720,80 Q1080,40 1440,90 L1440,0 Z" fill="var(--color-primary)" />
       </svg>
-    </div> -->
+    </div>
 
     <!-- Lead / intro -->
     <section class="lead">
@@ -423,7 +423,7 @@ useHead(() => ({
 .divider {
   margin-top: -1px;
   line-height: 0;
-  background: var(--color-bg-muted);
+  background: var(--color-bg);
 }
 
 .divider svg {
@@ -993,16 +993,8 @@ useHead(() => ({
     height: 50px;
   }
 
-  .lead {
-    padding: var(--space-2xl) 0 var(--space-xl);
-  }
-
   .lead__text {
-    font-size: 1.2rem;
-  }
-
-  .lead__sub {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
   }
 
   .step {
