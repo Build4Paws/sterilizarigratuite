@@ -7,7 +7,9 @@ interface SitemapUrl {
 }
 
 export default defineEventHandler((): SitemapUrl[] => {
-  const urls: SitemapUrl[] = []
+  const urls: SitemapUrl[] = [
+    { loc: '/despre-sterilizare', changefreq: 'monthly', priority: 0.7 },
+  ]
 
   for (const j of judeteData.judete) {
     const slug = j.nume
