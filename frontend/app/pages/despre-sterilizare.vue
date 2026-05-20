@@ -30,16 +30,29 @@
     <!-- Lead / intro -->
     <section class="lead">
       <div class="container lead__inner">
+        <span class="lead__rule" aria-hidden="true"></span>
         <p class="lead__text">
           Sterilizarea este una dintre cele mai responsabile decizii pe care le poți lua
           pentru animalul tău de companie. Reduce semnificativ riscul de tumori mamare și
           uterine, elimină sarcinile nedorite și contribuie la o viață mai lungă, mai
           liniștită și mai sănătoasă.
         </p>
-        <p class="lead__note">
-          Pe scurt, ce ai de făcut <strong>înainte</strong>, ce ai de făcut <strong>după</strong>
-          și ce trebuie să știi despre <strong>procedură</strong>.
+        <p class="lead__sub">
+          Mai jos găsești pașii — pe scurt, ce ai de făcut înainte, după și ce trebuie
+          să știi despre procedură.
         </p>
+        <nav class="lead__chips" aria-label="Sări la o secțiune">
+          <a
+            v-for="(step, i) in steps"
+            :key="step.title"
+            :href="`#pasul-${i + 1}`"
+            class="chip"
+            :class="`chip--${step.accent}`"
+          >
+            <span class="chip__num">{{ i + 1 }}</span>
+            <span class="chip__label">{{ step.shortLabel }}</span>
+          </a>
+        </nav>
       </div>
     </section>
 
@@ -66,6 +79,7 @@
 
         <article
           v-for="(step, i) in steps"
+          :id="`pasul-${i + 1}`"
           :key="step.title"
           class="step"
           :class="`step--${step.accent}`"
@@ -201,6 +215,7 @@ const steps = [
     accent: 'before',
     icon: ClipboardList,
     title: 'Înainte de sterilizare',
+    shortLabel: 'Înainte',
     items: [
       {
         n: 1,
@@ -223,6 +238,7 @@ const steps = [
     accent: 'after',
     icon: HeartHandshake,
     title: 'După sterilizare',
+    shortLabel: 'După',
     items: [
       {
         n: 1,
@@ -245,6 +261,7 @@ const steps = [
     accent: 'procedure',
     icon: Activity,
     title: 'Ce trebuie să știi despre procedură',
+    shortLabel: 'Procedură',
     items: [
       {
         n: 1,
@@ -430,8 +447,8 @@ useHead(() => ({
 
 /* ---- Lead ---- */
 .lead {
-  background: var(--color-bg-muted);
-  padding: 0 0 var(--space-2xl);
+  background: var(--color-bg);
+  padding: var(--space-3xl) 0 var(--space-2xl);
 }
 
 .lead__inner {
@@ -439,28 +456,100 @@ useHead(() => ({
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: var(--space-md);
 }
 
-.lead__text {
-  font-size: 1.15rem;
-  color: var(--color-text);
-  line-height: 1.65;
-  margin: 0;
+/* Thin orange accent rule above the paragraph — quiet but signals "article opener". */
+.lead__rule {
+  display: block;
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-accent);
 }
 
-.lead__note {
+.lead__text {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  margin: 0;
+  max-width: 680px;
+}
+
+.lead__sub {
   font-size: var(--font-size-base);
   color: var(--color-text-muted);
   line-height: 1.6;
   margin: 0;
-  padding-left: var(--space-md);
-  border-left: 3px solid var(--color-accent);
+  max-width: 560px;
 }
 
-.lead__note strong {
-  color: var(--color-primary);
+.lead__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-xs);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.chip:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(4, 26, 73, 0.08);
+}
+
+.chip__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
   font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.chip__label {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  letter-spacing: 0.01em;
+}
+
+.chip--before .chip__num { background: var(--color-primary); }
+.chip--before:hover { border-color: var(--color-primary); }
+
+.chip--after .chip__num { background: var(--color-success); }
+.chip--after:hover { border-color: var(--color-success); }
+
+.chip--procedure .chip__num { background: var(--color-accent); }
+.chip--procedure:hover { border-color: var(--color-accent); }
+
+/* Anchor offset so step headings clear the page top when chip-linked. */
+.step {
+  scroll-margin-top: var(--space-xl);
 }
 
 /* ---- Benefits ---- */
@@ -904,8 +993,16 @@ useHead(() => ({
     height: 50px;
   }
 
+  .lead {
+    padding: var(--space-2xl) 0 var(--space-xl);
+  }
+
   .lead__text {
-    font-size: 1.05rem;
+    font-size: 1.2rem;
+  }
+
+  .lead__sub {
+    font-size: 0.95rem;
   }
 
   .step {
