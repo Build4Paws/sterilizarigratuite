@@ -40,7 +40,9 @@
       "PowerShell(Join-Path *)",
       "Bash(awk -F'\\\\t' '$8==\"PPLC\"' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
       "Bash(awk -F'\\\\t' '$8==\"PPLA\" && $11==\"10\"' /c/Users/anton/Desktop/Projects/Build4Paws/sterilizarigratuite/frontend/scripts/.cache/RO.txt)",
-      "Bash(awk *)"
+      "Bash(awk *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(rm typecheck.log)"
     ]
   }
 }

@@ -23,6 +23,7 @@
           <p class="footer__col-title">Navigare</p>
           <nav class="footer__col-links" aria-label="Navigare site">
             <NuxtLink to="/campanii">Campanii</NuxtLink>
+            <NuxtLink to="/despre-sterilizare">Despre sterilizare</NuxtLink>
             <NuxtLink to="/organizatori">Organizatori</NuxtLink>
             <NuxtLink to="/harta">Harta</NuxtLink>
           </nav>

@@ -41,6 +41,27 @@
       </div>
     </section>
 
+    <!-- Guide CTA banner -->
+    <section class="guide-banner" aria-label="Ghid sterilizare">
+      <div class="container">
+        <NuxtLink to="/despre-sterilizare" class="guide-banner__card">
+          <div class="guide-banner__icon" aria-hidden="true">
+            <Stethoscope :size="22" />
+          </div>
+          <div class="guide-banner__body">
+            <p class="guide-banner__eyebrow">Înainte de programare</p>
+            <p class="guide-banner__title">
+              Citește ghidul nostru de sterilizare — ce ai de făcut înainte, după și ce să știi despre procedură.
+            </p>
+          </div>
+          <span class="guide-banner__cta">
+            Vezi ghidul
+            <ArrowRight :size="16" aria-hidden="true" />
+          </span>
+        </NuxtLink>
+      </div>
+    </section>
+
     <!-- Results -->
     <section class="list">
       <div class="container">
@@ -108,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { Calendar, Inbox, RotateCcw } from 'lucide-vue-next'
+import { Calendar, Inbox, RotateCcw, Stethoscope, ArrowRight } from 'lucide-vue-next'
 import type { Campaign, CampaignCardData, Species } from '~/types'
 
 definePageMeta({ layout: 'default' })
@@ -450,6 +471,100 @@ useHead(() => ({
   align-items: flex-end;
   padding-bottom: 2px;
   margin-left: auto;
+}
+
+/* ---- Guide CTA banner ---- */
+.guide-banner {
+  padding: var(--space-lg) 0 0;
+}
+
+.guide-banner__card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.guide-banner__card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 6px 18px rgba(249, 89, 5, 0.10);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.guide-banner__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(249, 89, 5, 0.10);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guide-banner__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.guide-banner__eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin: 0;
+}
+
+.guide-banner__title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.guide-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.2s, gap 0.2s;
+}
+
+.guide-banner__card:hover .guide-banner__cta {
+  color: var(--color-accent);
+  gap: var(--space-sm);
+}
+
+@media (max-width: 600px) {
+  .guide-banner__card {
+    flex-wrap: wrap;
+    padding: var(--space-md);
+  }
+
+  .guide-banner__cta {
+    margin-left: calc(44px + var(--space-md));
+  }
 }
 
 /* ---- List ---- */

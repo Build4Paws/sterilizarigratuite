@@ -38,6 +38,13 @@
             Vezi campaniile de sterilizare gratuită din toată țara &rarr;
           </span>
         </NuxtLink>
+        <NuxtLink to="/despre-sterilizare" class="bottom-band__card">
+          <Stethoscope class="bottom-band__icon" :size="28" />
+          <span class="bottom-band__card-title">Despre sterilizare</span>
+          <span class="bottom-band__card-desc">
+            Ghid medical — tot ce trebuie să știi înainte și după procedură &rarr;
+          </span>
+        </NuxtLink>
         <NuxtLink to="/organizatori" class="bottom-band__card">
           <Megaphone class="bottom-band__icon" :size="28" />
           <span class="bottom-band__card-title">Ești ONG sau primărie?</span>
@@ -51,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { PawPrint, Megaphone } from 'lucide-vue-next'
+import { PawPrint, Megaphone, Stethoscope } from 'lucide-vue-next'
 
 useSeoMeta({
   title: 'Sterilizări Gratuite — Campanii de sterilizare pentru câini și pisici',
@@ -191,7 +198,7 @@ useHead({
 
 .bottom-band__inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-xl);
 }
 
@@ -280,6 +287,13 @@ useHead({
 
   .bottom-band__inner {
     grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .bottom-band__inner {
+    grid-template-columns: 1fr 1fr;
   }
 }
 </style>

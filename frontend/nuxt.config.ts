@@ -98,6 +98,7 @@ export default defineNuxtConfig({
     '/campanii': { swr: 300 },
     '/harta': { swr: 300 },
     '/organizatori': { prerender: true },
+    '/despre-sterilizare': { prerender: true },
     '/despre': { redirect: '/harta' },
     '/confirmare': { robots: false, ssr: false },
     '/confirmare-campanie': { robots: false },
