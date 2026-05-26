@@ -1,10 +1,11 @@
 import { AwsClient } from 'aws4fetch'
 
-interface HcaptchaVerifyResponse {
-  success: boolean
-  'error-codes'?: string[]
-}
-
+/**
+ * Proxy for POST /register.
+ * hCaptcha verification is handled exclusively by the AWS backend —
+ * we forward the full body (including hcaptchaToken) as-is and sign
+ * the request with SigV4 so the backend trusts the origin.
+ */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const {
@@ -13,7 +14,6 @@ export default defineEventHandler(async (event) => {
     awsSessionToken,
     awsRegion,
     awsApiBase,
-    hcaptchaSecretKey,
   } = config
 
   if (!awsAccessKeyId || !awsSecretAccessKey || !awsApiBase) {
@@ -24,42 +24,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = (await readBody(event)) as Record<string, unknown> | null
-  const { hcaptchaToken, ...registration } = body ?? {}
-
-  const secret = hcaptchaSecretKey as string
-  if (!secret && !import.meta.dev) {
-    throw createError({ statusCode: 500, statusMessage: 'Captcha not configured.' })
-  }
-  if (secret) {
-    if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Captcha token lipsă.',
-        data: { error: 'captcha_failed' },
-      })
-    }
-    let verify: HcaptchaVerifyResponse
-    try {
-      verify = await $fetch<HcaptchaVerifyResponse>('https://api.hcaptcha.com/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ secret, response: hcaptchaToken }).toString(),
-        signal: AbortSignal.timeout(5_000),
-      })
-    } catch (err) {
-      if (err instanceof Error && err.name === 'TimeoutError') {
-        throw createError({ statusCode: 503, statusMessage: 'Upstream timeout.', data: { error: 'server_error' } })
-      }
-      throw err
-    }
-    if (!verify.success) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Verificarea captcha a eșuat.',
-        data: { error: 'captcha_failed', codes: verify['error-codes'] },
-      })
-    }
-  }
 
   const aws = new AwsClient({
     accessKeyId: awsAccessKeyId as string,
@@ -76,7 +40,7 @@ export default defineEventHandler(async (event) => {
   const res = await fetchUpstream(aws, `${baseUrl}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(registration),
+    body: JSON.stringify(body ?? {}),
   })
 
   const text = await res.text()

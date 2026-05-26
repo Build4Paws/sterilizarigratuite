@@ -31,10 +31,14 @@ export interface CitizenConfirmation {
   waitingCount: number
 }
 
-/** Aggregated counts returned alongside a successful registration */
+/**
+ * Aggregated counts returned alongside a successful registration.
+ * `county` and `locality` are optional — backend `LocalityStats` shape
+ * only guarantees the two count fields; the name fields may be absent.
+ */
 export interface RegistrationStats {
-  county: string
-  locality: string
+  county?: string
+  locality?: string
   registeredInCounty: number
   registeredInLocality: number
 }
@@ -42,5 +46,7 @@ export interface RegistrationStats {
 /** Response returned by POST /register */
 export interface CitizenRegistrationResponse {
   message: string
+  citizenId: string
+  manageToken: string
   stats: RegistrationStats
 }

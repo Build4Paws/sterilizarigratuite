@@ -1,4 +1,4 @@
-export type { Campaign, Species, CampaignStatus, CampaignCardData } from './campaign'
+export type { Campaign, Species, CampaignStatus, CampaignCardData, PublicCampaign } from './campaign'
 export type {
   CitizenFormState,
   CitizenRegistration,
@@ -13,4 +13,4 @@ export type {
   CampaignFormState,
 } from './organizer'
 export type { County, Locality, JudeteData } from './location'
-export type { CountyMetric, CountyStats, RegistrationsCountryResponse } from './map'
+export type { CountyMetric, CountyStats, RegistrationsCountryResponse, MapStats, MapOfertaItem } from './map'

@@ -13,6 +13,9 @@ export interface CitizenSession {
   species: ('dog' | 'cat')[]
   submittedAt: string
   stats?: RegistrationStats
+  /** Persisted for a future "manage my subscription" link (magic-link UI deferred). */
+  citizenId?: string
+  manageToken?: string
 }
 
 const STORAGE_KEY = 'citizen-session'

@@ -19,7 +19,8 @@ export interface CampaignSubmission {
 
 export interface CampaignSubmissionResponse {
   message: string
-  campaignId: string
+  /** UUID returned by POST /campaigns/submit (v1.1.1). Was `campaignId` in the legacy proxy. */
+  submissionId: string
   status: 'pending'
   stats?: {
     registeredInLocality: number

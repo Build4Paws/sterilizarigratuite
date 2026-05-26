@@ -1,15 +1,16 @@
 import { AwsClient } from 'aws4fetch'
-import type { LocalityWaitingStats } from '~/types'
+import type { PublicCampaign } from '~/types'
 
-export default defineEventHandler(async (event): Promise<LocalityWaitingStats> => {
-  const query = getQuery(event)
-  const county = String(query.county ?? '').trim()
-  const locality = String(query.locality ?? '').trim()
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-  if (!county || !locality) {
+export default defineEventHandler(async (event): Promise<PublicCampaign> => {
+  const id = getRouterParam(event, 'id') ?? ''
+
+  if (!UUID_RE.test(id)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'county și locality sunt obligatorii.',
+      statusMessage: 'ID campanie invalid.',
+      data: { error: 'invalid_id' },
     })
   }
 
@@ -26,8 +27,6 @@ export default defineEventHandler(async (event): Promise<LocalityWaitingStats> =
   const rawBase = (awsApiBase as string) || 'https://api.sterilizarigratuite.ro'
   const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`
 
-  const upstreamUrl = `${baseUrl}/stats/locality?county=${encodeURIComponent(county)}&locality=${encodeURIComponent(locality)}`
-
   const aws = new AwsClient({
     accessKeyId: awsAccessKeyId as string,
     secretAccessKey: awsSecretAccessKey as string,
@@ -36,17 +35,22 @@ export default defineEventHandler(async (event): Promise<LocalityWaitingStats> =
     service: 'execute-api',
   })
 
-  const res = await fetchUpstream(aws, upstreamUrl)
+  const res = await fetchUpstream(aws, `${baseUrl}/campaigns/${id}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  })
+
+  const text = await res.text()
 
   if (!res.ok) {
     throw createError({
       statusCode: res.status,
       statusMessage: res.statusText || 'Upstream error',
-      data: await res.text(),
+      data: text,
     })
   }
 
   setResponseHeader(event, 'cache-control', 'public, max-age=60')
 
-  return (await res.json()) as LocalityWaitingStats
+  return JSON.parse(text) as PublicCampaign
 })

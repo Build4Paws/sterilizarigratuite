@@ -354,6 +354,8 @@ async function handleSubmit() {
       species: payload.species,
       submittedAt: new Date().toISOString(),
       stats: response?.stats,
+      citizenId: response?.citizenId,
+      manageToken: response?.manageToken,
     })
 
     await router.push('/confirmare')

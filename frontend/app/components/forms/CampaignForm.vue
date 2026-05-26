@@ -263,23 +263,6 @@
           </UiFormItem>
         </UiFormRow>
 
-        <UiFormRow v-if="hcaptchaSiteKey">
-          <UiFormItem>
-            <ClientOnly>
-              <VueHcaptcha
-                ref="hcaptchaRef"
-                :sitekey="hcaptchaSiteKey"
-                @verify="onCaptchaVerify"
-                @expired="onCaptchaExpired"
-                @error="onCaptchaError"
-              />
-            </ClientOnly>
-            <p v-if="submitted && captchaError" class="campaign-form__error" role="alert">
-              {{ captchaError }}
-            </p>
-          </UiFormItem>
-        </UiFormRow>
-
         <Transition name="error-banner">
           <UiFormRow v-if="submitted && errorCount > 0">
             <UiFormItem basis="100%">
@@ -311,12 +294,32 @@
     <template v-else>
       <CampaignCard :campaign="cardData" :show-call-cta="true" />
 
+      <div v-if="hcaptchaSiteKey" class="campaign-form__captcha">
+        <ClientOnly>
+          <VueHcaptcha
+            ref="hcaptchaRef"
+            :sitekey="hcaptchaSiteKey"
+            @verify="onCaptchaVerify"
+            @expired="onCaptchaExpired"
+            @error="onCaptchaError"
+          />
+        </ClientOnly>
+        <p v-if="captchaError" class="campaign-form__error" role="alert">
+          {{ captchaError }}
+        </p>
+      </div>
+
       <div class="campaign-form__preview-actions">
         <UiButton type="button" variant="ghost" :disabled="submitting" @click="goBackToEdit">
           <ArrowLeft :size="18" />
           Înapoi la editare
         </UiButton>
-        <UiButton type="submit" variant="primary" :loading="submitting" :disabled="submitting">
+        <UiButton
+          type="submit"
+          variant="primary"
+          :loading="submitting"
+          :disabled="submitting || (!!hcaptchaSiteKey && !hcaptchaToken)"
+        >
           Trimite spre aprobare
         </UiButton>
       </div>
@@ -389,7 +392,7 @@ const form = reactive<CampaignFormState>({
   dateStart: '',
   isMultiDay: false,
   dateEnd: '',
-  timeStart: '08:00',
+  timeStart: '09:00',
   timeEnd: '20:00',
   hasDogs: false,
   hasCats: false,
@@ -537,6 +540,7 @@ const cardData = computed<CampaignCardData>(() => {
 })
 
 function goBackToEdit() {
+  resetCaptcha()
   step.value = 1
   emit('stepChange', 1)
   if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -554,17 +558,17 @@ async function handleSubmit() {
       setTimeout(() => { shaking.value = false }, 500)
       return
     }
-    if (hcaptchaSiteKey && !hcaptchaToken.value) {
-      captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
-      return
-    }
     step.value = 2
     emit('stepChange', 2)
     if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
     return
   }
 
-  // Step 2 — POST to backend (mocked) and persist session.
+  // Step 2 — POST to backend and persist session.
+  if (hcaptchaSiteKey && !hcaptchaToken.value) {
+    captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
+    return
+  }
   submitting.value = true
   try {
     const payload: CampaignSubmission = {
@@ -597,7 +601,7 @@ async function handleSubmit() {
     organizerSubmission.setSession({
       campaign: payload,
       countyName: countyName.value,
-      campaignId: response.campaignId,
+      submissionId: response.submissionId,
       status: response.status,
       stats: response.stats,
       submittedAt: new Date().toISOString(),

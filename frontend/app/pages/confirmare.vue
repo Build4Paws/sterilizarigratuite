@@ -39,12 +39,37 @@
           </li>
         </ul>
       </section>
+
+      <footer class="confirmare__footer">
+        <p class="confirmare__footer-label">Între timp, poți:</p>
+        <div class="link-cards">
+          <UiLinkCard
+            to="/campanii"
+            :icon="PawPrint"
+            title="Campanii active"
+            desc="Vezi campaniile de sterilizare gratuită din toată țara"
+          />
+          <UiLinkCard
+            to="/despre-sterilizare"
+            :icon="Stethoscope"
+            title="Despre sterilizare"
+            desc="Ghid medical — tot ce trebuie să știi înainte și după procedură"
+          />
+          <UiLinkCard
+            to="/harta"
+            :icon="Map"
+            title="Harta înregistrărilor"
+            desc="Descoperă câți oameni din județul tău așteaptă o campanie"
+          />
+        </div>
+      </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { CircleCheck, Users, MapPin } from 'lucide-vue-next'
+import { CircleCheck, Users, MapPin, PawPrint, Stethoscope, Map } from 'lucide-vue-next'
+// PawPrint, Stethoscope, Map are passed as :icon props to UiLinkCard
 
 definePageMeta({ layout: 'default' })
 useSeoMeta({ robots: 'noindex, nofollow', title: 'Înscriere confirmată — Sterilizări Gratuite' })
@@ -285,13 +310,34 @@ const { clinics } = useClinics(
 }
 
 .confirmare__footer {
-  text-align: center;
-  padding-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding-top: var(--space-sm);
 }
 
-.confirmare__home {
-  color: var(--color-primary);
-  text-decoration: underline;
-  font-weight: 500;
+.confirmare__footer-label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  text-align: center;
+}
+
+.link-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .link-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 900px) {
+  .link-cards {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

@@ -31,27 +31,24 @@
     <!-- Bottom band -->
     <section class="bottom-band">
       <div class="container bottom-band__inner">
-        <NuxtLink to="/campanii" class="bottom-band__card">
-          <PawPrint class="bottom-band__icon" :size="28" />
-          <span class="bottom-band__card-title">Campanii active</span>
-          <span class="bottom-band__card-desc">
-            Vezi campaniile de sterilizare gratuită din toată țara &rarr;
-          </span>
-        </NuxtLink>
-        <NuxtLink to="/despre-sterilizare" class="bottom-band__card">
-          <Stethoscope class="bottom-band__icon" :size="28" />
-          <span class="bottom-band__card-title">Despre sterilizare</span>
-          <span class="bottom-band__card-desc">
-            Ghid medical — tot ce trebuie să știi înainte și după procedură &rarr;
-          </span>
-        </NuxtLink>
-        <NuxtLink to="/organizatori" class="bottom-band__card">
-          <Megaphone class="bottom-band__icon" :size="28" />
-          <span class="bottom-band__card-title">Ești ONG sau primărie?</span>
-          <span class="bottom-band__card-desc">
-            Anunță o campanie de sterilizare și ajunge la cetățeni &rarr;
-          </span>
-        </NuxtLink>
+        <UiLinkCard
+          to="/campanii"
+          :icon="PawPrint"
+          title="Campanii active"
+          desc="Vezi campaniile de sterilizare gratuită din toată țara"
+        />
+        <UiLinkCard
+          to="/despre-sterilizare"
+          :icon="Stethoscope"
+          title="Despre sterilizare"
+          desc="Ghid medical — tot ce trebuie să știi înainte și după procedură"
+        />
+        <UiLinkCard
+          to="/organizatori"
+          :icon="Megaphone"
+          title="Ești ONG sau primărie?"
+          desc="Anunță o campanie de sterilizare și ajunge la cetățeni"
+        />
       </div>
     </section>
   </div>
@@ -202,40 +199,6 @@ useHead({
   gap: var(--space-xl);
 }
 
-.bottom-band__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-xl);
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  text-decoration: none;
-  color: var(--color-text);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.bottom-band__card:hover {
-  border-color: var(--color-accent);
-  box-shadow: 0 4px 12px rgba(249, 89, 5, 0.1);
-  text-decoration: none;
-}
-
-.bottom-band__icon {
-  color: var(--color-accent);
-}
-
-.bottom-band__card-title {
-  font-family: var(--font-heading);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--color-primary);
-}
-
-.bottom-band__card-desc {
-  font-size: var(--font-size-base);
-  color: var(--color-text-muted);
-}
 
 /* ---- Responsive ---- */
 @media (min-width: 1300px) {
