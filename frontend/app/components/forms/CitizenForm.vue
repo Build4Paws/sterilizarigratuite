@@ -76,7 +76,10 @@
             :options="localities"
             :required="true"
             :disabled="!form.county"
+            :async="true"
+            :loading="localityLoading"
             :error="submitted ? errors.locality : undefined"
+            @search="searchLocality"
           />
         </UiFormItem>
       </UiFormRow>
@@ -193,7 +196,7 @@ import type { ContactChannel } from '~/composables/useCitizenSession'
 const router = useRouter()
 const runtimeConfig = useRuntimeConfig()
 const hcaptchaSiteKey = runtimeConfig.public.hcaptchaSiteKey as string
-const { counties, localities, setCounty, init: initLocations } = useLocationData()
+const { counties, init: initLocations } = useLocationData()
 const citizenSession = useCitizenSession()
 
 const hcaptchaRef = ref<InstanceType<typeof VueHcaptcha> | null>(null)
@@ -238,6 +241,9 @@ const form = reactive<CitizenFormState>({
   catCount: 1,
   gdprConsent: false,
 })
+
+// Must be after `form` — getter closes over the reactive object.
+const { localities, loading: localityLoading, search: searchLocality } = useLocalities(() => form.county)
 
 const dogCountStr = computed({
   get: () => form.dogCount?.toString() ?? '',
@@ -293,9 +299,8 @@ watch(() => ({ ...form }), () => {
   if (submitted.value) validate()
 }, { deep: true })
 
-function onCountyChange(code: string) {
+function onCountyChange() {
   form.locality = ''
-  setCounty(code)
 }
 
 async function handleSubmit() {

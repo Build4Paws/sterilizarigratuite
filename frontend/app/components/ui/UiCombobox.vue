@@ -56,14 +56,17 @@
         role="listbox"
         class="ui-combobox__list"
       >
-        <li
-          v-if="filtered.length === 0"
-          class="ui-combobox__empty"
-        >
-          Niciun rezultat pentru „{{ query }}"
+        <li v-if="loading" class="ui-combobox__loading" aria-live="polite">
+          Se caută…
         </li>
         <li
-          v-for="(opt, i) in filtered"
+          v-else-if="filtered.length === 0"
+          class="ui-combobox__empty"
+        >
+          {{ query ? `Niciun rezultat pentru „${query}"` : 'Niciun rezultat' }}
+        </li>
+        <li
+          v-for="(opt, i) in (loading ? [] : filtered)"
           :id="`${id}-opt-${i}`"
           :key="opt.value"
           role="option"
@@ -101,11 +104,21 @@ const props = defineProps<{
   required?: boolean
   disabled?: boolean
   error?: string
+  /**
+   * When true, local filtering is disabled and parent controls the option list.
+   * Emits `search` events as the user types so the parent can fetch results.
+   * Assumes value === label (e.g. locality names).
+   */
+  async?: boolean
+  /** Show a loading indicator in the dropdown (used together with `async`). */
+  loading?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   blur: []
+  /** Fired when async=true and the user types. Debounce in the parent/composable. */
+  search: [query: string]
 }>()
 
 const wrapperRef = ref<HTMLElement>()
@@ -121,8 +134,10 @@ function stripDiacritics(str: string): string {
 
 const selectedLabel = computed(() => {
   if (!props.modelValue) return ''
+  // In async mode value === label (e.g. locality name), so return directly.
+  if (props.async) return props.modelValue
   const opt = props.options.find(o => o.value === props.modelValue)
-  return opt?.label ?? ''
+  return opt?.label ?? props.modelValue
 })
 
 const displayValue = computed(() => {
@@ -143,6 +158,8 @@ function matchesAtWordBoundary(text: string, search: string): boolean {
 }
 
 const filtered = computed(() => {
+  // In async mode the parent controls the option list — no local filtering.
+  if (props.async) return props.options
   if (!query.value) return props.options
   const q = stripDiacritics(query.value.trim())
   if (!q) return props.options
@@ -164,6 +181,7 @@ function onInput(e: Event) {
   query.value = (e.target as HTMLInputElement).value
   activeIndex.value = -1
   if (!open.value) open.value = true
+  if (props.async) emit('search', query.value)
 }
 
 function select(opt: Option) {
@@ -372,6 +390,14 @@ onUnmounted(() => {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   text-align: center;
+}
+
+.ui-combobox__loading {
+  padding: 0.75rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+  font-style: italic;
 }
 
 .ui-field--error .ui-combobox__input {

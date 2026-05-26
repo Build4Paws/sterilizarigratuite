@@ -72,7 +72,10 @@
               :options="localities"
               :required="true"
               :disabled="!form.county"
+              :async="true"
+              :loading="localityLoading"
               :error="submitted ? errors.locality : undefined"
+              @search="searchLocality"
             />
           </UiFormItem>
         </UiFormRow>
@@ -342,7 +345,7 @@ import type {
 const router = useRouter()
 const runtimeConfig = useRuntimeConfig()
 const hcaptchaSiteKey = runtimeConfig.public.hcaptchaSiteKey as string
-const { counties, localities, setCounty, init: initLocations } = useLocationData()
+const { counties, init: initLocations } = useLocationData()
 const organizerSubmission = useOrganizerSubmission()
 const toast = useToast()
 
@@ -402,6 +405,9 @@ const form = reactive<CampaignFormState>({
   gdprConsent: false,
 })
 
+// Must be after `form` — getter closes over the reactive object.
+const { localities, loading: localityLoading, search: searchLocality } = useLocalities(() => form.county)
+
 const slotsDogsStr = computed({
   get: () => form.slotsDogs?.toString() ?? '',
   set: (v: string) => { form.slotsDogs = v ? Number(v) : undefined },
@@ -411,8 +417,8 @@ const slotsCatsStr = computed({
   set: (v: string) => { form.slotsCats = v ? Number(v) : undefined },
 })
 
-// Live "people waiting" stats — re-fetches via the Nuxt server route
-// (mocked at /api/stats/locality) whenever county or locality change.
+// Live "people waiting" stats — re-fetches via /api/stats/locality (GET /stats/locality on the backend)
+// whenever county or locality change.
 const { localityCount, countyCount, loading: waitingLoading } = useLocalityWaitingCount(
   () => form.county,
   () => form.locality,
@@ -506,9 +512,8 @@ watch(() => ({ ...form }), () => {
   if (submitted.value) validate()
 }, { deep: true })
 
-function onCountyChange(code: string) {
+function onCountyChange() {
   form.locality = ''
-  setCounty(code)
 }
 
 const countyName = computed(() =>

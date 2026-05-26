@@ -147,7 +147,10 @@ const DATE_FMT = new Intl.DateTimeFormat('ro-RO', {
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—'
-  const [y, m, d] = iso.split('-').map(Number)
+  const parts = iso.split('-').map(Number)
+  const y = parts[0] ?? 0
+  const m = parts[1] ?? 1
+  const d = parts[2] ?? 1
   return DATE_FMT.format(new Date(y, m - 1, d))
 }
 </script>
