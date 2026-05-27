@@ -1,10 +1,11 @@
 import { AwsClient } from 'aws4fetch'
 
 /**
- * Proxy for POST /register.
- * hCaptcha verification is handled exclusively by the AWS backend —
- * we forward the full body (including hcaptchaToken) as-is and sign
- * the request with SigV4 so the backend trusts the origin.
+ * Signed proxy for GET /counties/{code}/localities?q=...
+ *
+ * Returns { localities: [{ id, name }] } from the backend as-is.
+ * Cached 24 h — locality lists rarely change.
+ * No hCaptcha needed (read endpoint).
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -23,7 +24,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const body = (await readBody(event)) as Record<string, unknown> | null
+  // Validate county code — 1-2 uppercase letters (e.g. "SV", "IF").
+  const rawCode = getRouterParam(event, 'code') ?? ''
+  if (!rawCode || !/^[A-Za-z]{1,2}$/.test(rawCode)) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid county code' })
+  }
+  const code = rawCode.toUpperCase()
+
+  // Optional search query — trimmed, capped at 50 chars.
+  const qs = getQuery(event)
+  const q = String(qs.q ?? '').trim().slice(0, 50)
 
   const aws = new AwsClient({
     accessKeyId: awsAccessKeyId as string,
@@ -37,10 +47,11 @@ export default defineEventHandler(async (event) => {
     ? (awsApiBase as string)
     : `https://${awsApiBase}`
 
-  const res = await fetchUpstream(aws, `${baseUrl}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body ?? {}),
+  const upstream = `${baseUrl}/counties/${code}/localities${q ? `?q=${encodeURIComponent(q)}` : ''}`
+
+  const res = await fetchUpstream(aws, upstream, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
   })
 
   const text = await res.text()
@@ -52,6 +63,8 @@ export default defineEventHandler(async (event) => {
       data: text,
     })
   }
+
+  setResponseHeader(event, 'cache-control', 'public, max-age=86400')
 
   try {
     return JSON.parse(text)

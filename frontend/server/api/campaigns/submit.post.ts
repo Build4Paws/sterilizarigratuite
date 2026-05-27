@@ -1,17 +1,23 @@
 import { AwsClient } from 'aws4fetch'
 import type { CampaignSubmissionResponse } from '~/types'
 
-interface HcaptchaVerifyResponse {
-  success: boolean
-  'error-codes'?: string[]
-}
-
-interface OrganizersApiResponse {
+interface SubmitApiResponse {
   message?: string
-  campaignId?: string
+  submissionId?: string
+  status?: string
+  stats?: {
+    registeredInLocality: number
+    registeredInCounty: number
+  }
   [key: string]: unknown
 }
 
+/**
+ * Proxy for POST /campaigns/submit.
+ * hCaptcha verification is handled exclusively by the AWS backend —
+ * we forward the full body (including hcaptchaToken) as-is and sign
+ * the request with SigV4 so the backend trusts the origin.
+ */
 export default defineEventHandler(async (event): Promise<CampaignSubmissionResponse> => {
   const config = useRuntimeConfig()
   const {
@@ -20,7 +26,6 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
     awsSessionToken,
     awsRegion,
     awsApiBase,
-    hcaptchaSecretKey,
   } = config
 
   if (!awsAccessKeyId || !awsSecretAccessKey || !awsApiBase) {
@@ -31,42 +36,6 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
   }
 
   const body = (await readBody(event)) as Record<string, unknown> | null
-  const { hcaptchaToken, ...submission } = body ?? {}
-
-  const secret = hcaptchaSecretKey as string
-  if (!secret && !import.meta.dev) {
-    throw createError({ statusCode: 500, statusMessage: 'Captcha not configured.' })
-  }
-  if (secret) {
-    if (typeof hcaptchaToken !== 'string' || !hcaptchaToken) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Captcha token lipsă.',
-        data: { error: 'captcha_failed' },
-      })
-    }
-    let verify: HcaptchaVerifyResponse
-    try {
-      verify = await $fetch<HcaptchaVerifyResponse>('https://api.hcaptcha.com/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ secret, response: hcaptchaToken }).toString(),
-        signal: AbortSignal.timeout(5_000),
-      })
-    } catch (err) {
-      if (err instanceof Error && err.name === 'TimeoutError') {
-        throw createError({ statusCode: 503, statusMessage: 'Upstream timeout.', data: { error: 'server_error' } })
-      }
-      throw err
-    }
-    if (!verify.success) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Verificarea captcha a eșuat.',
-        data: { error: 'captcha_failed', codes: verify['error-codes'] },
-      })
-    }
-  }
 
   const aws = new AwsClient({
     accessKeyId: awsAccessKeyId as string,
@@ -80,14 +49,18 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
     ? (awsApiBase as string)
     : `https://${awsApiBase}`
 
-  const res = await fetchUpstream(aws, `${baseUrl}/organizers`, {
+  // Campaign submissions are slower than register: the backend verifies hCaptcha
+  // (outbound call) + writes to DB + may cold-start a separate Lambda.
+  // AWS API Gateway's own hard limit is 29 s, so 25 s gives us a clean 503
+  // before Gateway would return its own opaque timeout.
+  const res = await fetchUpstream(aws, `${baseUrl}/campaigns/submit`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify(submission),
-  })
+    body: JSON.stringify(body ?? {}),
+  }, 25_000)
 
   const text = await res.text()
 
@@ -99,11 +72,12 @@ export default defineEventHandler(async (event): Promise<CampaignSubmissionRespo
     })
   }
 
-  const apiResponse: OrganizersApiResponse = JSON.parse(text)
+  const apiResponse: SubmitApiResponse = JSON.parse(text)
 
   return {
-    message: String(apiResponse.message ?? 'Submitted'),
-    campaignId: String(apiResponse.campaignId ?? crypto.randomUUID()),
+    message: String(apiResponse.message ?? 'Trimis cu succes'),
+    submissionId: String(apiResponse.submissionId),
     status: 'pending',
+    stats: apiResponse.stats,
   }
 })

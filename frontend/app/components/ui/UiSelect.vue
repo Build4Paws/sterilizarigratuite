@@ -16,9 +16,12 @@
       @blur="$emit('blur')"
     >
       <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
-      <option v-for="opt in options" :key="opt.value" :value="opt.value">
-        {{ opt.label }}
-      </option>
+      <option
+        v-for="opt in options"
+        :key="opt.value"
+        :value="opt.value"
+        :selected="opt.value === modelValue"
+      >{{ opt.label }}</option>
     </select>
     <p v-if="error" :id="`${id}-error`" class="ui-field__error" role="alert">
       {{ error }}

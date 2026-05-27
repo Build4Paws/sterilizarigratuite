@@ -16,6 +16,17 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Ai trimis prea multe cereri într-un timp scurt. Te rugăm să aștepți câteva minute.',
   server_error:
     'A apărut o problemă pe server. Te rugăm să încerci din nou peste câteva minute.',
+  // v1.1.1 additions
+  invalid_json:
+    'Cererea trimisă nu este validă. Te rugăm să reîncarci pagina și să încerci din nou.',
+  invalid_id:
+    'Identificatorul furnizat nu este valid.',
+  not_found:
+    'Resursa solicitată nu a fost găsită.',
+  token_invalid:
+    'Link-ul a expirat sau a fost deja folosit. Te rugăm să soliciți un link nou.',
+  internal_error:
+    'A apărut o problemă pe server. Te rugăm să încerci din nou peste câteva minute.',
 }
 
 const FALLBACK = 'A apărut o eroare. Te rugăm să încerci din nou.'

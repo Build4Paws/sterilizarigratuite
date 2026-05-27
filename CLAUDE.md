@@ -56,13 +56,19 @@ The browser never talks to AWS API Gateway directly. The pattern in `server/api/
 3. Sign the upstream request with `aws4fetch` (`AwsClient`, service `execute-api`).
 4. Forward error bodies back as `data` on a `createError({ statusCode, statusMessage, data })` so `extractApiError` on the client can map backend error codes (`duplicate_submission`, `validation_failed`, `captcha_failed`, etc.) to Romanian copy.
 
-The base URL defaults to `https://api.sterilizarigratuite.ro` and is overridable via `AWS_API_BASE`. Backend routes currently in use: `POST /register`, `POST /organizers` (campaign submit). Backend has also exposed `GET /organizers/{id}` and `GET /campaigns?county=...` — frontend wiring for these is pending.
+The base URL defaults to `https://api.sterilizarigratuite.ro` and is overridable via `AWS_API_BASE`. Backend routes wired as of API v1.1.1:
+- `POST /register` — citizen registration
+- `POST /campaigns/submit` — organizer campaign submission (`submit.post.ts`)
+- `GET /campaigns?county=` — public campaign listing (`campaigns/index.get.ts`)
+- `GET /stats/locality?county=&locality=` — locality waiting counts (`stats/locality.get.ts`)
+- `GET /stats/map` — country-wide registration choropleth (`stats/map.get.ts`)
+- `GET /counties/{code}/localities?q=` — async locality typeahead (`counties/[code]/localities.get.ts`)
+
+Available-but-unused: `GET /register/{id}`, `GET /campaigns/{id}`, `GET /counties`. Magic-link pages (`/m/**`, `/r/**`) remain deferred placeholders.
 
 ### Known mocks/stubs (don't ship to prod assuming these are real)
 
-- `server/api/stats/locality.get.ts` — full mock with deterministic pseudo-random counts. No backend `/stats/locality` route exists yet. Replace using the SigV4 pattern when it does.
 - `app/composables/useClinics.ts` — returns `[]`; v2 work for permanent clinics.
-- `app/pages/campanii.vue` — placeholder; `GET /campaigns` is now available but not wired up.
 
 ### Form pattern (CitizenForm + CampaignForm)
 

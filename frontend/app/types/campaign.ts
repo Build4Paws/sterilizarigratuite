@@ -1,7 +1,31 @@
+/**
+ * Wire shape returned by `GET /campaigns` and `GET /campaigns/{id}`.
+ * `species` is an **object of slot counts** (not an array) — normalize to
+ * `Campaign` via the mapper in `useCampaigns` before passing to the UI.
+ */
+export interface PublicCampaign {
+  submissionId: string
+  organizationName: string
+  phonePublic: string
+  county: string        // 2-letter code, e.g. "SV"
+  countyName: string    // backend resolves this
+  locality: string
+  address: string
+  dateStart: string
+  dateEnd: string | null
+  timeStart: string
+  timeEnd: string
+  doctor: string | null
+  /** Slot counts per species. May be partial if only one species is offered. */
+  species: Partial<Record<Species, number>>
+}
+
 export interface Campaign {
   id: string
   organizationName: string
   county: string
+  /** Resolved county display name — provided by the backend via `PublicCampaign.countyName`. */
+  countyName?: string
   locality: string
   address: string
   dateStart: string

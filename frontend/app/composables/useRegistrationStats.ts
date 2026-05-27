@@ -39,7 +39,7 @@ const FETCH_KEY = 'stats-registrations'
 export function useRegistrationStats() {
   const { data, error, status } = useAsyncData<RegistrationsCountryResponse>(
     FETCH_KEY,
-    () => $fetch<RegistrationsCountryResponse>('/api/stats/registrations'),
+    () => $fetch<RegistrationsCountryResponse>('/api/stats/map'),
     {
       default: () => ({ byCounty: {}, totalRegistrations: 0 } as RegistrationsCountryResponse),
       getCachedData(key, nuxtApp) {

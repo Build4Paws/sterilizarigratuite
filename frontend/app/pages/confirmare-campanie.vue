@@ -42,7 +42,7 @@
         <dl class="confirmare__meta">
           <div class="confirmare__meta-row">
             <dt>ID campanie</dt>
-            <dd><code>{{ session.campaignId }}</code></dd>
+            <dd><code>{{ session.submissionId }}</code></dd>
           </div>
           <div class="confirmare__meta-row">
             <dt>Trimisă</dt>

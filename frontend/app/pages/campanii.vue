@@ -257,11 +257,11 @@ function syncUrl(query: { judet?: string; specie?: string }) {
   router.replace({ query: cleaned })
 }
 
-// Sync card data — indexes are loaded so countyCodeToNameSync resolves.
+// Sync card data — prefer backend-provided countyName; fall back to local sync lookup.
 function toCardData(c: Campaign): CampaignCardData {
   return {
     organizationName: c.organizationName,
-    countyName: countyCodeToNameSync(c.county) || c.county,
+    countyName: c.countyName || countyCodeToNameSync(c.county) || c.county,
     locality: c.locality,
     address: c.address,
     dateStart: c.dateStart,
