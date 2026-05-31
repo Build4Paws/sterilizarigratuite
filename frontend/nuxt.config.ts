@@ -93,7 +93,10 @@ export default defineNuxtConfig({
         ].join('; '),
       },
     },
-    '/': { prerender: true },
+    // `/` is prerendered via `nitro.prerender.routes` (below) instead of a
+    // route rule: the route-rule form writes a dev-time payload cache under the
+    // bare key `payload`, which collides with the `payload/<route>` directory
+    // the swr routes need (ENOTDIR). Build-time prerendering is unchanged.
     '/campanii': { swr: 300 },
     '/harta': { swr: 300 },
     '/organizatori': { prerender: true },
@@ -104,6 +107,26 @@ export default defineNuxtConfig({
     '/campanie/**': { robots: false },
     '/m/**': { robots: false },
     '/r/**': { robots: false },
+  },
+
+  nitro: {
+    prerender: {
+      routes: ['/'],
+    },
+  },
+
+  hooks: {
+    // `nuxt build` finishes writing `.output` but leaves the esbuild keepalive
+    // service running, so the process never exits and `deploy.sh` hangs forever
+    // after "Build complete!". Force-exit once the Nuxt instance closes — but
+    // only for build/generate; in dev `close` also fires on config-reload
+    // restarts, where exiting would kill the dev server.
+    close: () => {
+      const cmd = process.env.npm_lifecycle_event
+      if (cmd === 'build' || cmd === 'generate') {
+        process.exit(0)
+      }
+    },
   },
 
   css: ['~/assets/css/main.css'],

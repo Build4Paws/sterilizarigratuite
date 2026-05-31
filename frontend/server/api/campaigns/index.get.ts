@@ -1,4 +1,30 @@
 import { AwsClient } from 'aws4fetch'
+import type { PublicCampaign } from '~/types'
+
+/**
+ * Maps the API v2 wire shape (snake_case, `species_slots`) to the documented
+ * camelCase `PublicCampaign` contract the frontend consumes. Shaping the
+ * upstream response here keeps the type + `normalizePublicCampaign` mapper
+ * stable for every consumer (see CLAUDE.md "data shaping lives in the backend").
+ */
+function mapCampaign(c: Record<string, any>): PublicCampaign {
+  return {
+    submissionId: c.submission_id,
+    organizationName: c.organization_name,
+    phonePublic: c.phone_public,
+    county: c.county_code,
+    countyName: c.county_name,
+    locality: c.locality_name,
+    address: c.address,
+    dateStart: c.date_start,
+    dateEnd: c.date_end ?? null,
+    // v2 sends "HH:MM:SS"; the card renders the raw string, so trim to "HH:MM".
+    timeStart: (c.time_start ?? '').slice(0, 5),
+    timeEnd: (c.time_end ?? '').slice(0, 5),
+    doctor: c.doctor ?? null,
+    species: c.species_slots ?? {},
+  }
+}
 
 /**
  * Public read of approved + upcoming campaigns. Optional `?county=AB` filter
@@ -61,7 +87,9 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'cache-control', 'public, max-age=60, s-maxage=300')
 
   try {
-    return JSON.parse(text)
+    const parsed = JSON.parse(text)
+    const campaigns = Array.isArray(parsed?.campaigns) ? parsed.campaigns : []
+    return { campaigns: campaigns.map(mapCampaign) }
   } catch {
     setResponseHeader(event, 'content-type', res.headers.get('content-type') ?? 'application/json')
     return text
