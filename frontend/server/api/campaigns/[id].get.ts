@@ -50,7 +50,8 @@ export default defineEventHandler(async (event): Promise<PublicCampaign> => {
     })
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=60')
+  // No frontend caching — always serve what the backend returns.
+  setResponseHeader(event, 'cache-control', 'no-store')
 
   return JSON.parse(text) as PublicCampaign
 })

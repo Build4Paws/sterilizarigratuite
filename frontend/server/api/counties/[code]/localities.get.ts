@@ -64,7 +64,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=86400')
+  // No frontend caching — always serve what the backend returns.
+  setResponseHeader(event, 'cache-control', 'no-store')
 
   try {
     return JSON.parse(text)

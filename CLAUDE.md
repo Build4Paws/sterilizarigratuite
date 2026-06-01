@@ -86,7 +86,8 @@ Both forms follow the same UX rule: **submit-only validation**. Errors are store
 
 ### SEO + routing rules
 
-- `nuxt.config.ts` `routeRules` controls per-route behavior: `/` is prerendered, `/campanii` is SWR 300s, `/confirmare*` and `/m/**`/`/r/**` are `robots: false`. `/confirmare` is also `ssr: false` because it relies on sessionStorage hydration.
+- `nuxt.config.ts` `routeRules` controls per-route behavior: `/`, `/organizatori`, `/despre-sterilizare` are prerendered (static, no backend data), `/confirmare*` and `/m/**`/`/r/**` are `robots: false`. `/confirmare` is also `ssr: false` because it relies on sessionStorage hydration.
+- **No frontend caching of backend data.** `/campanii` and `/harta` render live backend API data and are plain SSR (fresh every request) — never SWR/ISR. The API-proxy routes under `server/api/` all set `cache-control: no-store`. Caching is the backend's responsibility; the frontend always displays what the backend returns. Don't reintroduce `swr`/`isr` route rules or `max-age` cache headers on data-driven routes.
 - `useSeoMeta` is set per page; magic-link and confirmation pages add `robots: 'noindex, nofollow'`.
 
 ## Conventions worth knowing

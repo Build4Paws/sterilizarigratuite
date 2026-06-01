@@ -46,7 +46,8 @@ export default defineEventHandler(async (event): Promise<LocalityWaitingStats> =
     })
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=60')
+  // No frontend caching — always serve what the backend returns.
+  setResponseHeader(event, 'cache-control', 'no-store')
 
   return (await res.json()) as LocalityWaitingStats
 })

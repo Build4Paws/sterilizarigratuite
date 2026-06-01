@@ -58,7 +58,8 @@ export default defineEventHandler(async (event): Promise<RegistrationsCountryRes
     delete byCounty.Ilfov
   }
 
-  setResponseHeader(event, 'cache-control', 'public, max-age=60, s-maxage=300')
+  // No frontend caching — always serve what the backend returns.
+  setResponseHeader(event, 'cache-control', 'no-store')
 
   return {
     byCounty,

@@ -96,9 +96,12 @@ export default defineNuxtConfig({
     // `/` is prerendered via `nitro.prerender.routes` (below) instead of a
     // route rule: the route-rule form writes a dev-time payload cache under the
     // bare key `payload`, which collides with the `payload/<route>` directory
-    // the swr routes need (ENOTDIR). Build-time prerendering is unchanged.
-    '/campanii': { swr: 300 },
-    '/harta': { swr: 300 },
+    // (ENOTDIR). Build-time prerendering is unchanged.
+    //
+    // NO frontend caching of backend data: `/campanii` and `/harta` render
+    // backend API data and are intentionally left as plain SSR (fresh on every
+    // request) — they must always reflect what the backend returns. Caching is
+    // the backend's responsibility. Only static, data-free pages are prerendered.
     '/organizatori': { prerender: true },
     '/despre-sterilizare': { prerender: true },
     '/despre': { redirect: '/harta' },
