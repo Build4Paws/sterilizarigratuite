@@ -44,7 +44,7 @@
             :metric="activeMetric"
             :unit="activeUnit"
             :selected="selectedCode"
-            :locality-registrations="selectedCountyData?.localities"
+            :priority-localities="priorityLocalities"
             :highlighted-locality="highlightedLocality"
             @hover="hoveredCode = $event"
             @select="onCountySelect"
@@ -178,6 +178,22 @@ const selectedCountyData = computed<CountyStats | undefined>(() => {
 const selectedCampaigns = computed<Campaign[]>(() => {
   if (!selectedCode.value) return []
   return campaigns.value.filter(c => c.county.toUpperCase() === selectedCode.value)
+})
+
+// Locality names the map should prioritise as dots (the county seat is always
+// added by the map itself). Ofertă → localities with a campaign; Cerere →
+// localities with registrations. The map places the ones it has coordinates
+// for and backfills the rest with the most populous localities.
+const priorityLocalities = computed<string[]>(() => {
+  if (activeView.value === 'oferta') {
+    return selectedCampaigns.value.map(c => c.locality).filter(Boolean)
+  }
+  if (activeView.value === 'cerere') {
+    return Object.entries(selectedCountyData.value?.localities ?? {})
+      .filter(([, n]) => (n ?? 0) > 0)
+      .map(([name]) => name)
+  }
+  return []
 })
 
 // ── Interactions ─────────────────────────────────────────────────────────────

@@ -151,17 +151,7 @@ function peopleWord(n: number): string {
   return n === 1 ? 'persoană' : 'persoane'
 }
 
-const submittedLabel = computed(() => {
-  const iso = session.value?.submittedAt
-  if (!iso) return ''
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(iso))
-})
+const submittedLabel = computed(() => formatDateTime(session.value?.submittedAt))
 </script>
 
 <style scoped>

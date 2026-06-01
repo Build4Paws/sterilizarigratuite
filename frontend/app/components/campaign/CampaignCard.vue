@@ -136,27 +136,11 @@ const showCta = computed(() =>
   props.showCallCta && ['ongoing', 'upcoming'].includes(badge.value?.tone || '') && !!props.campaign.phonePublic,
 )
 
-const dateLabel = computed(() => {
-  const start = formatDateRO(props.campaign.dateStart)
-  if (!props.campaign.dateEnd || props.campaign.dateEnd === props.campaign.dateStart) {
-    return start
-  }
-  return `${start} – ${formatDateRO(props.campaign.dateEnd)}`
-})
-
-// Parse YYYY-MM-DD as a local date; `new Date(iso)` would treat it as UTC and
-// could shift the displayed day depending on the user's timezone.
-function formatDateRO(iso: string): string {
-  const parts = iso.split('-').map(Number)
-  if (parts.length !== 3 || parts.some(Number.isNaN)) return iso
-  const [y, m, d] = parts as [number, number, number]
-  const date = new Date(y, m - 1, d)
-  return new Intl.DateTimeFormat('ro-RO', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
-}
+// `formatDateRange` (auto-imported from utils/format) renders Romanian
+// dd/mm/yyyy and collapses single-day campaigns to one date.
+const dateLabel = computed(() =>
+  formatDateRange(props.campaign.dateStart, props.campaign.dateEnd ?? undefined),
+)
 
 </script>
 

@@ -88,13 +88,14 @@ const props = withDefaults(defineProps<{
   metric: Record<string, number>
   unit: string
   selected?: string
-  // locality name → registration count for the selected county
-  localityRegistrations?: Record<string, number>
+  // locality names to prioritise as dots for the selected county
+  // (campaign localities in `oferta`, registration localities in `cerere`)
+  priorityLocalities?: string[]
   // externally highlighted locality (e.g. from sidepanel row hover/click)
   highlightedLocality?: string | null
 }>(), {
   selected: undefined,
-  localityRegistrations: () => ({}),
+  priorityLocalities: () => [],
   highlightedLocality: null,
 })
 
@@ -215,9 +216,13 @@ async function ensureLocalityData() {
   localityData.value = mod.default as Record<string, Locality[]>
 }
 
-// Display rule (v1): show only tier-1 (county seat) + top 2 by population
-// + any locality with at least one registration (cerere).
-const TOP_N_BY_POP = 2
+// Display rule: county seat (tier 1) first, then the priority localities
+// (campaigns in `oferta`, registrations in `cerere`) we have coordinates for,
+// then — if that yields fewer than MIN_DOTS — backfill with the most populous
+// remaining localities so the county doesn't look empty. Priority localities
+// with no coordinates in the dataset are intentionally dropped from the map;
+// they still appear in the side list. This should be the exception.
+const MIN_DOTS = 5
 
 function normalizeLocalityName(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
@@ -228,32 +233,33 @@ const localitiesForCounty = computed<Locality[]>(() => {
   const all = localityData.value[props.selected] ?? []
   if (!all.length) return []
 
-  // Normalized registration locality names for the selected county
-  const regSet = new Set(
-    Object.entries(props.localityRegistrations ?? {})
-      .filter(([, n]) => (n ?? 0) > 0)
-      .map(([name]) => normalizeLocalityName(name)),
-  )
-
-  // Tier 1 (sorted population desc by build script) → keep all (usually one).
-  const tier1 = all.filter(l => l.t === 1)
-  // Tier 2 (already pop-desc) → top N by population.
-  const tier2 = all.filter(l => l.t === 2)
-  const topByPop = tier2.slice(0, TOP_N_BY_POP)
-
-  // Any locality with registration data (matched by normalized name).
-  const withReg = regSet.size
-    ? all.filter(l => regSet.has(normalizeLocalityName(l.n)))
-    : []
-
-  // Union by name
+  const byNorm = new Map(all.map(l => [normalizeLocalityName(l.n), l]))
   const seen = new Set<string>()
   const out: Locality[] = []
-  for (const l of [...tier1, ...topByPop, ...withReg]) {
-    if (seen.has(l.n)) continue
-    seen.add(l.n)
-    out.push(l)
+  const add = (l: Locality | undefined) => {
+    if (l && !seen.has(l.n)) {
+      seen.add(l.n)
+      out.push(l)
+    }
   }
+
+  // 1. County seat(s) — tier 1, always first.
+  for (const l of all) if (l.t === 1) add(l)
+
+  // 2. Priority localities we can actually place on the map.
+  for (const name of props.priorityLocalities) {
+    add(byNorm.get(normalizeLocalityName(name)))
+  }
+
+  // 3. Backfill with the most populous remaining localities up to MIN_DOTS.
+  if (out.length < MIN_DOTS) {
+    const byPop = [...all].sort((a, b) => (b.p ?? 0) - (a.p ?? 0))
+    for (const l of byPop) {
+      if (out.length >= MIN_DOTS) break
+      add(l)
+    }
+  }
+
   return out
 })
 
@@ -261,12 +267,12 @@ const localitiesForCounty = computed<Locality[]>(() => {
 const zoomScale = computed(() => viewBox.w / FULL_VIEWBOX.w)
 
 function dotRadius(tier: 1 | 2) {
-  const base = tier === 1 ? 5 : 3
+  const base = tier === 1 ? 8 : 6
   return base * zoomScale.value
 }
 
-const labelFontSize = computed(() => 9 * zoomScale.value)
-const labelOffset = computed(() => 3 * zoomScale.value)
+const labelFontSize = computed(() => 14 * zoomScale.value)
+const labelOffset = computed(() => 5 * zoomScale.value)
 
 // Active label state — visible on dot hover or via external highlight prop
 const hoveredLocality = ref<string | null>(null)

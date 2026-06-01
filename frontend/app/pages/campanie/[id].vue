@@ -137,22 +137,8 @@ const notFound = computed(() => {
 
 const errorMessage = computed(() => extractApiError(fetchError.value))
 
-// ---- Formatting -------------------------------------------------------
-
-const DATE_FMT = new Intl.DateTimeFormat('ro-RO', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-})
-
-function formatDate(iso: string | null | undefined): string {
-  if (!iso) return '—'
-  const parts = iso.split('-').map(Number)
-  const y = parts[0] ?? 0
-  const m = parts[1] ?? 1
-  const d = parts[2] ?? 1
-  return DATE_FMT.format(new Date(y, m - 1, d))
-}
+// Dates render via the auto-imported `formatDate` (utils/format) — Romanian
+// dd/mm/yyyy.
 </script>
 
 <style scoped>

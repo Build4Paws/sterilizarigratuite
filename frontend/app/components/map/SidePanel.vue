@@ -274,13 +274,8 @@ const crossViewLine = computed(() => {
   return `În acest județ: ${parts.join(' · ')}`
 })
 
-// ── Ofertă helpers ───────────────────────────────────────────────────────────
-
-function formatDate(iso: string) {
-  if (!iso) return ''
-  const [y, m, d] = iso.split('-')
-  return `${d}.${m}.${y}`
-}
+// Campaign dates render via the auto-imported `formatDate` (utils/format) —
+// Romanian dd/mm/yyyy, consistent with the rest of the app.
 </script>
 
 <style scoped>
