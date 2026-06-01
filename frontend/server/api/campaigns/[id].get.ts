@@ -24,7 +24,7 @@ export default defineEventHandler(async (event): Promise<PublicCampaign> => {
     })
   }
 
-  const rawBase = (awsApiBase as string) || 'https://api.sterilizarigratuite.ro'
+  const rawBase = (awsApiBase as string) || ''
   const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`
 
   const aws = new AwsClient({

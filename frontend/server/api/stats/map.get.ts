@@ -15,7 +15,7 @@ export default defineEventHandler(async (event): Promise<RegistrationsCountryRes
   const query = getQuery(event)
   const view = String(query.view ?? '').trim()
 
-  const rawBase = (awsApiBase as string) || 'https://api.sterilizarigratuite.ro'
+  const rawBase = (awsApiBase as string) || ''
   const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`
   const upstreamUrl = view
     ? `${baseUrl}/stats/map?view=${encodeURIComponent(view)}`

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event): Promise<LocalityWaitingStats> =
     })
   }
 
-  const rawBase = (awsApiBase as string) || 'https://api.sterilizarigratuite.ro'
+  const rawBase = (awsApiBase as string) || ''
   const baseUrl = /^https?:\/\//i.test(rawBase) ? rawBase : `https://${rawBase}`
 
   const upstreamUrl = `${baseUrl}/stats/locality?county=${encodeURIComponent(county)}&locality=${encodeURIComponent(locality)}`

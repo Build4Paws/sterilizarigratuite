@@ -86,7 +86,7 @@ export default defineNuxtConfig({
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com data:",
           "img-src 'self' data: https:",
-          "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com https://api.sterilizarigratuite.ro",
+          "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com",
           "frame-src https://*.hcaptcha.com https://hcaptcha.com",
           "frame-ancestors 'none'",
           "base-uri 'self'",
