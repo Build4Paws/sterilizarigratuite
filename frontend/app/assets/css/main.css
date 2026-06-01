@@ -60,12 +60,18 @@
   /* Layout */
   --max-width: 1140px;
 
-  /* Map choropleth — Cerere scale (puțină → multă) */
-  --map-none:     #D6DCE8;   /* no data — neutral gray-blue */
-  --map-low:      #4A90D9;   /* albastru  — bottom 20%    */
-  --map-mid-low:  #F97316;   /* portocaliu — 20–50%       */
-  --map-mid-high: #DC2626;   /* roșu      — 50–80%        */
-  --map-high:     #7F1D1D;   /* vișiniu   — top 20%       */
+  /* Map choropleth — Cerere scale: grey → dark blue (monochrome) */
+  --map-none:     #D6DCE8;   /* no data / zero — neutral grey-blue */
+  --map-low:      #BFD3EC;   /* light blue   — bottom 20% */
+  --map-mid-low:  #87ABDB;   /* blue         — 20–50%     */
+  --map-mid-high: #4470B4;   /* mid-dark blue — 50–80%    */
+  --map-high:     #15356B;   /* dark blue    — top 20%     */
+
+  /* Oferta — binary: grey (no campaigns) vs dark blue (has campaigns).
+     A selected county switches to soft light blue so its locality dots/labels
+     read clearly against it. */
+  --map-offer-has:      var(--map-high);
+  --map-offer-selected: #CBDDF1;
 }
 
 /* ==========================================================================

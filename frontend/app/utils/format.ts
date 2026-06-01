@@ -1,5 +1,10 @@
+const RO_MONTHS = [
+  'ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie',
+  'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie',
+] as const
+
 /**
- * Format an ISO `YYYY-MM-DD` date as Romanian `dd/mm/yyyy`.
+ * Format an ISO `YYYY-MM-DD` date as Romanian `dd <lună> yyyy` (e.g. `03 iunie 2026`).
  * Parsed component-wise (not via `new Date`) so the displayed day never shifts
  * by timezone. Returns '' for empty input and echoes back anything unparseable.
  */
@@ -8,8 +13,9 @@ export function formatDate(iso: string | null | undefined): string {
   const parts = iso.split('-').map(Number)
   if (parts.length !== 3 || parts.some(Number.isNaN)) return iso
   const [y, m, d] = parts as [number, number, number]
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(d)}/${pad(m)}/${y}`
+  const month = RO_MONTHS[m - 1]
+  if (!month) return iso
+  return `${String(d).padStart(2, '0')} ${month} ${y}`
 }
 
 export function formatDateRange(start: string, end?: string): string {
@@ -18,14 +24,14 @@ export function formatDateRange(start: string, end?: string): string {
 }
 
 /**
- * Format a full ISO timestamp as Romanian `dd/mm/yyyy, HH:MM` (local time).
+ * Format a full ISO timestamp as Romanian `dd <lună> yyyy, HH:MM` (local time).
  */
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return ''
   const dt = new Date(iso)
   if (Number.isNaN(dt.getTime())) return iso
   const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()}, ${pad(dt.getHours())}:${pad(dt.getMinutes())}`
+  return `${pad(dt.getDate())} ${RO_MONTHS[dt.getMonth()]} ${dt.getFullYear()}, ${pad(dt.getHours())}:${pad(dt.getMinutes())}`
 }
 
 export function formatPhone(phone: string): string {

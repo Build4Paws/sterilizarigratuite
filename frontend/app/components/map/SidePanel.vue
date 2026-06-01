@@ -22,10 +22,13 @@
 
       <!-- Cerere selected — has data -->
       <template v-else-if="view === 'cerere' && countyData">
-        <p class="side-panel__big-number">{{ countyData.total.toLocaleString('ro-RO') }}</p>
-        <p class="side-panel__unit">persoane înscrise</p>
+        <p class="side-panel__total">
+          <span class="side-panel__big-number">{{ countyData.total.toLocaleString('ro-RO') }}</span>
+          <span class="side-panel__unit">persoane înscrise</span>
+        </p>
 
-        <div class="side-panel__species">
+        <!-- Species breakdown — hidden while viewing all localities -->
+        <div v-if="!showAllLocalities" class="side-panel__species">
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
               <Dog :size="15" class="side-panel__species-icon" />
@@ -42,22 +45,45 @@
           </div>
         </div>
 
-        <div v-if="topLocalities.length" class="side-panel__localities">
-          <p class="side-panel__section-label">Top localități</p>
-          <div
-            v-for="[loc, n] in topLocalities"
-            :key="loc"
-            :class="['side-panel__loc-row', { 'is-pinned': pinnedLocality === loc }]"
-            @mouseenter="emit('hover-locality', loc)"
-            @mouseleave="emit('hover-locality', null)"
-            @click="onLocalityClick(loc)"
-          >
-            <span class="side-panel__loc-name">{{ loc }}</span>
-            <span class="side-panel__loc-count">{{ n }}</span>
+        <button
+          v-if="showAllLocalities"
+          class="side-panel__back"
+          @click="showAllLocalities = false"
+        >
+          <ArrowLeft :size="16" aria-hidden="true" />
+          Înapoi
+        </button>
+
+        <div v-if="localitiesList.length" class="side-panel__localities">
+          <div class="side-panel__loc-head">
+            <p class="side-panel__section-label">
+              {{ showAllLocalities ? 'Toate cererile din județ' : 'Top localități' }}
+            </p>
+            <button
+              v-if="!showAllLocalities && hasMoreLocalities"
+              class="side-panel__see-all"
+              @click="showAllLocalities = true"
+            >
+              Vezi toate →
+            </button>
+          </div>
+
+          <div class="side-panel__loc-list" :class="{ 'is-scroll': showAllLocalities }">
+            <div
+              v-for="[loc, n] in localitiesList"
+              :key="loc"
+              :class="['side-panel__loc-row', { 'is-pinned': pinnedLocality === loc }]"
+              @mouseenter="emit('hover-locality', loc)"
+              @mouseleave="emit('hover-locality', null)"
+              @click="onLocalityClick(loc)"
+            >
+              <span class="side-panel__loc-name">{{ loc }}</span>
+              <span class="side-panel__loc-count">{{ n }}</span>
+            </div>
           </div>
         </div>
 
-        <NuxtLink to="/organizatori" class="side-panel__cta">
+        <NuxtLink v-if="!showAllLocalities" to="/organizatori" class="side-panel__cta">
           Organizează o campanie aici →
         </NuxtLink>
       </template>
@@ -91,11 +117,6 @@
           Statisticile campaniilor încheiate vor apărea aici curând.
         </p>
       </template>
-
-      <!-- Cross-view footer line -->
-      <div v-if="crossViewLine" class="side-panel__cross-view">
-        {{ crossViewLine }}
-      </div>
     </template>
 
     <!-- Default: top-10 list -->
@@ -165,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { X, Dog, Cat } from 'lucide-vue-next'
+import { X, Dog, Cat, ArrowLeft } from 'lucide-vue-next'
 import type { Campaign, CountyStats } from '~/types'
 import { countyCodeToNameSync, countyCodeToSlugSync } from '~/composables/useLocationData'
 
@@ -176,7 +197,6 @@ const props = defineProps<{
   countyCampaigns?: Campaign[]
   topTen: Array<{ code: string; value: number }>
   cerereByCounty?: Record<string, CountyStats>
-  ofertaByCounty?: Record<string, number>
 }>()
 
 const emit = defineEmits<{
@@ -186,9 +206,17 @@ const emit = defineEmits<{
   'toggle-locality': [name: string]
 }>()
 
-// Pinned locality (toggled by click; cleared when the county changes)
+// Pinned locality (toggled by click; cleared when the county changes). Clicking
+// a locality row also raises its pin/label to the front of the map.
 const pinnedLocality = ref<string | null>(null)
-watch(() => props.selected, () => { pinnedLocality.value = null })
+
+// "Vezi toate" → expand the Cerere panel to list every locality in the county.
+const showAllLocalities = ref(false)
+
+watch(() => props.selected, () => {
+  pinnedLocality.value = null
+  showAllLocalities.value = false
+})
 
 function onLocalityClick(name: string) {
   pinnedLocality.value = pinnedLocality.value === name ? null : name
@@ -213,6 +241,7 @@ const sortBy = ref<SortKey>('total')
 watch(() => props.view, () => {
   sortBy.value = 'total'
   showAll.value = false
+  showAllLocalities.value = false
 })
 watch(sortBy, () => { showAll.value = false })
 
@@ -252,27 +281,20 @@ const defaultTitle = computed(() => {
 
 // ── Cerere selected helpers ──────────────────────────────────────────────────
 
-const topLocalities = computed<[string, number][]>(() => {
+// All localities with registrations, sorted by count desc. The default panel
+// shows the top 5; "Vezi toate" reveals the full list.
+const allLocalities = computed<[string, number][]>(() => {
   const locs = props.countyData?.localities
   if (!locs) return []
-  return Object.entries(locs)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
+  return Object.entries(locs).sort(([, a], [, b]) => b - a)
 })
 
-// ── Cross-view footer ────────────────────────────────────────────────────────
-
-const crossViewLine = computed(() => {
-  if (!props.selected) return ''
-  const code = props.selected
-  const inscr = props.cerereByCounty?.[code]?.total ?? 0
-  const camp = props.ofertaByCounty?.[code] ?? 0
-  if (!inscr && !camp) return ''
-  const parts: string[] = []
-  if (inscr) parts.push(`${inscr.toLocaleString('ro-RO')} înscrieri`)
-  if (camp) parts.push(`${camp} campanii active`)
-  return `În acest județ: ${parts.join(' · ')}`
-})
+const TOP_LOCALITIES = 5
+const topLocalities = computed(() => allLocalities.value.slice(0, TOP_LOCALITIES))
+const localitiesList = computed(() =>
+  showAllLocalities.value ? allLocalities.value : topLocalities.value,
+)
+const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALITIES)
 
 // Campaign dates render via the auto-imported `formatDate` (utils/format) —
 // Romanian dd/mm/yyyy, consistent with the rest of the app.
@@ -333,10 +355,17 @@ const crossViewLine = computed(() => {
   background: var(--color-bg-muted);
 }
 
-/* ── Big number ── */
+/* ── Big number — total + label inline ── */
+.side-panel__total {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+}
+
 .side-panel__big-number {
   font-family: var(--font-heading);
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   font-weight: 800;
   color: var(--color-primary);
   line-height: 1;
@@ -345,7 +374,6 @@ const crossViewLine = computed(() => {
 .side-panel__unit {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
-  margin-top: -var(--space-xs);
 }
 
 /* ── Species breakdown ── */
@@ -396,7 +424,64 @@ const crossViewLine = computed(() => {
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: var(--space-xs);
+  margin: 0;
+}
+
+.side-panel__loc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.side-panel__see-all {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-accent);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.side-panel__see-all:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+/* Scrollable full list in "Toate cererile din județ" mode */
+.side-panel__loc-list.is-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+  margin: 0 calc(-1 * var(--space-xs));
+  padding: 0 var(--space-xs);
+}
+
+/* Back button — return from the all-localities view */
+.side-panel__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  align-self: flex-start;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.side-panel__back:hover {
+  color: var(--color-primary);
 }
 
 .side-panel__loc-row {
@@ -602,7 +687,11 @@ const crossViewLine = computed(() => {
   color: var(--color-accent);
   font-size: var(--font-size-sm);
   font-weight: 600;
+  /* Align the label with the county names above (past the rank column),
+     and add a little breathing room from the last row. */
   padding: 6px 10px;
+  padding-left: calc(10px + 1.4rem + 8px);
+  margin-top: var(--space-sm);
   text-align: left;
   display: block;
   width: 100%;
@@ -624,14 +713,6 @@ const crossViewLine = computed(() => {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   line-height: 1.6;
-}
-
-.side-panel__cross-view {
-  margin-top: auto;
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--color-border-light);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }
 
 .side-panel__localities {

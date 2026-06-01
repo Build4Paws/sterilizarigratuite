@@ -30,25 +30,24 @@
 
       <g v-if="selected && localitiesForCounty.length" class="localities">
         <circle
-          v-for="(loc, i) in localitiesForCounty"
+          v-for="(loc, i) in orderedLocalities"
           :key="`dot-${loc.n}`"
           :cx="loc.x"
           :cy="loc.y"
           :r="dotRadius(loc.t)"
-          :class="['locality-dot', `locality-dot--t${loc.t}`, { 'is-active': isLocalityActive(loc.n) }]"
+          :class="['locality-dot', `locality-dot--t${loc.t}`, { 'is-active': isLocalityActive(loc.n), 'is-dimmed': isLocalityDimmed(loc.n) }]"
           :style="{ '--i': Math.min(i, 30) }"
           vector-effect="non-scaling-stroke"
           @mouseenter="hoveredLocality = loc.n"
           @mouseleave="hoveredLocality = null"
         />
         <text
-          v-for="loc in localitiesForCounty"
-          v-show="isLocalityActive(loc.n)"
+          v-for="loc in orderedLocalities"
           :key="`label-${loc.n}`"
           :x="loc.x"
           :y="loc.y - dotRadius(loc.t) - labelOffset"
           :font-size="labelFontSize"
-          :class="['locality-label', `locality-label--t${loc.t}`]"
+          :class="['locality-label', `locality-label--t${loc.t}`, { 'is-active': isLocalityActive(loc.n), 'is-dimmed': isLocalityDimmed(loc.n) }]"
           text-anchor="middle"
           aria-hidden="true"
         >{{ loc.n }}</text>
@@ -87,16 +86,24 @@ interface Locality { n: string; x: number; y: number; t: 1 | 2; p: number }
 const props = withDefaults(defineProps<{
   metric: Record<string, number>
   unit: string
+  // active map view — drives the coloring model (graduated for cerere, binary
+  // grey/blue for oferta) and whether locality labels show without a hover.
+  view?: 'cerere' | 'oferta' | 'istoric'
   selected?: string
   // locality names to prioritise as dots for the selected county
   // (campaign localities in `oferta`, registration localities in `cerere`)
   priorityLocalities?: string[]
-  // externally highlighted locality (e.g. from sidepanel row hover/click)
+  // externally highlighted locality (hover or click) — drives z-order + emphasis
   highlightedLocality?: string | null
+  // pinned (clicked) locality — when set, every other locality is dimmed so the
+  // pinned one is easy to spot. Cleared on a second click (toggle).
+  pinnedLocality?: string | null
 }>(), {
+  view: 'cerere',
   selected: undefined,
   priorityLocalities: () => [],
   highlightedLocality: null,
+  pinnedLocality: null,
 })
 
 const emit = defineEmits<{
@@ -105,7 +112,10 @@ const emit = defineEmits<{
   clear: []
 }>()
 
-// ── Color scale — 4 buckets, 20/30/30/20 percentile split ───────────────────
+// ── Color models ────────────────────────────────────────────────────────────
+// Cerere: graduated blue scale (grey → dark blue), 4 buckets, 20/30/30/20 split.
+// Oferta: binary — grey where there are no campaigns, dark blue where there are;
+//         the selected county switches to a soft light blue.
 
 const FILLS = [
   'var(--map-low)',
@@ -123,6 +133,13 @@ const cutPoints = computed<[number, number, number]>(() => {
 
 function fillFor(code: string): string {
   const val = props.metric[code] ?? 0
+
+  if (props.view === 'oferta') {
+    // Selected county reads as soft light blue so its dots/labels stand out.
+    if (code === props.selected) return 'var(--map-offer-selected)'
+    return val > 0 ? 'var(--map-offer-has)' : 'var(--map-none)'
+  }
+
   if (!val) return 'var(--map-none)'
   const [p20, p50, p80] = cutPoints.value
   if (val <= p20) return FILLS[0]
@@ -216,50 +233,32 @@ async function ensureLocalityData() {
   localityData.value = mod.default as Record<string, Locality[]>
 }
 
-// Display rule: county seat (tier 1) first, then the priority localities
-// (campaigns in `oferta`, registrations in `cerere`) we have coordinates for,
-// then — if that yields fewer than MIN_DOTS — backfill with the most populous
-// remaining localities so the county doesn't look empty. Priority localities
-// with no coordinates in the dataset are intentionally dropped from the map;
-// they still appear in the side list. This should be the exception.
-const MIN_DOTS = 5
-
+// Display rule: show ONLY the localities returned by the stats endpoint for
+// the selected county (campaigns in `oferta`, registrations in `cerere`). No
+// county seat, no population backfill — just the data-bearing localities we
+// have coordinates for. Names are always shown above the pin (see template).
+// A stats locality missing from the coordinate dataset is dropped from the map
+// (it still appears in the side list); with the full API-backed dataset this
+// should be vanishingly rare.
 function normalizeLocalityName(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 }
 
 const localitiesForCounty = computed<Locality[]>(() => {
-  if (!props.selected || !localityData.value) return []
+  if (!props.selected || !localityData.value || !props.priorityLocalities.length) return []
   const all = localityData.value[props.selected] ?? []
   if (!all.length) return []
 
   const byNorm = new Map(all.map(l => [normalizeLocalityName(l.n), l]))
   const seen = new Set<string>()
   const out: Locality[] = []
-  const add = (l: Locality | undefined) => {
+  for (const name of props.priorityLocalities) {
+    const l = byNorm.get(normalizeLocalityName(name))
     if (l && !seen.has(l.n)) {
       seen.add(l.n)
       out.push(l)
     }
   }
-
-  // 1. County seat(s) — tier 1, always first.
-  for (const l of all) if (l.t === 1) add(l)
-
-  // 2. Priority localities we can actually place on the map.
-  for (const name of props.priorityLocalities) {
-    add(byNorm.get(normalizeLocalityName(name)))
-  }
-
-  // 3. Backfill with the most populous remaining localities up to MIN_DOTS.
-  if (out.length < MIN_DOTS) {
-    const byPop = [...all].sort((a, b) => (b.p ?? 0) - (a.p ?? 0))
-    for (const l of byPop) {
-      if (out.length >= MIN_DOTS) break
-      add(l)
-    }
-  }
-
   return out
 })
 
@@ -283,6 +282,28 @@ function isLocalityActive(name: string): boolean {
   if (!target) return false
   return normalizeLocalityName(name) === normalizeLocalityName(target)
 }
+
+// When a locality is pinned (clicked in the side list), fade every other one so
+// the pinned locality stands out. Cleared when the pin is toggled off.
+const pinnedNorm = computed(() =>
+  props.pinnedLocality ? normalizeLocalityName(props.pinnedLocality) : null,
+)
+function isLocalityDimmed(name: string): boolean {
+  return !!pinnedNorm.value && normalizeLocalityName(name) !== pinnedNorm.value
+}
+
+// Paint order = SVG z-order. Render the active locality (hovered or clicked in
+// the side panel) LAST so its dot + label sit on top of any overlapping ones.
+const orderedLocalities = computed<Locality[]>(() => {
+  const list = localitiesForCounty.value
+  const target = activeLocalityName.value
+  if (!target) return list
+  const t = normalizeLocalityName(target)
+  const rest: Locality[] = []
+  const active: Locality[] = []
+  for (const l of list) (normalizeLocalityName(l.n) === t ? active : rest).push(l)
+  return [...rest, ...active]
+})
 
 // ── Interactions ─────────────────────────────────────────────────────────────
 
@@ -341,17 +362,17 @@ function onWrapperMouseLeave() {
 }
 
 .county {
-  fill: var(--fill, var(--map-q0));
+  fill: var(--fill, var(--map-none));
   stroke: var(--color-bg);
   stroke-width: 0.6;
   cursor: pointer;
-  transition: fill 120ms ease, opacity 350ms ease;
+  transition: fill 120ms ease, filter 120ms ease, opacity 350ms ease;
   outline: none;
 }
 
+/* Subtle hover — darken the existing shade slightly. No dark-blue fill override. */
 .county:not(.is-selected):hover {
-  fill: var(--color-primary) !important;
-  opacity: 0.9;
+  filter: brightness(0.9);
 }
 
 .county.is-selected {
@@ -429,7 +450,7 @@ function onWrapperMouseLeave() {
   cursor: pointer;
   animation: locality-fade-in 260ms ease-out forwards;
   animation-delay: calc(280ms + var(--i, 0) * 6ms);
-  transition: stroke-width 0.15s ease;
+  transition: stroke-width 0.15s ease, opacity 0.2s ease;
 }
 
 .locality-dot--t1 {
@@ -438,6 +459,12 @@ function onWrapperMouseLeave() {
 
 .locality-dot.is-active {
   stroke-width: 2.4;
+}
+
+/* Pinned-locality mode: fade everything except the pinned one.
+   `!important` is needed to override the fade-in animation's held opacity. */
+.locality-dot.is-dimmed {
+  opacity: 0.22 !important;
 }
 
 @keyframes locality-fade-in {
@@ -454,11 +481,23 @@ function onWrapperMouseLeave() {
   stroke-width: 3px;
   stroke-linejoin: round;
   pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
 .locality-label--t2 {
   font-weight: 500;
   fill: var(--color-text-muted, #4b5563);
+}
+
+/* Clicked/hovered locality — emphasised and (via paint order) on top. */
+.locality-label.is-active {
+  fill: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Pinned-locality mode: fade the non-pinned labels. */
+.locality-label.is-dimmed {
+  opacity: 0.22;
 }
 
 @media (prefers-reduced-motion: reduce) {

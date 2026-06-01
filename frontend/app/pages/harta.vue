@@ -43,17 +43,18 @@
           <MapRomania
             :metric="activeMetric"
             :unit="activeUnit"
+            :view="activeView"
             :selected="selectedCode"
             :priority-localities="priorityLocalities"
             :highlighted-locality="highlightedLocality"
+            :pinned-locality="pinnedLocality"
             @hover="hoveredCode = $event"
             @select="onCountySelect"
             @clear="onClear"
           />
           <MapLegend
             v-if="activeView !== 'istoric'"
-            :metric="activeMetric"
-            :unit="activeUnit"
+            :view="activeView"
           />
         </div>
 
@@ -66,7 +67,6 @@
             :county-campaigns="selectedCampaigns"
             :top-ten="topTen"
             :cerere-by-county="regByCounty"
-            :oferta-by-county="ofertaByCounty"
             @select="onCountySelect"
             @clear="onClear"
             @hover-locality="hoveredLocality = $event"
@@ -324,7 +324,7 @@ useSeoMeta({
   gap: var(--space-xs);
 }
 
-.harta-tab:hover:not(:disabled) {
+.harta-tab:hover:not(:disabled):not(.harta-tab--active) {
   background: rgba(255, 255, 255, 0.2);
   color: var(--color-text-light);
 }

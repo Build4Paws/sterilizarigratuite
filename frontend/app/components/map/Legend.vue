@@ -1,41 +1,57 @@
 <template>
   <div class="map-legend" aria-label="Legendă hartă">
 
-    <div class="map-legend__scale">
-      <span class="map-legend__edge-label">puțină</span>
+    <!-- Ofertă: binary — grey (no campaigns) vs dark blue (has campaigns) -->
+    <template v-if="view === 'oferta'">
+      <div class="map-legend__none">
+        <div class="map-legend__swatch map-legend__swatch--small" style="background:var(--map-none)" />
+        <span>Fără campanii</span>
+      </div>
+      <div class="map-legend__none">
+        <div class="map-legend__swatch map-legend__swatch--small" style="background:var(--map-offer-has)" />
+        <span>Campanii active</span>
+      </div>
+    </template>
 
-      <div class="map-legend__swatches">
-        <div
-          v-for="step in steps"
-          :key="step.token"
-          class="map-legend__swatch-wrap"
-        >
+    <!-- Cerere: graduated blue scale (puțină → multă) -->
+    <template v-else>
+      <div class="map-legend__scale">
+        <span class="map-legend__edge-label">puțină</span>
+
+        <div class="map-legend__swatches">
           <div
-            class="map-legend__swatch"
-            :style="{ background: `var(${step.token})` }"
-          />
-          <span class="map-legend__pct">{{ step.pct }}</span>
+            v-for="step in steps"
+            :key="step.token"
+            class="map-legend__swatch-wrap"
+          >
+            <div
+              class="map-legend__swatch"
+              :style="{ background: `var(${step.token})` }"
+            />
+            <span class="map-legend__pct">{{ step.pct }}</span>
+          </div>
         </div>
+
+        <span class="map-legend__edge-label">multă</span>
       </div>
 
-      <span class="map-legend__edge-label">multă</span>
-    </div>
+      <div class="map-legend__divider" aria-hidden="true" />
 
-    <div class="map-legend__divider" aria-hidden="true" />
-
-    <div class="map-legend__none">
-      <div class="map-legend__swatch map-legend__swatch--small" style="background:var(--map-none)" />
-      <span>Fără date</span>
-    </div>
+      <div class="map-legend__none">
+        <div class="map-legend__swatch map-legend__swatch--small" style="background:var(--map-none)" />
+        <span>Fără date</span>
+      </div>
+    </template>
 
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  metric: Record<string, number>
-  unit?: string
-}>()
+withDefaults(defineProps<{
+  view?: 'cerere' | 'oferta' | 'istoric'
+}>(), {
+  view: 'cerere',
+})
 
 const steps = [
   { token: '--map-low',      pct: 'jos 20%'   },

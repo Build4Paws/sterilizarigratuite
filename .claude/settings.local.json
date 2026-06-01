@@ -57,7 +57,9 @@
       "Bash(curl -s \"http://localhost:3001/campanii?judet=suceava\")",
       "Bash(grep -oE '\"\\\\$f[a-zA-Z0-9_-]*\"|useCampaigns|/api/campaigns')",
       "Bash(git mv *)",
-      "Bash(grep -viE \"/\\\\*|//|<!--\")"
+      "Bash(grep -viE \"/\\\\*|//|<!--\")",
+      "Bash(curl -s \"http://localhost:3000/api/counties/IS/localities\")",
+      "Bash(curl -s http://localhost:3000/api/counties/__TRACKED_VAR__/localities)"
     ]
   }
 }
