@@ -99,7 +99,7 @@ type ActiveView = 'cerere' | 'oferta' | 'istoric'
 const TABS = [
   { id: 'cerere', label: 'Cerere', disabled: false },
   { id: 'oferta', label: 'Ofertă', disabled: false },
-  { id: 'istoric', label: 'Istoric', disabled: true },
+  // { id: 'istoric', label: 'Istoric', disabled: true },
 ] as const
 
 // ── Route state ──────────────────────────────────────────────────────────────
@@ -413,7 +413,16 @@ useSeoMeta({
     position: static;
   }
 
+  /* Map column must be able to shrink below the SVG/legend min-content,
+     otherwise the page won't fit narrow phones. */
+  .harta-map-col {
+    min-width: 0;
+  }
+
+  /* Full-width, internally-scrollable tab bar — never widen the page. */
   .harta-tabs {
+    align-self: stretch;
+    max-width: 100%;
     overflow-x: auto;
   }
 }

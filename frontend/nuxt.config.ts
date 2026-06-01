@@ -103,7 +103,9 @@ export default defineNuxtConfig({
     // request) — they must always reflect what the backend returns. Caching is
     // the backend's responsibility. Only static, data-free pages are prerendered.
     '/organizatori': { prerender: true },
-    '/despre-sterilizare': { prerender: true },
+    '/ghid-sterilizare': { prerender: true },
+    // Old guide URL → new one (page renamed "Despre sterilizare" → "Ghid sterilizare").
+    '/despre-sterilizare': { redirect: '/ghid-sterilizare' },
     '/despre': { redirect: '/harta' },
     '/confirmare': { robots: false, ssr: false },
     '/confirmare-campanie': { robots: false },

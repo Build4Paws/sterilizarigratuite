@@ -44,7 +44,7 @@
     <!-- Guide CTA banner -->
     <section class="guide-banner" aria-label="Ghid sterilizare">
       <div class="container">
-        <NuxtLink to="/despre-sterilizare" class="guide-banner__card">
+        <NuxtLink to="/ghid-sterilizare" class="guide-banner__card">
           <div class="guide-banner__icon" aria-hidden="true">
             <Stethoscope :size="22" />
           </div>

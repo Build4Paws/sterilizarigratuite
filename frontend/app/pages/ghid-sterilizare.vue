@@ -3,19 +3,17 @@
     <!-- Hero -->
     <section class="hero">
       <div class="container hero__inner">
-        <Stethoscope class="hero__icon" :size="44" aria-hidden="true" />
         <p class="hero__eyebrow">Ghid medical</p>
-        <h1 class="hero__title">Despre sterilizare</h1>
-        <p class="hero__subtitle">
-          Tot ce trebuie să știi — înainte, după și în timpul procedurii.
-        </p>
+        <h1 class="hero__title">
+          Tot ce trebuie să știi înainte, în timpul și după procedură.
+        </h1>
         <p class="hero__credit">
-          Conținut medical:
+          Autor:
           <a
             href="https://urgenteveterinare.com"
             target="_blank"
             rel="noopener nofollow"
-          >dr. Denisa Săraru — urgenteveterinare.com</a>
+          >dr. Denisa Săraru, urgenteveterinare.com</a>
         </p>
       </div>
     </section>
@@ -38,7 +36,7 @@
           liniștită și mai sănătoasă.
         </p>
         <p class="lead__sub">
-          Mai jos găsești pașii — pe scurt, ce ai de făcut înainte, după și ce trebuie
+          Mai jos găsești pașii, pe scurt: ce ai de făcut înainte, după și ce trebuie
           să știi despre procedură.
         </p>
         <nav class="lead__chips" aria-label="Sări la o secțiune">
@@ -56,7 +54,7 @@
       </div>
     </section>
 
-    <!-- Why sterilize — 3 benefits -->
+    <!-- Why sterilize: 3 benefits -->
     <section class="benefits">
       <div class="container">
         <h2 class="section-title">De ce contează</h2>
@@ -113,7 +111,7 @@
         <aside class="alarm" role="note" aria-labelledby="alarm-title">
           <div class="alarm__header">
             <AlertTriangle :size="22" class="alarm__icon" aria-hidden="true" />
-            <p id="alarm-title" class="alarm__eyebrow">Atenție — semnale de alarmă</p>
+            <p id="alarm-title" class="alarm__eyebrow">Atenție: semnale de alarmă</p>
           </div>
           <p class="alarm__lead">
             Mergi imediat la medicul veterinar dacă observi:
@@ -132,7 +130,7 @@
           <p class="emergency__eyebrow">Dispecerat non-stop</p>
           <h2 class="emergency__title">Ai nevoie de ajutor urgent?</h2>
           <p class="emergency__text">
-            Zi sau noapte, în weekend sau de sărbători — un operator real îți răspunde
+            Zi sau noapte, în weekend sau de sărbători, un operator real îți răspunde
             imediat, îți spune unde să mergi și ce să faci până ajungi la medic.
             Nu aștepta până luni dimineața.
           </p>
@@ -152,7 +150,7 @@
       </div>
     </section>
 
-    <!-- Final CTA — back to Build4Paws funnel -->
+    <!-- Final CTA: back to Build4Paws funnel -->
     <section class="final-cta">
       <div class="container final-cta__inner">
         <PawPrint class="final-cta__icon" :size="36" aria-hidden="true" />
@@ -178,7 +176,6 @@
 
 <script setup lang="ts">
 import {
-  Stethoscope,
   HeartPulse,
   Smile,
   Users,
@@ -243,7 +240,7 @@ const steps = [
       {
         n: 1,
         title: 'Liniște și căldură primele 24 de ore',
-        text: 'Anestezia dispare treptat — animalul va fi somnoros și instabil pe picioare. Nu-l lăsa să sară pe canapea, pe pat sau pe scări.',
+        text: 'Anestezia dispare treptat, iar animalul va fi somnoros și instabil pe picioare. Nu-l lăsa să sară pe canapea, pe pat sau pe scări.',
       },
       {
         n: 2,
@@ -253,7 +250,7 @@ const steps = [
       {
         n: 3,
         title: 'Respectă tratamentul prescris',
-        text: 'Administrează antibioticele și antiinflamatoarele exact conform indicațiilor. Programează scoaterea firelor — de regulă la 10–14 zile de la operație.',
+        text: 'Administrează antibioticele și antiinflamatoarele exact conform indicațiilor. Programează scoaterea firelor, de regulă la 10-14 zile de la operație.',
       },
     ],
   },
@@ -276,7 +273,7 @@ const steps = [
       {
         n: 3,
         title: 'Apetitul poate crește',
-        text: 'Ajustează porțiile de mâncare și asigură-i mișcare zilnică, pentru a preveni obezitatea — cea mai frecventă problemă post-sterilizare.',
+        text: 'Ajustează porțiile de mâncare și asigură-i mișcare zilnică, pentru a preveni obezitatea, cea mai frecventă problemă post-sterilizare.',
       },
     ],
   },
@@ -289,28 +286,28 @@ const alarmSignals = [
 ]
 
 useSeoMeta({
-  title: 'Despre sterilizare — ghid pentru câini și pisici · Sterilizări Gratuite',
+  title: 'Ghid sterilizare pentru câini și pisici · Sterilizări Gratuite',
   description: 'Ghid medical: ce trebuie să știi înainte, după și în timpul sterilizării câinilor și pisicilor. Pași simpli, semnale de alarmă, recuperare.',
-  ogTitle: 'Despre sterilizare — ghid complet',
-  ogDescription: 'Tot ce trebuie să știi înainte, după și în timpul sterilizării — pe înțelesul tuturor.',
+  ogTitle: 'Ghid sterilizare pentru câini și pisici',
+  ogDescription: 'Tot ce trebuie să știi înainte, după și în timpul sterilizării, pe înțelesul tuturor.',
 })
 
 const siteConfig = useSiteConfig()
 const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizarigratuite.ro'
 
 useHead(() => ({
-  link: [{ rel: 'canonical', href: `${siteUrl}/despre-sterilizare` }],
+  link: [{ rel: 'canonical', href: `${siteUrl}/ghid-sterilizare` }],
   script: [
     {
       type: 'application/ld+json',
-      key: 'despre-article',
+      key: 'ghid-article',
       innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'Article',
-        headline: 'Despre sterilizare — ghid pentru câini și pisici',
+        headline: 'Ghid sterilizare pentru câini și pisici',
         description: 'Ghid medical complet despre sterilizarea câinilor și pisicilor: pregătire, procedură și recuperare.',
         inLanguage: 'ro',
-        url: `${siteUrl}/despre-sterilizare`,
+        url: `${siteUrl}/ghid-sterilizare`,
         author: {
           '@type': 'Person',
           name: 'dr. Denisa Săraru',
@@ -329,13 +326,13 @@ useHead(() => ({
     },
     {
       type: 'application/ld+json',
-      key: 'despre-breadcrumbs',
+      key: 'ghid-breadcrumbs',
       innerHTML: safeJsonLd({
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Acasă', item: `${siteUrl}/` },
-          { '@type': 'ListItem', position: 2, name: 'Despre sterilizare', item: `${siteUrl}/despre-sterilizare` },
+          { '@type': 'ListItem', position: 2, name: 'Ghid sterilizare', item: `${siteUrl}/ghid-sterilizare` },
         ],
       }),
     },
@@ -461,7 +458,7 @@ useHead(() => ({
   gap: var(--space-md);
 }
 
-/* Thin orange accent rule above the paragraph — quiet but signals "article opener". */
+/* Thin orange accent rule above the paragraph: quiet but signals "article opener". */
 .lead__rule {
   display: block;
   width: 48px;

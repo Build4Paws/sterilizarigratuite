@@ -35,7 +35,7 @@ const menuOpen = ref(false)
 const links = [
   { to: '/', label: 'Acasă' },
   { to: '/campanii', label: 'Campanii' },
-  { to: '/despre-sterilizare', label: 'Despre sterilizare' },
+  { to: '/ghid-sterilizare', label: 'Ghid sterilizare' },
   { to: '/organizatori', label: 'Organizatori' },
   { to: '/harta', label: 'Harta' },
 ]

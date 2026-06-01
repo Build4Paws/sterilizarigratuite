@@ -38,9 +38,9 @@
           desc="Vezi campaniile de sterilizare gratuită din toată țara"
         />
         <UiLinkCard
-          to="/despre-sterilizare"
+          to="/ghid-sterilizare"
           :icon="Stethoscope"
-          title="Despre sterilizare"
+          title="Ghid sterilizare"
           desc="Ghid medical — tot ce trebuie să știi înainte și după procedură"
         />
         <UiLinkCard
