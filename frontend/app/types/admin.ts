@@ -127,3 +127,20 @@ export interface AuditList {
   entries: AuditEntry[]
   total: number
 }
+
+// --- Reports (CSV export) ---
+
+/** The four report datasets. Mirrors the backend `/admin/reports/{type}` routes. */
+export type ReportType = 'campaigns' | 'citizens' | 'organizers' | 'activity'
+
+/**
+ * Filters shared across reports. All optional; the backend applies only the ones
+ * relevant to the chosen `type` (e.g. `status` is ignored for organizers). Dates
+ * are inclusive `YYYY-MM-DD`; `county` is the 2-letter code.
+ */
+export interface ReportFilters {
+  from?: string
+  to?: string
+  county?: string
+  status?: string
+}

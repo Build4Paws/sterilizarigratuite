@@ -1,6 +1,5 @@
 <template>
   <div class="page">
-    <h1 class="page__title">Jurnal audit</h1>
     <p class="page__note">Acțiuni de administrare și evenimente de sistem (GDPR Art. 30).</p>
 
     <UiAlert v-if="error" variant="error">{{ extractApiError(error) }}</UiAlert>

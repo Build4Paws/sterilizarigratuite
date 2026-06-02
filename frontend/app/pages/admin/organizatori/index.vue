@@ -1,13 +1,18 @@
 <template>
   <div class="page">
-    <h1 class="page__title">Organizatori</h1>
+    <AdminFilters
+      v-model:search="filters.search.value"
+      search-placeholder="Caută după nume, email sau telefon…"
+      :has-active="filters.hasActive.value"
+      @reset="filters.reset"
+    />
 
     <UiAlert v-if="error" variant="error">{{ extractApiError(error) }}</UiAlert>
 
     <AdminTable
       :columns="['Nume', 'Email', 'Telefon', 'Campanii', 'Creat', '']"
       :empty="!pending && (data?.organizers?.length ?? 0) === 0"
-      empty-text="Niciun organizator."
+      :empty-text="emptyText"
     >
       <tr v-for="o in data?.organizers ?? []" :key="o.organizerId" class="is-clickable" @click="open(o.organizerId)">
         <td>{{ o.name }}</td>
@@ -27,7 +32,18 @@ import type { AdminOrganizerList } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 useSeoMeta({ title: 'Admin — Organizatori', robots: 'noindex, nofollow' })
 
-const { data, pending, error } = await useFetch<AdminOrganizerList>('/api/admin/organizers', { key: 'admin-organizers' })
+const route = useRoute()
+const filters = useAdminListFilters()
+
+const { data, pending, error } = await useFetch<AdminOrganizerList>('/api/admin/organizers', {
+  key: 'admin-organizers',
+  query: {
+    q: computed(() => route.query.q || undefined),
+  },
+})
+
+const emptyText = computed(() =>
+  filters.hasActive.value ? 'Niciun organizator pentru această căutare.' : 'Niciun organizator încă.')
 
 function open(id: string) {
   navigateTo(`/admin/organizatori/${id}`)
@@ -36,10 +52,4 @@ function open(id: string) {
 
 <style scoped>
 .page { display: flex; flex-direction: column; gap: var(--space-md); max-width: 1000px; }
-.page__title {
-  font-family: var(--font-heading, var(--font-body));
-  font-size: var(--font-size-2xl, 1.75rem);
-  color: var(--color-text);
-  margin: 0;
-}
 </style>

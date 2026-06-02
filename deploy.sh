@@ -21,8 +21,15 @@ npm run build
 rsync -avz --delete -e "ssh -i $KEY -o StrictHostKeyChecking=accept-new" \
   .output/ "$HOST:/tmp/output-new/"
 
+# 2b. Sync the nginx site config (source of truth lives in deploy/nginx/).
+#     Uploaded to a temp path; the remote step backs up the live config, swaps
+#     it in, validates with `nginx -t`, and only reloads if the test passes —
+#     otherwise it restores the backup so a bad edit can't take the site down.
+rsync -avz -e "ssh -i $KEY -o StrictHostKeyChecking=accept-new" \
+  "$ROOT/deploy/nginx/sterilizari.conf" "$HOST:/tmp/sterilizari.conf.new"
+
 # 3. Atomically swap into /opt/sterilizari, keep the previous build for rollback,
-#    and restart the pm2 process.
+#    restart pm2, then apply the nginx config (validate-before-reload).
 ssh -i "$KEY" -o StrictHostKeyChecking=accept-new "$HOST" '
   set -e
   sudo rm -rf /opt/sterilizari-old
@@ -31,6 +38,19 @@ ssh -i "$KEY" -o StrictHostKeyChecking=accept-new "$HOST" '
   sudo chown -R ec2-user:ec2-user /opt/sterilizari
   pm2 restart sterilizari
   pm2 save
+
+  # nginx: back up, swap, validate, reload — restore on failure.
+  CONF=/etc/nginx/conf.d/sterilizari.conf
+  sudo cp "$CONF" "${CONF}.bak.$(date +%Y%m%d-%H%M%S)"
+  sudo cp /tmp/sterilizari.conf.new "$CONF"
+  if sudo nginx -t; then
+    sudo systemctl reload nginx
+    echo "nginx config applied and reloaded."
+  else
+    echo "nginx -t FAILED — restoring previous config, NOT reloading." >&2
+    sudo cp "$(ls -1t ${CONF}.bak.* | head -1)" "$CONF"
+    exit 1
+  fi
 '
 
 echo

@@ -2,7 +2,7 @@
   <div class="login">
     <div class="login__card">
       <div class="login__brand">
-        <PawPrint :size="28" />
+        <img src="/favicon.svg" alt="" class="login__logo" width="30" height="30" />
         <span>Build4Paws <strong>Admin</strong></span>
       </div>
 
@@ -98,8 +98,6 @@
 </template>
 
 <script setup lang="ts">
-import { PawPrint } from 'lucide-vue-next'
-
 // Standalone screen — no admin chrome, no public nav.
 definePageMeta({ layout: false })
 useSeoMeta({ title: 'Admin — Autentificare', robots: 'noindex, nofollow' })
@@ -264,6 +262,7 @@ async function submit() {
   font-size: var(--font-size-lg);
 }
 .login__brand strong { font-weight: 800; }
+.login__logo { width: 30px; height: 30px; }
 
 .login__title {
   font-family: var(--font-heading, var(--font-body));

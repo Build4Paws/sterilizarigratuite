@@ -1,24 +1,32 @@
 <template>
   <div class="page">
-    <h1 class="page__title">Campanii</h1>
-
     <nav class="tabs">
       <NuxtLink
         v-for="t in tabs"
         :key="t.value"
-        :to="t.value ? `/admin/campanii?status=${t.value}` : '/admin/campanii'"
+        :to="{ path: '/admin/campanii', query: tabQuery(t.value) }"
         :class="['tabs__tab', { 'tabs__tab--active': activeStatus === t.value }]"
       >
         {{ t.label }}
       </NuxtLink>
     </nav>
 
+    <AdminFilters
+      v-model:search="filters.search.value"
+      v-model:county="filters.county.value"
+      :counties="filters.counties.value"
+      show-county
+      search-placeholder="Caută după organizație sau localitate…"
+      :has-active="filters.hasActive.value"
+      @reset="filters.reset"
+    />
+
     <UiAlert v-if="error" variant="error">{{ extractApiError(error) }}</UiAlert>
 
     <AdminTable
       :columns="['Organizație', 'Localitate', 'Județ', 'Perioadă', 'Status', '']"
       :empty="!pending && (data?.campaigns?.length ?? 0) === 0"
-      empty-text="Nicio campanie pentru acest filtru."
+      :empty-text="emptyText"
     >
       <tr v-for="c in data?.campaigns ?? []" :key="c.submissionId" class="is-clickable" @click="open(c.submissionId)">
         <td>{{ c.organizationName }}</td>
@@ -41,6 +49,9 @@ useSeoMeta({ title: 'Admin — Campanii', robots: 'noindex, nofollow' })
 const route = useRoute()
 const activeStatus = computed(() => String(route.query.status ?? ''))
 
+const filters = useAdminListFilters({ county: true })
+await filters.init()
+
 const tabs = [
   { value: '', label: 'Toate' },
   { value: 'pending', label: 'În așteptare' },
@@ -50,10 +61,26 @@ const tabs = [
   { value: 'finished', label: 'Finalizate' },
 ]
 
+/** Switch status while keeping the active search/county filters. */
+function tabQuery(status: string) {
+  const q: Record<string, string | undefined> = { ...route.query } as Record<string, string | undefined>
+  q.status = status || undefined
+  return q
+}
+
 const { data, pending, error } = await useFetch<AdminCampaignList>('/api/admin/campaigns', {
   key: 'admin-campaigns',
-  query: { status: activeStatus },
+  query: {
+    status: computed(() => route.query.status || undefined),
+    county: computed(() => route.query.county || undefined),
+    q: computed(() => route.query.q || undefined),
+  },
 })
+
+const emptyText = computed(() =>
+  filters.hasActive.value || activeStatus.value
+    ? 'Nicio campanie pentru aceste filtre.'
+    : 'Nicio campanie încă.')
 
 function open(id: string) {
   navigateTo(`/admin/campanii/${id}`)
@@ -62,21 +89,14 @@ function open(id: string) {
 
 <style scoped>
 .page { display: flex; flex-direction: column; gap: var(--space-md); max-width: 1000px; }
-.page__title {
-  font-family: var(--font-heading, var(--font-body));
-  font-size: var(--font-size-2xl, 1.75rem);
-  color: var(--color-text);
-  margin: 0;
-}
 .tabs { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
 .tabs__tab {
   padding: 0.375rem 0.75rem;
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-slate-500, #64748b);
+  color: var(--color-text-muted);
   text-decoration: none;
-  border: 1px solid transparent;
 }
 .tabs__tab:hover { background: var(--color-slate-50); }
 .tabs__tab--active { background: var(--color-primary); color: var(--color-text-light); }

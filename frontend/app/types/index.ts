@@ -30,4 +30,6 @@ export type {
   AdminOrganizerList,
   AuditEntry,
   AuditList,
+  ReportType,
+  ReportFilters,
 } from './admin'

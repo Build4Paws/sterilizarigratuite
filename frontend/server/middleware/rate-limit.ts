@@ -6,6 +6,9 @@ const LIMITS: Record<string, { max: number; windowMs: number }> = {
   // Brute-force guard on admin login (per IP). Generous enough for a fat-finger
   // + MFA retry, tight enough to make credential stuffing impractical.
   '/api/admin/auth/login': { max: 10, windowMs: 60_000 },
+  // CSV report generation is heavier (and the citizens export touches PII) —
+  // throttle per IP. Generous for normal use, tight against scripted bulk pulls.
+  '/api/admin/reports': { max: 20, windowMs: 60_000 },
 }
 
 // Prune expired buckets periodically so the Map doesn't grow unbounded.
@@ -17,12 +20,14 @@ setInterval(() => {
 }, 60_000)
 
 export default defineEventHandler((event) => {
-  const url = event.node.req.url ?? ''
-  const limit = Object.entries(LIMITS).find(([prefix]) => url.startsWith(prefix))?.[1]
+  // Match + bucket on the pathname only — otherwise a varying query string
+  // (e.g. report filters) would spawn a fresh bucket per request and bypass the limit.
+  const path = (event.node.req.url ?? '').split('?')[0] ?? ''
+  const limit = Object.entries(LIMITS).find(([prefix]) => path.startsWith(prefix))?.[1]
   if (!limit) return
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
-  const key = `${url}:${ip}`
+  const key = `${path}:${ip}`
   const now = Date.now()
   const bucket = buckets.get(key)
 
