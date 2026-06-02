@@ -29,7 +29,7 @@ defineProps<{
   modelValue?: string
   label: string
   id: string
-  type?: 'text' | 'email' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local'
+  type?: 'text' | 'email' | 'tel' | 'url' | 'number' | 'date' | 'time' | 'datetime-local' | 'password'
   placeholder?: string
   required?: boolean
   error?: string

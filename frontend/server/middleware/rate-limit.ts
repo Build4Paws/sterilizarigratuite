@@ -3,6 +3,9 @@ const buckets = new Map<string, { count: number; resetAt: number }>()
 const LIMITS: Record<string, { max: number; windowMs: number }> = {
   '/api/register': { max: 5, windowMs: 60_000 },
   '/api/campaigns/submit': { max: 3, windowMs: 60_000 },
+  // Brute-force guard on admin login (per IP). Generous enough for a fat-finger
+  // + MFA retry, tight enough to make credential stuffing impractical.
+  '/api/admin/auth/login': { max: 10, windowMs: 60_000 },
 }
 
 // Prune expired buckets periodically so the Map doesn't grow unbounded.

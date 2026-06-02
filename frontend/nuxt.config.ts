@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   },
 
   robots: {
-    disallow: ['/m/', '/r/', '/confirmare', '/confirmare-campanie'],
+    disallow: ['/m/', '/r/', '/confirmare', '/confirmare-campanie', '/admin'],
   },
 
   sitemap: {
@@ -67,6 +67,13 @@ export default defineNuxtConfig({
     awsSessionToken: process.env.AWS_SESSION_TOKEN || '',
     awsRegion: process.env.AWS_REGION,
     awsApiBase: process.env.AWS_API_BASE,
+    // Admin auth — Amazon Cognito User Pool (server-only, never exposed to the
+    // browser). See docs/ADMIN-PLAN.md. The client secret stays here and is used
+    // server-side to compute the SECRET_HASH; it must never reach `public.*`.
+    cognitoRegion: process.env.COGNITO_REGION || process.env.AWS_REGION,
+    cognitoUserPoolId: process.env.COGNITO_USER_POOL_ID || '',
+    cognitoClientId: process.env.COGNITO_CLIENT_ID || '',
+    cognitoClientSecret: process.env.COGNITO_CLIENT_SECRET || '',
     public: {
       hcaptchaSiteKey: process.env.NUXT_PUBLIC_HCAPTCHA_SITE_KEY || '',
     },
@@ -109,6 +116,8 @@ export default defineNuxtConfig({
     '/despre': { redirect: '/harta' },
     '/confirmare': { robots: false, ssr: false },
     '/confirmare-campanie': { robots: false },
+    // Authenticated internal admin — never indexed. Plain SSR (auth-gated).
+    '/admin/**': { robots: false },
     '/campanie/**': { robots: false },
     '/m/**': { robots: false },
     '/r/**': { robots: false },

@@ -27,6 +27,12 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Link-ul a expirat sau a fost deja folosit. Te rugăm să soliciți un link nou.',
   internal_error:
     'A apărut o problemă pe server. Te rugăm să încerci din nou peste câteva minute.',
+  // Admin
+  unauthorized: 'Sesiune expirată. Te rugăm să te autentifici din nou.',
+  forbidden: 'Nu ai permisiunea necesară pentru această acțiune.',
+  invalid_state: 'Acțiunea nu este permisă pentru starea curentă.',
+  unknown_host: 'Configurare invalidă a serverului. Contactează un administrator.',
+  route_not_found: 'Resursa solicitată nu a fost găsită.',
 }
 
 const FALLBACK = 'A apărut o eroare. Te rugăm să încerci din nou.'

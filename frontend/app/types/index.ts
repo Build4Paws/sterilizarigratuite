@@ -14,3 +14,20 @@ export type {
 } from './organizer'
 export type { County, Locality, JudeteData } from './location'
 export type { CountyMetric, CountyStats, RegistrationsCountryResponse, MapStats, MapOfertaItem } from './map'
+export type {
+  AdminMe,
+  AdminOverview,
+  AdminCampaignStatus,
+  CitizenStatus,
+  AdminCampaign,
+  AdminCampaignDetail,
+  AdminCampaignList,
+  AdminCitizenRow,
+  AdminCitizenDetail,
+  AdminCitizenList,
+  AdminOrganizer,
+  AdminOrganizerDetail,
+  AdminOrganizerList,
+  AuditEntry,
+  AuditList,
+} from './admin'
