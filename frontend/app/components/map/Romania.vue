@@ -366,7 +366,7 @@ function onWrapperMouseLeave() {
   stroke: var(--color-bg);
   stroke-width: 0.6;
   cursor: pointer;
-  transition: fill 120ms ease, filter 120ms ease, opacity 350ms ease;
+  transition: fill 400ms ease, filter 120ms ease, opacity 350ms ease;
   outline: none;
 }
 
