@@ -1,5 +1,14 @@
 <template>
   <form class="citizen-form" novalidate @submit.prevent="handleSubmit">
+    <!-- Card header -->
+    <div class="citizen-form__header">
+      <h2 class="citizen-form__title">Înscrie-te gratuit</h2>
+      <p class="citizen-form__subtitle">
+        Îți trimitem SMS sau email când apare o campanie în localitatea ta.
+        Fără taxă, fără cont, dezabonare oricând.
+      </p>
+    </div>
+
     <!-- Să facem cunoștință -->
     <div class="form-section">
       <div class="form-section__header">
@@ -22,10 +31,19 @@
     <!-- Cum te contactăm? -->
     <div class="form-section">
       <div class="form-section__header">
-        <h3 class="form-section__title">Cum preferi să te contactăm?</h3>
+        <h3 class="form-section__title">Cum te anunțăm?</h3>
         <p class="form-section__hint">Lasă-ne un număr de telefon sau o adresă de email, sau ambele</p>
       </div>
       <UiFormRow align="end" :nowrap="!isMobile">
+        <UiFormItem basis="140px">
+          <UiPhoneInput
+            id="citizen-phone"
+            v-model="form.phone"
+            label="Telefon"
+            :error="submitted ? errors.phone : undefined"
+          />
+        </UiFormItem>
+        <UiFormDivider>sau</UiFormDivider>
         <UiFormItem basis="140px">
           <UiInput
             id="citizen-email"
@@ -34,15 +52,6 @@
             type="email"
             placeholder="adresa@email.com"
             :error="submitted ? errors.email : undefined"
-          />
-        </UiFormItem>
-        <UiFormDivider>sau</UiFormDivider>
-        <UiFormItem basis="140px">
-          <UiPhoneInput
-            id="citizen-phone"
-            v-model="form.phone"
-            label="Telefon"
-            :error="submitted ? errors.phone : undefined"
           />
         </UiFormItem>
       </UiFormRow>
@@ -88,8 +97,7 @@
     <!-- Ce dorești să sterilizezi?? -->
     <fieldset class="form-section form-section--fieldset">
       <div class="form-section__header">
-        <legend class="form-section__title">Ce dorești să sterilizezi?</legend>
-        <p class="form-section__hint">Bifează ce prieteni blănoși ai acasă.</p>
+        <legend class="form-section__title">Bifează ce dorești să sterilizezi.</legend>
       </div>
       <UiFormRow>
         <UiFormItem :grow="false" basis="auto">
@@ -178,7 +186,7 @@
         <UiFormItem basis="100%">
           <div :class="{ 'citizen-form__btn--shake': shaking }">
             <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
-              Înscrie-mă
+              Anunțați-mă
             </UiButton>
           </div>
         </UiFormItem>
@@ -379,6 +387,27 @@ async function handleSubmit() {
   flex-direction: column;
   gap: 0;
   text-align: left;
+}
+
+/* ---- Card header ---- */
+.citizen-form__header {
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.citizen-form__title {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.citizen-form__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: var(--space-xs) 0 0;
+  line-height: 1.5;
 }
 
 /* ---- Section blocks ---- */

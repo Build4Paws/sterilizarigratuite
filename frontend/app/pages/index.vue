@@ -4,10 +4,13 @@
     <section class="hero">
       <div class="container hero__inner">
         <h1 class="hero__title">
-          Sterilizare gratuită pentru câinele sau pisica ta
+          Lasă-ne telefonul sau emailul.
         </h1>
         <p class="hero__subtitle">
-          Te anunțăm când se organizează o campanie de sterilizare gratuită în localitatea ta.
+          Te anunțăm când apare o campanie de sterilizare gratuită în localitatea ta.
+        </p>
+        <p v-if="showSignupCount" class="hero__count">
+          {{ signupCount }} de persoane s-au înscris deja.
         </p>
       </div>
     </section>
@@ -56,6 +59,22 @@
 
 <script setup lang="ts">
 import { PawPrint, Megaphone, Stethoscope } from 'lucide-vue-next'
+
+// Social-proof counter — national total of registered citizens.
+// `/` is prerendered, so we fetch client-side after hydration to show a live
+// value instead of a build-time stale one. Hidden until at least 20 sign-ups.
+// (When per-county data is available, switch this to the visitor's județ.)
+const signupCount = ref(0)
+const showSignupCount = computed(() => signupCount.value >= 20)
+
+onMounted(async () => {
+  try {
+    const res = await $fetch<{ totalRegistrations: number }>('/api/stats/map')
+    signupCount.value = res?.totalRegistrations ?? 0
+  } catch {
+    // Non-critical — leave the counter hidden if the request fails.
+  }
+})
 
 useSeoMeta({
   title: 'Sterilizări Gratuite — Campanii de sterilizare pentru câini și pisici',
@@ -126,6 +145,17 @@ useHead({
   font-weight: 400;
   max-width: 560px;
   margin: 0 auto;
+}
+
+.hero__count {
+  display: inline-block;
+  margin: var(--space-md) auto 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-light);
+  background: rgba(255, 255, 255, 0.10);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 999px;
 }
 
 /* Decorative illustrations */

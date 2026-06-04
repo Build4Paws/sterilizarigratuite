@@ -8,13 +8,13 @@
           <Eye v-else key="icon-preview" class="hero__icon" :size="44" aria-hidden="true" />
         </Transition>
         <Transition name="hero-swap" mode="out-in">
-          <h1 v-if="formStep === 1" key="title-form" class="hero__title">Anunță o campanie de sterilizare</h1>
+          <h1 v-if="formStep === 1" key="title-form" class="hero__title">Anunță o campanie de sterilizare gratuită</h1>
           <h1 v-else key="title-preview" class="hero__title">Previzualizare campanie</h1>
         </Transition>
         <Transition name="hero-swap" mode="out-in">
           <p v-if="formStep === 1" key="sub-form" class="hero__subtitle">
-            Ești ONG sau primărie? Publică campania pe platformă și ajunge automat
-            la cetățenii din zonă care așteaptă o campanie.
+            Durează 2 minute. În maxim 24 de ore aprobăm și notificăm prin SMS
+            sau email toate persoanele înscrise din localitate.
           </p>
           <p v-else key="sub-preview" class="hero__subtitle">
             Așa va apărea campania ta pe pagina de campanii după aprobare.
@@ -43,7 +43,7 @@
     <!-- How it works -->
     <section class="how">
       <div class="container">
-        <h2 class="how__title">Cum funcționează</h2>
+        <h2 class="how__title">Cum ajungi la cetățeni în 3 pași</h2>
         <ol class="how__steps">
           <li v-for="(step, i) in steps" :key="i" class="how__step">
             <div class="how__step-num" aria-hidden="true">{{ i + 1 }}</div>
@@ -91,17 +91,17 @@ const steps = [
   {
     icon: FilePlus2,
     title: 'Completezi formularul',
-    text: 'Spui când, unde și câte locuri ai pentru câini și pisici. Durează ~2 minute.',
+    text: 'Când, unde și câte locuri ai. Durează doar 2 minute.',
   },
   {
     icon: ShieldCheck,
-    title: 'Verificăm rapid cererea',
-    text: 'Echipa noastră aprobă campania în maxim 24 de ore și revine pe email cu confirmarea.',
+    title: 'Verificăm și aprobăm',
+    text: 'În maxim 24 de ore primești confirmarea pe email.',
   },
   {
     icon: Send,
-    title: 'Anunțăm cetățenii din zonă',
-    text: 'Trimitem SMS și email tuturor celor înregistrați în localitatea ta — fără efort din partea ta.',
+    title: 'Notificăm persoanele înscrise din localitate',
+    text: 'Trimitem SMS și email tuturor celor înscriși, fără niciun efort din partea ta.',
   },
 ]
 
@@ -115,7 +115,7 @@ const faqItems = [
     a: 'Nu. Publicarea pe platformă este gratuită — scopul nostru este să ajutăm campaniile să ajungă la cât mai mulți cetățeni.',
   },
   {
-    q: 'Cum sunt anunțați cetățenii?',
+    q: 'Cum sunt notificate persoanele înscrise?',
     a: 'Imediat ce campania ta este aprobată, trimitem automat SMS și email tuturor cetățenilor înregistrați din localitatea (și județul) tău. Tu nu trebuie să faci nimic.',
   },
   {

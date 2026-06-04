@@ -7,8 +7,7 @@
       <!-- Despre organizație -->
       <div class="form-section">
         <div class="form-section__header">
-          <h3 class="form-section__title">Despre organizația ta</h3>
-          <p class="form-section__hint">Folosim aceste date doar ca să te contactăm despre campanie.</p>
+          <h3 class="form-section__title">Detalii organizator</h3>
         </div>
         <UiFormRow>
           <UiFormItem>
@@ -48,7 +47,7 @@
       <!-- Unde -->
       <div class="form-section">
         <div class="form-section__header">
-          <h3 class="form-section__title">Unde organizezi campania?</h3>
+          <h3 class="form-section__title">Unde are loc campania?</h3>
         </div>
         <UiFormRow>
           <UiFormItem basis="200px">
@@ -166,7 +165,6 @@
       <fieldset class="form-section form-section--fieldset">
         <div class="form-section__header">
           <legend class="form-section__title">Ce poți steriliza?</legend>
-          <p class="form-section__hint">Bifează speciile și câte locuri ai pentru fiecare.</p>
         </div>
         <UiFormRow>
           <UiFormItem :grow="false" basis="auto">
@@ -217,8 +215,7 @@
       <!-- Medic + telefon public -->
       <div class="form-section">
         <div class="form-section__header">
-          <h3 class="form-section__title">Detalii pentru pagina publică</h3>
-          <p class="form-section__hint">Informațiile de mai jos apar pe campania publică, pe site.</p>
+          <h3 class="form-section__title">Ce apare public?</h3>
         </div>
         <UiFormRow>
           <UiFormItem>

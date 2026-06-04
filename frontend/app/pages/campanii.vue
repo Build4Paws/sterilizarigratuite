@@ -5,7 +5,7 @@
       <div class="container hero__inner">
         <h1 class="hero__title">Campanii de sterilizare gratuită</h1>
         <p class="hero__subtitle">
-          Găsește o campanie de sterilizare aproape de tine. Sună direct la organizator pentru a-ți programa animalul.
+          Găsește o campanie în zona ta. Sună direct la organizator pentru a te înscrie.
         </p>
       </div>
     </section>
@@ -101,7 +101,7 @@
               Vezi toate campaniile
             </NuxtLink>
             <NuxtLink to="/" class="empty__cta">
-              Înscrie-te să fii anunțat
+              Anunțați-mă
             </NuxtLink>
           </div>
         </div>
@@ -220,20 +220,20 @@ const headingText = computed(() => {
 
 // Empty-state copy.
 const emptyTitle = computed(() => {
-  if (!hasActiveFilters.value) return 'Nu sunt campanii programate momentan'
+  if (!hasActiveFilters.value) return 'Nu sunt campanii programate momentan.'
   if (countyName.value && species.value) {
     const sp = species.value === 'dog' ? 'câini' : 'pisici'
-    return `Nu sunt campanii pentru ${sp} în ${countyName.value}`
+    return `Nu sunt campanii pentru ${sp} în ${countyName.value}.`
   }
-  if (countyName.value) return `Nu sunt campanii viitoare în ${countyName.value}`
+  if (countyName.value) return `Nu sunt campanii viitoare în ${countyName.value}.`
   const sp = species.value === 'dog' ? 'câini' : 'pisici'
-  return `Nu sunt campanii pentru ${sp} momentan`
+  return `Nu sunt campanii pentru ${sp} momentan.`
 })
 
 const emptyText = computed(() =>
   hasActiveFilters.value
-    ? 'Încearcă să schimbi filtrele sau înscrie-te să fii anunțat când apare o campanie în zona ta.'
-    : 'Înscrie-te pe pagina principală și te anunțăm prin SMS și email când apare o campanie în zona ta.',
+    ? 'Încearcă alt județ sau altă specie.'
+    : 'Lasă-ne telefonul sau emailul și te anunțăm când apare una în zona ta.',
 )
 
 // Filter handlers — write to URL; refs follow reactively.
@@ -471,6 +471,15 @@ useHead(() => ({
   align-items: flex-end;
   padding-bottom: 2px;
   margin-left: auto;
+}
+
+/* Compact the reset button so it fits on the same row as the two dropdowns
+   instead of wrapping below them. */
+.filters__reset :deep(.ui-btn) {
+  padding: 0.5rem 0.85rem;
+  font-size: var(--font-size-sm);
+  border-width: 1px;
+  white-space: nowrap;
 }
 
 /* ---- Guide CTA banner ---- */
