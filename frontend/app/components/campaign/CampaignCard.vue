@@ -51,13 +51,13 @@
       </li>
     </ul>
 
-    <footer class="campaign-card__foot">
+    <footer v-if="campaign.doctor || campaign.phonePublic" class="campaign-card__foot">
       <div v-if="campaign.doctor" class="campaign-card__foot-row">
         <Stethoscope :size="15" class="campaign-card__icon" aria-hidden="true" />
         <span class="campaign-card__row-label">Medic veterinar:</span>
         <span>{{ campaign.doctor }}</span>
       </div>
-      <div class="campaign-card__foot-row">
+      <div v-if="campaign.phonePublic" class="campaign-card__foot-row">
         <Phone :size="15" class="campaign-card__icon" aria-hidden="true" />
         <span class="campaign-card__row-label">Telefon:</span>
         <a :href="`tel:${campaign.phonePublic}`" class="campaign-card__phone">

@@ -110,6 +110,7 @@ export default defineNuxtConfig({
     '/confirmare': { robots: false, ssr: false },
     '/confirmare-campanie': { robots: false },
     '/campanie/**': { robots: false },
+    '/organizator/**': { robots: false },
     '/m/**': { robots: false },
     '/r/**': { robots: false },
   },

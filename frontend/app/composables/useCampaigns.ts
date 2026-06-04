@@ -1,5 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
 import type { Campaign, PublicCampaign, Species } from '~/types'
+import { ensureLocationIndexes, countyCodeToNameSync } from '~/composables/useLocationData'
 
 interface CampaignsApiResponse {
   campaigns?: PublicCampaign[]
@@ -57,20 +58,32 @@ export function useCampaigns(filters: UseCampaignsFilters) {
   // useFetch auto-watches reactive options like `query`, so any change to
   // countyCode triggers a refetch. Species is intentionally NOT in `query`
   // — it's filtered locally below.
-  const { data, error, status, refresh } = useFetch<CampaignsApiResponse | PublicCampaign[]>(
+  //
+  // `transform` resolves each campaign's `countyName` here (awaiting the async
+  // location index) so the display name is baked into the SSR payload. If we
+  // instead resolved it in the template via `countyCodeToNameSync`, the client
+  // would hydrate before the async index loaded and render the raw 2-letter
+  // code, causing a hydration mismatch. Resolving in the data layer means
+  // server and client hydrate from the same serialized value.
+  const { data, error, status, refresh } = useFetch(
     '/api/campaigns',
     {
       query: queryParams,
-      default: () => ({ campaigns: [] }),
+      default: () => [] as PublicCampaign[],
+      transform: async (res: CampaignsApiResponse | PublicCampaign[]): Promise<PublicCampaign[]> => {
+        const raw: PublicCampaign[] = Array.isArray(res) ? res : (res.campaigns ?? [])
+        await ensureLocationIndexes()
+        return raw.map(c => ({
+          ...c,
+          countyName: c.countyName || countyCodeToNameSync(c.county) || c.county,
+        }))
+      },
     },
   )
 
-  const allCampaigns = computed<Campaign[]>(() => {
-    const d = data.value
-    if (!d) return []
-    const raw: PublicCampaign[] = Array.isArray(d) ? d : (d.campaigns ?? [])
-    return raw.map(normalizePublicCampaign)
-  })
+  const allCampaigns = computed<Campaign[]>(() =>
+    (data.value ?? []).map(normalizePublicCampaign),
+  )
 
   const total = computed(() => allCampaigns.value.length)
 

@@ -257,11 +257,12 @@ function syncUrl(query: { judet?: string; specie?: string }) {
   router.replace({ query: cleaned })
 }
 
-// Sync card data — prefer backend-provided countyName; fall back to local sync lookup.
+// Sync card data — `countyName` is already resolved in `useCampaigns` (baked
+// into the SSR payload), so no template-time async lookup is needed here.
 function toCardData(c: Campaign): CampaignCardData {
   return {
     organizationName: c.organizationName,
-    countyName: c.countyName || countyCodeToNameSync(c.county) || c.county,
+    countyName: c.countyName || c.county,
     locality: c.locality,
     address: c.address,
     dateStart: c.dateStart,
@@ -342,7 +343,7 @@ const eventsLd = computed(() => {
         '@type': 'PostalAddress',
         streetAddress: c.address,
         addressLocality: c.locality,
-        addressRegion: countyCodeToNameSync(c.county) || c.county,
+        addressRegion: c.countyName || c.county,
         addressCountry: 'RO',
       },
     },
