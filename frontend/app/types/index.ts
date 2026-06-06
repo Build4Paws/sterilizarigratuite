@@ -11,6 +11,8 @@ export type {
   CampaignSubmissionResponse,
   LocalityWaitingStats,
   CampaignFormState,
+  OrganizerCampaign,
+  OrganizerProfile,
 } from './organizer'
 export type { County, Locality, JudeteData } from './location'
 export type { CountyMetric, CountyStats, RegistrationsCountryResponse, MapStats, MapOfertaItem } from './map'

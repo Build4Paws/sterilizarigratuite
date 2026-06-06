@@ -119,6 +119,7 @@ export default defineNuxtConfig({
     // Authenticated internal admin — never indexed. Plain SSR (auth-gated).
     '/admin/**': { robots: false },
     '/campanie/**': { robots: false },
+    '/organizator/**': { robots: false },
     '/m/**': { robots: false },
     '/r/**': { robots: false },
   },

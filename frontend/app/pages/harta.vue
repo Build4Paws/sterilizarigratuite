@@ -61,12 +61,12 @@
         <!-- Side panel -->
         <div ref="panelRef" class="harta-panel-col">
           <MapSidePanel
+            v-model:species="cerereSpecies"
             :view="activeView"
             :selected="selectedCode"
             :county-data="selectedCountyData"
             :county-campaigns="selectedCampaigns"
             :top-ten="topTen"
-            :cerere-by-county="regByCounty"
             @select="onCountySelect"
             @clear="onClear"
             @hover-locality="hoveredLocality = $event"
@@ -146,11 +146,22 @@ const ofertaByCounty = computed<Record<string, number>>(() =>
   }, {}),
 )
 
+// Cerere species filter — 'total' (all), 'dog' or 'cat'. Drives BOTH the
+// top-county list in the side panel and the map coloring, so toggling it
+// recolors the choropleth to the selected species' distribution.
+const cerereSpecies = ref<'total' | 'dog' | 'cat'>('total')
+
+function cerereValue(stats: CountyStats): number {
+  if (cerereSpecies.value === 'dog') return stats.species?.dog ?? 0
+  if (cerereSpecies.value === 'cat') return stats.species?.cat ?? 0
+  return stats.total
+}
+
 const activeMetric = computed<Record<string, number>>(() => {
   if (activeView.value === 'oferta') return ofertaByCounty.value
   if (activeView.value === 'cerere') {
     return Object.fromEntries(
-      Object.entries(regByCounty.value).map(([code, stats]) => [code, stats.total]),
+      Object.entries(regByCounty.value).map(([code, stats]) => [code, cerereValue(stats)]),
     )
   }
   return {}
@@ -158,7 +169,11 @@ const activeMetric = computed<Record<string, number>>(() => {
 
 const activeUnit = computed(() => {
   if (activeView.value === 'oferta') return 'campanii'
-  if (activeView.value === 'cerere') return 'înscrieri'
+  if (activeView.value === 'cerere') {
+    if (cerereSpecies.value === 'dog') return 'câini'
+    if (cerereSpecies.value === 'cat') return 'pisici'
+    return 'înscrieri'
+  }
   return 'campanii încheiate'
 })
 
@@ -240,6 +255,7 @@ async function setView(view: ActiveView) {
   activeView.value = view
   // Switching tabs resets the map to the full-country view
   selectedCode.value = ''
+  cerereSpecies.value = 'total'
   const q = { ...route.query } as Record<string, string | undefined>
   delete q.judet
   if (view === 'cerere') {

@@ -130,13 +130,13 @@
       </template>
 
       <template v-else>
-        <!-- Sort controls — only meaningful for Cerere (species data available) -->
-        <div v-if="view === 'cerere' && topTen.length" class="side-panel__sort">
+        <!-- Species filter — only for Cerere; also recolors the map -->
+        <div v-if="view === 'cerere' && topTen.length" class="side-panel__sort" role="group" aria-label="Filtrează după specie">
           <button
-            v-for="opt in SORT_OPTIONS"
+            v-for="opt in SPECIES_OPTIONS"
             :key="opt.key"
-            :class="['side-panel__sort-btn', { 'is-active': sortBy === opt.key }]"
-            @click="sortBy = opt.key"
+            :class="['side-panel__sort-btn', { 'is-active': species === opt.key }]"
+            @click="species = opt.key"
           >
             <Dog v-if="opt.key === 'dog'" :size="12" aria-hidden="true" />
             <Cat v-if="opt.key === 'cat'" :size="12" aria-hidden="true" />
@@ -158,15 +158,11 @@
             >
               <span class="side-panel__rank">{{ i + 1 }}</span>
               <span class="side-panel__county-name">{{ codeToName(item.code) }}</span>
-              <template v-if="view === 'cerere'">
-                <span class="side-panel__species-cell" :class="{ 'is-sort-key': sortBy === 'dog' }">
-                  <Dog :size="13" aria-hidden="true" />{{ speciesDog(item.code) }}
-                </span>
-                <span class="side-panel__species-cell" :class="{ 'is-sort-key': sortBy === 'cat' }">
-                  <Cat :size="13" aria-hidden="true" />{{ speciesCat(item.code) }}
-                </span>
-              </template>
-              <span class="side-panel__value" :class="{ 'is-sort-key': sortBy === 'total' }">{{ item.value.toLocaleString('ro-RO') }}</span>
+              <span class="side-panel__value">
+                <Dog v-if="view === 'cerere' && species === 'dog'" :size="13" aria-hidden="true" />
+                <Cat v-else-if="view === 'cerere' && species === 'cat'" :size="13" aria-hidden="true" />
+                {{ item.value.toLocaleString('ro-RO') }}
+              </span>
             </div>
 
             <button
@@ -196,8 +192,11 @@ const props = defineProps<{
   countyData?: CountyStats
   countyCampaigns?: Campaign[]
   topTen: Array<{ code: string; value: number }>
-  cerereByCounty?: Record<string, CountyStats>
 }>()
+
+// Cerere species filter, owned by the parent (it also drives the map coloring).
+// 'total' = all species, 'dog', 'cat'.
+const species = defineModel<'total' | 'dog' | 'cat'>('species', { default: 'total' })
 
 const emit = defineEmits<{
   select: [code: string]
@@ -232,46 +231,27 @@ function codeToName(code: string) {
   return countyCodeToNameSync(code)
 }
 
-// ── Top-10 list — sort ───────────────────────────────────────────────────────
+// ── Top-10 list — species filter ─────────────────────────────────────────────
 
-type SortKey = 'total' | 'dog' | 'cat'
-const sortBy = ref<SortKey>('total')
-
-// Reset sort + pagination when the view tab changes.
+// Collapse the expanded list when the view tab or species changes. The parent
+// resets `species` itself when the view changes, so we don't touch it here.
 watch(() => props.view, () => {
-  sortBy.value = 'total'
   showAll.value = false
   showAllLocalities.value = false
 })
-watch(sortBy, () => { showAll.value = false })
+watch(species, () => { showAll.value = false })
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+const SPECIES_OPTIONS: { key: 'total' | 'dog' | 'cat'; label: string }[] = [
   { key: 'total', label: 'Total' },
   { key: 'dog',   label: 'Câini' },
   { key: 'cat',   label: 'Pisici' },
 ]
 
-const sortedTopTen = computed(() => {
-  if (sortBy.value === 'total' || props.view !== 'cerere') return props.topTen
-  return [...props.topTen].sort((a, b) => {
-    const get = (code: string) =>
-      sortBy.value === 'dog'
-        ? (props.cerereByCounty?.[code]?.species?.dog ?? 0)
-        : (props.cerereByCounty?.[code]?.species?.cat ?? 0)
-    return get(b.code) - get(a.code)
-  })
-})
-
+// `topTen` already arrives sorted and valued for the active species — the parent
+// derives it from the same metric that colors the map — so we only paginate it.
 const visibleTopTen = computed(() =>
-  showAll.value ? sortedTopTen.value : sortedTopTen.value.slice(0, 10),
+  showAll.value ? props.topTen : props.topTen.slice(0, 10),
 )
-
-function speciesDog(code: string) {
-  return props.cerereByCounty?.[code]?.species?.dog ?? 0
-}
-function speciesCat(code: string) {
-  return props.cerereByCounty?.[code]?.species?.cat ?? 0
-}
 
 const defaultTitle = computed(() => {
   if (props.view === 'cerere') return 'Top județe după cerere'
@@ -574,9 +554,9 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
 }
 
 .side-panel__top-row {
-  /* rank | name | dog-cell | cat-cell | total */
+  /* rank | name | value */
   display: grid;
-  grid-template-columns: 1.4rem 1fr auto auto auto;
+  grid-template-columns: 1.4rem 1fr auto;
   align-items: center;
   column-gap: 8px;
   padding: 6px 10px;
@@ -608,43 +588,22 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   text-align: left;
 }
 
-.side-panel__species-cell {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  line-height: 1;
-  transition: color 0.12s, font-weight 0.12s;
-}
-
-.side-panel__species-cell svg {
-  opacity: 0.45;
-  flex-shrink: 0;
-  transition: opacity 0.12s;
-}
-
 .side-panel__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
   font-size: var(--font-size-sm);
-  font-weight: 400;
-  color: var(--color-text-muted);
+  font-weight: 600;
+  color: var(--color-primary);
   text-align: right;
   white-space: nowrap;
   min-width: 1.8rem;
-  transition: color 0.12s, font-weight 0.12s;
 }
 
-/* Active sort column — bold + primary color */
-.side-panel__species-cell.is-sort-key,
-.side-panel__value.is-sort-key {
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.side-panel__species-cell.is-sort-key svg {
-  opacity: 0.8;
+.side-panel__value svg {
+  opacity: 0.55;
+  flex-shrink: 0;
 }
 
 /* ── Campaigns list ── */

@@ -28,6 +28,32 @@ export interface CampaignSubmissionResponse {
   }
 }
 
+/**
+ * One campaign in the `GET /organizer/{id}` response. Unlike `PublicCampaign`,
+ * the organizer-scoped shape omits `organizationName` (it's on the parent
+ * profile), `phonePublic` and `doctor`, and carries the raw `status` +
+ * `createdAt`. `species` is an object of slot counts, like the other endpoints.
+ */
+export interface OrganizerCampaign {
+  submissionId: string
+  status: string              // e.g. "approved" (lowercase from this endpoint)
+  county: string              // 2-letter code, e.g. "SV"
+  locality: string
+  address: string
+  dateStart: string
+  dateEnd: string | null
+  timeStart: string
+  timeEnd: string
+  createdAt: string
+  species: Partial<Record<'dog' | 'cat', number>>
+}
+
+/** Wire shape of `GET /organizer/{id}` — an organization plus all its campaigns. */
+export interface OrganizerProfile {
+  organizationName: string
+  campaigns: OrganizerCampaign[]
+}
+
 export interface LocalityWaitingStats {
   county: string
   locality: string
