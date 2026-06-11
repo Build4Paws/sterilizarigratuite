@@ -29,25 +29,25 @@
         <h3>2.1 Utilizatori persoane fizice</h3>
         <p>Când te înscrii pentru a primi notificări despre campanii de sterilizare gratuită, colectăm:</p>
         <ul>
-          <li><strong>Număr de telefon/email</strong> (obligatoriu — folosit exclusiv pentru SMS-uri de notificare)</li>
-          <li><strong>Județ și localitate</strong> (obligatoriu — pentru a-ți trimite notificări relevante geografic)</li>
-          <li><strong>Specii de animale</strong> (câine / pisică / ambele) — pentru relevanța campaniilor</li>
+          <li><strong>Număr de telefon/email</strong> (obligatoriu, folosit exclusiv pentru SMS-uri de notificare)</li>
+          <li><strong>Județ și localitate</strong> (obligatoriu, pentru a-ți trimite notificări relevante geografic)</li>
+          <li><strong>Specii de animale</strong> (câine / pisică / ambele), pentru relevanța campaniilor</li>
         </ul>
 
         <h3>2.2 ONG-uri și organizatori de campanii</h3>
         <p>Când publici o campanie de sterilizare gratuită, prelucrăm următoarele date cu caracter personal:</p>
         <ul>
-          <li><strong>Numele persoanei de contact</strong> — identifică o persoană fizică</li>
-          <li><strong>Adresa de email a persoanei de contact</strong> — nevizibilă public, folosită exclusiv pentru comunicări administrative (aprobare, respingere)</li>
-          <li><strong>Numărul de telefon al persoanei de contact</strong> — dacă este număr personal (nu central al organizației)</li>
+          <li><strong>Numele persoanei de contact</strong>: identifică o persoană fizică</li>
+          <li><strong>Adresa de email a persoanei de contact</strong>: nevizibilă public, folosită exclusiv pentru comunicări administrative (aprobare, respingere)</li>
+          <li><strong>Numărul de telefon al persoanei de contact</strong>: dacă este număr personal (nu central al organizației)</li>
         </ul>
 
         <h3>2.3 Cabinete veterinare cu sterilizare permanentă</h3>
         <p>Când îți înscrii cabinetul ca partener permanent, prelucrăm următoarele date cu caracter personal:</p>
         <ul>
-          <li><strong>Numele persoanei de contact</strong> — identifică o persoană fizică</li>
-          <li><strong>Adresa de email a persoanei de contact</strong> — nevizibilă public, folosită pentru aprobare și comunicări administrative</li>
-          <li><strong>Numărul de telefon al persoanei de contact</strong> — dacă este număr personal al medicului/reprezentantului</li>
+          <li><strong>Numele persoanei de contact</strong>: identifică o persoană fizică</li>
+          <li><strong>Adresa de email a persoanei de contact</strong>: nevizibilă public, folosită pentru aprobare și comunicări administrative</li>
+          <li><strong>Numărul de telefon al persoanei de contact</strong>: dacă este număr personal al medicului/reprezentantului</li>
         </ul>
 
         <h3>2.4 Date colectate automat</h3>
@@ -72,9 +72,9 @@
         <h2>4. Scopurile și temeiul legal al prelucrării</h2>
         <p>Prelucrăm datele cu caracter personal exclusiv în scopurile descrise mai jos, cu indicarea temeiului legal corespunzător din Art. 6 alin. (1) GDPR.</p>
 
-        <h3>4.1 Date cetățeni — număr de telefon și email</h3>
+        <h3>4.1 Date cetățeni: număr de telefon și email</h3>
         <div class="privacy-legal-basis">
-          <strong>Temei legal:</strong> Art. 6 alin. (1) lit. a) GDPR — consimțământul explicit al persoanei vizate.
+          <strong>Temei legal:</strong> Art. 6 alin. (1) lit. a) GDPR, consimțământul explicit al persoanei vizate.
         </div>
         <ul>
           <li><strong>Scop principal:</strong> trimiterea notificărilor SMS când apare o campanie de sterilizare gratuită în localitatea ta</li>
@@ -83,24 +83,24 @@
         <p>Consimțământul este dat de tine în mod liber, specific și informat, la completarea formularului de înscriere. Îl poți retrage oricând, fără nicio consecință, printr-un singur click pe link-ul din orice SMS primit de la noi. Retragerea consimțământului nu afectează legalitatea prelucrărilor efectuate anterior retragerii.</p>
         <p>Dacă nu răspunzi la SMS-ul de refresh în 14 zile, ești dezabonat automat.</p>
 
-        <h3>4.2 Date persoane de contact — ONG-uri, organizatori, cabinete permanente</h3>
+        <h3>4.2 Date persoane de contact: ONG-uri, organizatori, cabinete permanente</h3>
         <div class="privacy-legal-basis">
-          <strong>Temei legal:</strong> Art. 6 alin. (1) lit. f) GDPR — interesul legitim al Operatorului.
+          <strong>Temei legal:</strong> Art. 6 alin. (1) lit. f) GDPR, interesul legitim al Operatorului.
         </div>
         <p>Interesul legitim constă în necesitatea de a administra relația cu partenerii platformei și de a gestiona campaniile și profilurile înscrise. Prelucrăm numele, adresa de email și numărul de telefon al persoanei de contact pentru:</p>
         <ul>
           <li>Comunicări administrative: notificarea aprobării sau respingerii înscrierii, transmiterea magic link-ului de management</li>
-          <li>Confirmarea trimestrială a datelor (cabinete permanente) — pentru menținerea acurateței informațiilor publice</li>
+          <li>Confirmarea trimestrială a datelor (cabinete permanente), pentru menținerea acurateței informațiilor publice</li>
           <li>Notificări privind modificări majore ale campaniei sau ale profilului</li>
           <li>Soluționarea eventualelor sesizări sau litigii legate de informațiile publicate</li>
         </ul>
 
         <h3>4.3 Analiză și îmbunătățire platformă</h3>
         <ul>
-          <li>Statistici agregate (număr utilizatori pe județ, tendințe) — date anonimizate, fără identificare individuală</li>
+          <li>Statistici agregate (număr utilizatori pe județ, tendințe), date anonimizate, fără identificare individuală</li>
         </ul>
         <div class="privacy-legal-basis">
-          <strong>Temei legal:</strong> Art. 6 alin. (1) lit. f) GDPR — interes legitim de a îmbunătăți serviciul.
+          <strong>Temei legal:</strong> Art. 6 alin. (1) lit. f) GDPR, interes legitim de a îmbunătăți serviciul.
         </div>
       </section>
 
@@ -122,12 +122,12 @@
                 <td>Prestarea serviciului de notificare</td>
               </tr>
               <tr>
-                <td>Date cetățean — după dezabonare</td>
+                <td>Date cetățean, după dezabonare</td>
                 <td>Anonimizate imediat (statistici agregate)</td>
                 <td>Interes legitim (statistici platformă)</td>
               </tr>
               <tr>
-                <td>Date cetățean — ștergere GDPR</td>
+                <td>Date cetățean, ștergere GDPR</td>
                 <td>Ștergere completă în max. 30 zile</td>
                 <td>Drept GDPR la ștergere</td>
               </tr>
@@ -161,7 +161,7 @@
         <h3>8.2 Dreptul la rectificare (Art. 16 GDPR)</h3>
         <p>Dacă datele tale sunt incorecte sau incomplete, le poți actualiza.</p>
 
-        <h3>8.3 Dreptul la ștergere — „dreptul de a fi uitat" (Art. 17 GDPR)</h3>
+        <h3>8.3 Dreptul la ștergere, „dreptul de a fi uitat" (Art. 17 GDPR)</h3>
         <p>Poți cere ștergerea completă a datelor tale.</p>
 
         <h3>8.4 Dreptul de opoziție și dezabonare (Art. 21 GDPR)</h3>
@@ -197,8 +197,8 @@
 
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Politică de Confidențialitate — Sterilizări Gratuite',
-  description: 'Politica de confidențialitate a platformei Sterilizări Gratuite — cum colectăm, prelucrăm și protejăm datele tale cu caracter personal.',
+  title: 'Politică de Confidențialitate · Sterilizări Gratuite',
+  description: 'Politica de confidențialitate a platformei Sterilizări Gratuite: cum colectăm, prelucrăm și protejăm datele tale cu caracter personal.',
 })
 </script>
 

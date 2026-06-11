@@ -20,7 +20,7 @@ export function formatDate(iso: string | null | undefined): string {
 
 export function formatDateRange(start: string, end?: string): string {
   if (!end || start === end) return formatDate(start)
-  return `${formatDate(start)} — ${formatDate(end)}`
+  return `${formatDate(start)} – ${formatDate(end)}`
 }
 
 /**

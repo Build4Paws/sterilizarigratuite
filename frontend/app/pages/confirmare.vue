@@ -115,7 +115,7 @@ import {
 } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'default' })
-useSeoMeta({ robots: 'noindex, nofollow', title: 'Înscriere confirmată — Sterilizări Gratuite' })
+useSeoMeta({ robots: 'noindex, nofollow', title: 'Înscriere confirmată · Sterilizări Gratuite' })
 
 const router = useRouter()
 const { session } = useCitizenSession()

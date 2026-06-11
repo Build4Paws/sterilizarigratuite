@@ -119,7 +119,7 @@ import { Clock, AlertCircle, CalendarCheck } from 'lucide-vue-next'
 import type { PublicCampaign } from '~/types'
 
 definePageMeta({ layout: 'default' })
-useSeoMeta({ robots: 'noindex, nofollow', title: 'Detalii campanie — Sterilizări Gratuite' })
+useSeoMeta({ robots: 'noindex, nofollow', title: 'Detalii campanie · Sterilizări Gratuite' })
 
 const route = useRoute()
 const id = computed(() => String(route.params.id ?? ''))

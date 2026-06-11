@@ -51,7 +51,7 @@
           <div class="guide-banner__body">
             <p class="guide-banner__eyebrow">Înainte de programare</p>
             <p class="guide-banner__title">
-              Citește ghidul nostru de sterilizare — ce ai de făcut înainte, după și ce să știi despre procedură.
+              Citește ghidul nostru de sterilizare: ce ai de făcut înainte, după și ce să știi despre procedură.
             </p>
           </div>
           <span class="guide-banner__cta">
@@ -297,9 +297,9 @@ const robotsValue = computed(() =>
 
 const seoTitle = computed(() => {
   if (countyName.value) {
-    return `Campanii de sterilizare gratuită în ${countyName.value} — Sterilizări Gratuite`
+    return `Campanii de sterilizare gratuită în ${countyName.value} · Sterilizări Gratuite`
   }
-  return 'Campanii de sterilizare gratuită — toate județele active în România'
+  return 'Campanii de sterilizare gratuită în toate județele active din România'
 })
 
 const seoDescription = computed(() => {
@@ -333,7 +333,7 @@ const eventsLd = computed(() => {
   return campaigns.value.map((c) => ({
     '@context': 'https://schema.org',
     '@type': 'Event',
-    name: `Campanie sterilizare gratuită — ${c.locality}`,
+    name: `Campanie sterilizare gratuită în ${c.locality}`,
     startDate: isoDateTime(c.dateStart, c.timeStart),
     endDate: isoDateTime(c.dateEnd || c.dateStart, c.timeEnd),
     eventStatus: 'https://schema.org/EventScheduled',

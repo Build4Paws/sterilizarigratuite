@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T12.
+**Rămase de făcut:** T5, T6, T7, T9, T12.
 
 ## Sumar task-uri
 
@@ -36,8 +36,8 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 |----|--------|------|------------------|------|
 | T1 | ✅ Done | Copy nou pe pagina de confirmare cetățean | `app/pages/confirmare.vue` | mic |
 | T2 | ✅ Done | „alt județ sau altă specie" doar când e specie selectată | `app/pages/campanii.vue` | mic |
-| T3 | ⬜ Todo | Iconițe distincte și consistente câine/pisică | nou `app/components/ui/SpeciesIcon.vue` + 3 fișiere | mediu |
-| T4 | ⬜ Todo | Elimină em dash-ul peste tot (inclusiv meta) | global | mediu |
+| T3 | ✅ Done | Iconițe distincte și consistente câine/pisică | nou `app/components/ui/SpeciesIcon.vue` + 2 fișiere | mediu |
+| T4 | ✅ Done | Elimină em dash-ul peste tot (inclusiv meta) | global | mediu |
 | T5 | ⬜ Todo | Redenumește „Top județe după…" + clarifică matematica speciilor | `app/components/map/SidePanel.vue` | mediu |
 | T6 | ⬜ Todo | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
 | T7 | ⬜ Todo | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
@@ -146,7 +146,19 @@ const emptyText = computed(() => {
 
 ---
 
-## T3 — Iconițe distincte și consistente pentru câine/pisică
+## T3 — Iconițe distincte și consistente pentru câine/pisică ✅ DONE
+
+**Status:** implementat și verificat în browser. Creat `app/components/ui/SpeciesIcon.vue` ca sursă unică
+de adevăr (lucide `Dog`/`Cat`, `stroke-width` 2.25 pentru claritate la dimensiuni mici). Culori distincte
+care urmează convenția cardului de campanie: **câine = portocaliu (`--color-accent`)**, **pisică = navy
+(`--color-primary`)** — aplicate inline, deci se disting prin culoare la orice dimensiune. Prop `colored`
+(default true) permite moștenirea culorii textului dacă e nevoie. Înlocuite toate cele 8 utilizări directe
+`<Dog>`/`<Cat>` cu `<UiSpeciesIcon>` în `CampaignCard.vue` (2) și `map/SidePanel.vue` (6); importurile
+`Dog, Cat` scoase din ambele. Confirmat vizual: dog `rgb(249,89,5)`, cat `rgb(4,26,73)` pe card (32px),
+filtre hartă (12px) și breakdown (15px). Schimbarea iconului/culorii într-un singur loc se propagă global.
+(`confirmare.vue` nu mai folosea Dog/Cat — randa doar `PawPrint` generic.)
+
+Detaliile de mai jos rămân ca referință a planului inițial.
 
 **Problemă:** iconițele `Dog`/`Cat` din lucide sunt folosite în mai multe locuri și se pot confunda
 la dimensiuni mici. Vrem (a) o **singură sursă de adevăr** ca să fie identice peste tot și (b) să fie
@@ -186,7 +198,33 @@ peste tot. `npm run typecheck` trece.
 
 ---
 
-## T4 — Elimină em dash-ul peste tot (inclusiv meta)
+## T4 — Elimină em dash-ul peste tot (inclusiv meta) ✅ DONE
+
+**Status:** implementat. Toate em dash-urile (`—`, U+2014) din text vizibil + meta au fost eliminate.
+Convenție aplicată: separator de titlu `·` (interpunct, consistent cu `ghid-sterilizare.vue` și footer),
+proză reformulată cu virgulă/două puncte/punct, intervale de dată pe en dash `–`.
+
+**Ce s-a schimbat:**
+- **Meta/titluri:** `nuxt.config.ts` (title → punct), `organizatori.vue`, `politica-de-confidentialitate.vue`,
+  `harta.vue` (titlu „cerere" reformulat), `campanii.vue` (seoTitle + JSON-LD Event name), `confirmare.vue`,
+  `confirmare-campanie.vue`, `campanie/[id].vue`, `organizator/[id].vue`, plus toate titlurile `admin/**`
+  (`Admin · …`).
+- **Proză vizibilă:** `politica-de-confidentialitate.vue` (toate `<li>`/`<h3>`/`Temei legal:`/celule tabel),
+  `organizatori.vue` (2 răspunsuri FAQ), `campanii.vue` (guide-banner).
+- **Intervale de dată:** `app/utils/format.ts` `formatDateRange` → en dash `–` (verificat pe card:
+  „11 iunie 2026 – 13 iunie 2026").
+- **aria-label/tooltip vizibile:** `Footer.vue` (logo), `map/Romania.vue` (aria-label județ + tooltip → `:`).
+- **Placeholder „fără valoare" în admin** (`'—'` în tile-uri/celule) → en dash `'–'`.
+
+**Lăsate intenționat (nu sunt vizibile utilizatorului):** em dash-uri din comentarii de cod, JSDoc,
+comentarii CSS, `types/**`, `server/**`, `scripts/**`, `.env.example`, `package.json`, și paginile stub
+`m/[token]`/`r/[token]` (placeholder dev „Phase 2/3"). `rg "—"` nu mai întoarce string-uri vizibile/meta.
+
+**Audit meta (cerut de owner):** toate cele 23 de pagini au `useSeoMeta`/`useHead`. Paginile publice
+indexabile au și `description` corectă care reflectă pagina (verificat: index, sustine, campanii,
+organizatori, harta, ghid-sterilizare, politică). Nu lipsea meta de pe nicio pagină.
+
+Detaliile de mai jos rămân ca referință a planului inițial.
 
 **Țintă:** caracterul **em dash `—` (U+2014)** din orice text vizibil utilizatorului: template-uri,
 string-uri de copy, `useSeoMeta`/`useHead`, `meta` din `nuxt.config.ts`, toast-uri, `placeholder`,

@@ -33,7 +33,7 @@
         v-if="campaign.species.includes('dog') && campaign.slotsDogs"
         class="campaign-card__slot campaign-card__slot--dog"
       >
-        <Dog :size="32" class="campaign-card__slot-icon" aria-hidden="true" />
+        <UiSpeciesIcon species="dog" :size="32" class="campaign-card__slot-icon" />
         <div class="campaign-card__slot-info">
           <span class="campaign-card__slot-count">{{ campaign.slotsDogs }}</span>
           <span class="campaign-card__slot-label">{{ Number(campaign.slotsDogs) === 1 ? 'loc alocat câine' : 'locuri alocate câini' }}</span>
@@ -43,7 +43,7 @@
         v-if="campaign.species.includes('cat') && campaign.slotsCats"
         class="campaign-card__slot campaign-card__slot--cat"
       >
-        <Cat :size="32" class="campaign-card__slot-icon" aria-hidden="true" />
+        <UiSpeciesIcon species="cat" :size="32" class="campaign-card__slot-icon" />
         <div class="campaign-card__slot-info">
           <span class="campaign-card__slot-count">{{ campaign.slotsCats }}</span>
           <span class="campaign-card__slot-label">{{ Number(campaign.slotsCats) === 1 ? 'loc pisică alocat' : 'locuri alocate pisici' }}</span>
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { Calendar, MapPin, Phone, Stethoscope, Dog, Cat, Building2 } from 'lucide-vue-next'
+import { Calendar, MapPin, Phone, Stethoscope, Building2 } from 'lucide-vue-next'
 import type { CampaignCardData } from '~/types'
 
 type BadgeTone = 'upcoming' | 'ongoing' | 'warning' | 'muted' | 'neutral'

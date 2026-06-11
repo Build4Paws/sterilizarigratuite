@@ -17,7 +17,7 @@
           'is-faded': isZoomed && county.code !== selected,
         }]"
         :style="{ '--fill': fillFor(county.code) }"
-        :aria-label="`${county.name} — ${props.metric[county.code] ?? 0} ${props.unit}`"
+        :aria-label="`${county.name}: ${props.metric[county.code] ?? 0} ${props.unit}`"
         :tabindex="isZoomed && county.code !== selected ? -1 : 0"
         role="button"
         :d="county.d"
@@ -325,7 +325,7 @@ function onEnter(e: MouseEvent, code: string, name: string) {
   // the data for the selected county, and the faded ones aren't interactive.
   if (isZoomed.value) return
   const val = props.metric[code] ?? 0
-  tooltip.text = `${name} — ${val} ${props.unit}`
+  tooltip.text = `${name}: ${val} ${props.unit}`
   tooltip.visible = true
   positionTooltip(e)
   emit('hover', code)

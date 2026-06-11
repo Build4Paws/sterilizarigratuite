@@ -101,7 +101,7 @@ const steps = [
   {
     icon: Send,
     title: 'Notificăm persoanele înscrise din localitate',
-    text: 'Trimitem SMS și email tuturor celor înscriși, fără niciun efort din partea ta.',
+    text: 'Trimitem SMS sau email tuturor celor înscriși, fără niciun efort din partea ta.',
   },
 ]
 
@@ -112,7 +112,7 @@ const faqItems = [
   },
   {
     q: 'Costă ceva publicarea?',
-    a: 'Nu. Publicarea pe platformă este gratuită — scopul nostru este să ajutăm campaniile să ajungă la cât mai mulți cetățeni.',
+    a: 'Nu. Publicarea pe platformă este gratuită. Scopul nostru este să ajutăm campaniile să ajungă la cât mai mulți cetățeni.',
   },
   {
     q: 'Cum sunt notificate persoanele înscrise?',
@@ -120,7 +120,7 @@ const faqItems = [
   },
   {
     q: 'Pot modifica o campanie după trimitere?',
-    a: 'Pentru moment, modificările se fac prin email — răspunde la confirmarea pe care o primești de la noi cu schimbările dorite și actualizăm campania.',
+    a: 'Pentru moment, modificările se fac prin email: răspunde la confirmarea pe care o primești de la noi cu schimbările dorite și actualizăm campania.',
   },
   {
     q: 'Ce date despre organizație sunt publice?',
@@ -129,10 +129,10 @@ const faqItems = [
 ]
 
 useSeoMeta({
-  title: 'Publică o campanie de sterilizare — Sterilizări Gratuite',
+  title: 'Publică o campanie de sterilizare · Sterilizări Gratuite',
   description: 'Ești ONG sau primărie? Publică campania de sterilizare gratuită și ajunge automat la cetățenii din zonă care au animale de sterilizat.',
   ogTitle: 'Publică o campanie de sterilizare',
-  ogDescription: 'Anunță campania ta de sterilizare gratuită — ajunge la cetățenii din zonă.',
+  ogDescription: 'Anunță campania ta de sterilizare gratuită și ajunge la cetățenii din zonă.',
 })
 </script>
 

@@ -279,7 +279,7 @@ useSeoMeta({
   title: computed(() =>
     activeView.value === 'oferta'
       ? 'Harta campaniilor de sterilizare gratuită în România'
-      : 'Harta sterilizărilor gratuite din România — cerere',
+      : 'Harta cererii de sterilizări gratuite din România',
   ),
   description: computed(() =>
     activeView.value === 'oferta'

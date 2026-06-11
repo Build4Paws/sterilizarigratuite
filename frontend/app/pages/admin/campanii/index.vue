@@ -44,7 +44,7 @@
 import type { AdminCampaignList } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Campanii', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Campanii', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const activeStatus = computed(() => String(route.query.status ?? ''))

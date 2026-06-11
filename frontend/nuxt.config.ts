@@ -37,7 +37,7 @@ export default defineNuxtConfig({
         { property: 'og:type', content: 'website' },
         { property: 'og:locale', content: 'ro_RO' },
       ],
-      title: 'Sterilizări Gratuite — Campanii de sterilizare pentru câini și pisici',
+      title: 'Sterilizări Gratuite. Campanii de sterilizare pentru câini și pisici',
     },
   },
 

@@ -100,7 +100,7 @@
 <script setup lang="ts">
 // Standalone screen — no admin chrome, no public nav.
 definePageMeta({ layout: false })
-useSeoMeta({ title: 'Admin — Autentificare', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Autentificare', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 

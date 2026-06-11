@@ -70,7 +70,7 @@ import type { CampaignCardData } from '~/types'
 definePageMeta({ layout: 'default' })
 useSeoMeta({
   robots: 'noindex, nofollow',
-  title: 'Cerere primită — Sterilizări Gratuite',
+  title: 'Cerere primită · Sterilizări Gratuite',
 })
 
 const router = useRouter()

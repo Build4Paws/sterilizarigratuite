@@ -30,7 +30,7 @@
 import type { AdminOrganizerList } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Organizatori', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Organizatori', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const filters = useAdminListFilters()
