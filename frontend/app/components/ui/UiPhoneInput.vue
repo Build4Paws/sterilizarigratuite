@@ -11,7 +11,6 @@
           <rect x="213.3" width="213.4" height="480" fill="#ffde00"/>
           <rect x="426.7" width="213.3" height="480" fill="#de2110"/>
         </svg>
-        <span class="ui-phone__code">+40</span>
       </span>
       <input
         :id="id"
@@ -19,12 +18,12 @@
         type="tel"
         inputmode="numeric"
         :value="displayValue"
-        placeholder="7XX XXX XXX"
+        placeholder="07XX XXX XXX"
         :required="required"
         :aria-invalid="!!error"
         :aria-describedby="error ? `${id}-error` : undefined"
         class="ui-phone__input"
-        maxlength="11"
+        maxlength="12"
         @input="onInput"
         @blur="$emit('blur')"
         @keydown="onKeydown"
@@ -56,40 +55,56 @@ function digitsOnly(str: string): string {
   return str.replace(/\D/g, '')
 }
 
-function formatDigits(digits: string): string {
-  // Format as: 7XX XXX XXX
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`
-  return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)}`
+// Normalize any user/paste input to the national format: a single leading 0
+// followed by up to 9 subscriber digits (e.g. "0740123456"). Romanians write
+// their numbers starting with 0, so the leading 0 is preserved as typed and
+// international prefixes (+40 / 0040 / 40) are folded back to it.
+function toNational(raw: string): string {
+  let cleaned = raw.replace(/\s/g, '')
+  // Fold explicit country-code prefixes back to the national leading 0.
+  // `+40` is also our canonical storage form, so handle it regardless of length.
+  if (cleaned.startsWith('+40')) cleaned = `0${cleaned.slice(3)}`
+  else if (cleaned.startsWith('0040')) cleaned = `0${cleaned.slice(4)}`
+  else if (cleaned.startsWith('+')) cleaned = cleaned.slice(1)
+  let digits = digitsOnly(cleaned)
+  // Bare country code pasted without a + (e.g. "40740123456")
+  if (digits.startsWith('40') && digits.length >= 11) digits = `0${digits.slice(2)}`
+  else if (!digits.startsWith('0') && digits.length) digits = `0${digits}`
+  // Collapse any run of leading zeros to a single 0
+  digits = digits.replace(/^0+/, '0')
+  return digits.slice(0, 10)
 }
 
-function rawToDigits(raw: string): string {
-  // Strip any leading +40 or 0 prefix the user might paste
-  let cleaned = raw.replace(/\s/g, '')
-  if (cleaned.startsWith('+40')) cleaned = cleaned.slice(3)
-  else if (cleaned.startsWith('40') && cleaned.length > 9) cleaned = cleaned.slice(2)
-  else if (cleaned.startsWith('0')) cleaned = cleaned.slice(1)
-  return digitsOnly(cleaned).slice(0, 9)
+function formatNational(digits: string): string {
+  // Format as: 07XX XXX XXX
+  if (digits.length <= 4) return digits
+  if (digits.length <= 7) return `${digits.slice(0, 4)} ${digits.slice(4)}`
+  return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`
+}
+
+// Subscriber digits (national minus the leading 0) used for +40 storage.
+function toSubscriber(raw: string): string {
+  return toNational(raw).replace(/^0/, '')
 }
 
 const displayValue = computed(() => {
-  const digits = rawToDigits(props.modelValue ?? '')
-  return formatDigits(digits)
+  return formatNational(toNational(props.modelValue ?? ''))
 })
 
 function onInput(e: Event) {
   const input = e.target as HTMLInputElement
-  const digits = rawToDigits(input.value)
-  // Emit with +40 prefix for storage
-  if (digits.length > 0) {
-    emit('update:modelValue', `+40${digits}`)
+  const national = toNational(input.value)
+  const subscriber = national.replace(/^0/, '')
+  // Store the canonical +40 form regardless of how the user typed it
+  if (subscriber.length > 0) {
+    emit('update:modelValue', `+40${subscriber}`)
   } else {
     emit('update:modelValue', '')
   }
-  // Restore cursor position after Vue re-renders the formatted value
+  // Re-apply the formatted national value after Vue re-renders. Use the value
+  // captured above so a lone leading "0" stays visible as the user types it.
   nextTick(() => {
-    const formatted = formatDigits(digits)
-    input.value = formatted
+    input.value = formatNational(national)
   })
 }
 
@@ -161,13 +176,6 @@ function onKeydown(e: KeyboardEvent) {
   height: 15px;
   border-radius: 2px;
   flex-shrink: 0;
-}
-
-.ui-phone__code {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text);
 }
 
 .ui-phone__input {

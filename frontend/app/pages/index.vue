@@ -4,13 +4,13 @@
     <section class="hero">
       <div class="container hero__inner">
         <h1 class="hero__title">
-          Lasă-ne telefonul sau emailul.
+          Te anunțăm când apare o campanie de sterilizare gratuită în localitatea ta.
         </h1>
         <p class="hero__subtitle">
-          Te anunțăm când apare o campanie de sterilizare gratuită în localitatea ta.
+          Lasă-ne telefonul sau emailul ca să te putem notifica.
         </p>
         <p v-if="showSignupCount" class="hero__count">
-          {{ signupCount }} de persoane s-au înscris deja.
+          {{ signupCount }} persoane s-au înscris deja.
         </p>
       </div>
     </section>
@@ -44,7 +44,7 @@
           to="/ghid-sterilizare"
           :icon="Stethoscope"
           title="Ghid sterilizare"
-          desc="Ghid medical — tot ce trebuie să știi înainte și după procedură"
+          desc="Ghid medical. Tot ce trebuie să știi înainte și după procedură"
         />
         <UiLinkCard
           to="/organizatori"
@@ -77,9 +77,9 @@ onMounted(async () => {
 })
 
 useSeoMeta({
-  title: 'Sterilizări Gratuite — Campanii de sterilizare pentru câini și pisici',
+  title: 'Sterilizări Gratuite. Campanii de sterilizare pentru câini și pisici',
   description: 'Găsește campanii de sterilizare gratuită pentru câini și pisici în România. Înscrie-te și te anunțăm când apare o campanie în zona ta.',
-  ogTitle: 'Sterilizări Gratuite — Build4Paws',
+  ogTitle: 'Sterilizări Gratuite Build4Paws',
   ogDescription: 'Te anunțăm când apare o campanie de sterilizare gratuită în zona ta.',
 })
 
@@ -94,7 +94,7 @@ useHead({
             '@type': 'Organization',
             name: 'Build4Paws',
             url: 'https://build4paws.ro',
-            description: 'Tech NGO for animal welfare — building digital solutions for sterilization campaigns.',
+            description: 'Tech NGO for animal welfare; building digital solutions for sterilization campaigns.',
           },
           {
             '@type': 'WebSite',

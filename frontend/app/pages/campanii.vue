@@ -101,7 +101,7 @@
               Vezi toate campaniile
             </NuxtLink>
             <NuxtLink to="/" class="empty__cta">
-              Anunțați-mă
+              Anunță-mă
             </NuxtLink>
           </div>
         </div>

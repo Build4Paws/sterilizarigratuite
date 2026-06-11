@@ -12,7 +12,7 @@
     <!-- Să facem cunoștință -->
     <div class="form-section">
       <div class="form-section__header">
-        <h3 class="form-section__title">Salut! Cum te numești?</h3>
+        <h3 class="form-section__title">Cum te numești?</h3>
       </div>
       <UiFormRow>
         <UiFormItem>
@@ -186,7 +186,7 @@
         <UiFormItem basis="100%">
           <div :class="{ 'citizen-form__btn--shake': shaking }">
             <UiButton type="submit" variant="primary" :block="true" :loading="submitting" :disabled="submitting">
-              Anunțați-mă
+              Anunță-mă
             </UiButton>
           </div>
         </UiFormItem>
@@ -288,7 +288,7 @@ function validate(): boolean {
     e.email = 'Completează telefonul sau emailul.'
   }
   if (hasPhone && !isValidPhone(form.phone)) {
-    e.phone = 'Introdu 9 cifre după +40 (ex: 7XX XXX XXX).'
+    e.phone = 'Introdu un număr de telefon valid (ex: 0712 345 678).'
   }
   if (hasEmail && !isValidEmail(form.email)) {
     e.email = 'Adresă de email invalidă.'
@@ -365,6 +365,8 @@ async function handleSubmit() {
       countyName,
       locality: form.locality,
       species: payload.species,
+      dogCount: payload.dogCount,
+      catCount: payload.catCount,
       submittedAt: new Date().toISOString(),
       stats: response?.stats,
       citizenId: response?.citizenId,
