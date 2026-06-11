@@ -7,14 +7,9 @@
         <CircleCheck :size="44" :stroke-width="2.25" />
       </div>
       <p class="cf__eyebrow">Înscriere confirmată</p>
-      <h1 class="cf__title">Ești înscris/ă, {{ firstName }}!</h1>
+      <h1 class="cf__title">Gata, {{ firstName }}!</h1>
+      <p class="cf__lead">De acum primești notificări despre campaniile gratuite din localitatea ta.</p>
       <p class="cf__channel">{{ channelMessage }}</p>
-      <ul v-if="speciesTags.length" class="cf__species" aria-label="Animale înscrise">
-        <li v-for="tag in speciesTags" :key="tag.label" class="cf__chip">
-          <component :is="tag.icon" :size="16" aria-hidden="true" />
-          {{ tag.label }}
-        </li>
-      </ul>
     </header>
 
     <div class="cf__divider" aria-hidden="true">
@@ -33,6 +28,10 @@
             <template v-for="(seg, i) in rankParts" :key="i">
               <strong v-if="seg.b">{{ seg.t }}</strong><template v-else>{{ seg.t }}</template>
             </template>
+          </p>
+          <p class="statcard__note">
+            Dacă se strâng suficiente cereri din {{ session.locality }}, notificăm oficial primăria,
+            care poate aloca fonduri pentru sterilizare gratuită (Legea 258/2013).
           </p>
         </div>
       </section>
@@ -75,6 +74,18 @@
         </ul>
       </section>
 
+      <!-- Share / referral nudge -->
+      <section class="card share-card">
+        <p class="share-card__title">Fiecare înscriere contează!</p>
+        <p class="share-card__text">
+          Dacă mai ai vecini care vor să își sterilizeze gratuit animalele, spune-le să se înscrie.
+        </p>
+        <button type="button" class="share-card__btn" :class="{ 'is-copied': linkCopied }" @click="copyLink">
+          <component :is="linkCopied ? Check : Share2" :size="18" aria-hidden="true" />
+          <span>{{ linkCopied ? 'Link copiat' : 'Copiază linkul' }}</span>
+        </button>
+      </section>
+
       <!-- Next steps -->
       <section class="next">
         <h2 class="next__label">Între timp, poți vedea:</h2>
@@ -100,7 +111,7 @@
 <script setup lang="ts">
 import {
   CircleCheck, Users, MapPin, KeyRound, Copy, Check, ShieldCheck,
-  Dog, Cat, PawPrint, Stethoscope, Map, ArrowUpRight,
+  PawPrint, Stethoscope, Map, ArrowUpRight, Share2,
 } from 'lucide-vue-next'
 
 definePageMeta({ layout: 'default' })
@@ -135,19 +146,6 @@ const channelMessage = computed(() => {
   }
 })
 
-const speciesTags = computed(() => {
-  const s = session.value
-  if (!s) return []
-  return s.species.map(sp => {
-    if (sp === 'dog') {
-      const n = s.dogCount
-      return { label: n ? `${n} ${n === 1 ? 'câine' : 'câini'}` : 'Câine', icon: Dog }
-    }
-    const n = s.catCount
-    return { label: n ? `${n} ${n === 1 ? 'pisică' : 'pisici'}` : 'Pisică', icon: Cat }
-  })
-})
-
 const actions = [
   { to: '/campanii', icon: PawPrint, title: 'Campanii active', desc: 'Vezi campaniile de sterilizare gratuită din toată țara.' },
   { to: '/ghid-sterilizare', icon: Stethoscope, title: 'Ghid de sterilizare', desc: 'Tot ce e bine să știi înainte și după procedură.' },
@@ -165,6 +163,19 @@ async function copyToken() {
     setTimeout(() => { copied.value = false }, 2500)
   } catch {
     toast.error('Nu am putut copia codul. Selectează-l și copiază-l manual.')
+  }
+}
+
+const linkCopied = ref(false)
+async function copyLink() {
+  const url = 'https://sterilizarigratuite.ro/'
+  try {
+    await navigator.clipboard.writeText(url)
+    linkCopied.value = true
+    toast.success('Link copiat. Trimite-l vecinilor tăi.')
+    setTimeout(() => { linkCopied.value = false }, 2500)
+  } catch {
+    toast.error('Nu am putut copia linkul. Copiază-l manual din bara de adrese.')
   }
 }
 
@@ -217,7 +228,7 @@ const rankParts = computed<Seg[]>(() => {
       { t: 'prima persoană', b: true },
       { t: ' din județul ' },
       { t: s.countyName, b: true },
-      { t: ' care s-a înscris.' },
+      { t: ' care va fi alertată.' },
     ]
   }
   if (localityRank > 5) {
@@ -226,7 +237,7 @@ const rankParts = computed<Seg[]>(() => {
       { t: `${feminineOrdinal(localityRank)} persoană`, b: true },
       { t: ' din ' },
       { t: s.locality, b: true },
-      { t: ' care s-a înscris.' },
+      { t: ' care va fi alertată.' },
     ]
   }
   if (localityRank === 1) {
@@ -239,7 +250,7 @@ const rankParts = computed<Seg[]>(() => {
       { t: String(countyRank), b: true },
       { t: ' din județul ' },
       { t: s.countyName, b: true },
-      { t: ' care s-au înscris.' },
+      { t: ' care vor fi alertate.' },
     ]
   }
   if (countyRank > localityRank) {
@@ -252,7 +263,7 @@ const rankParts = computed<Seg[]>(() => {
       { t: String(countyRank), b: true },
       { t: ' din județul ' },
       { t: s.countyName, b: true },
-      { t: ' care s-au înscris.' },
+      { t: ' care vor fi alertate.' },
     ]
   }
   return [
@@ -330,33 +341,19 @@ const { clinics } = useClinics(
   color: var(--color-text-light);
 }
 
-.cf__channel {
+.cf__lead {
   margin: var(--space-md) auto 0;
-  max-width: 38ch;
-  font-size: 1.05rem;
-  color: var(--color-slate-300);
+  max-width: 42ch;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.cf__species {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-sm);
-  margin: var(--space-lg) 0 0;
-  padding: 0;
-}
-
-.cf__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-md);
+.cf__channel {
+  margin: var(--space-sm) auto 0;
+  max-width: 40ch;
   font-size: var(--font-size-sm);
-  font-weight: 600;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--color-slate-300);
 }
 
 /* ---------- Divider ---------- */
@@ -429,6 +426,13 @@ const { clinics } = useClinics(
 .statcard__text strong {
   font-weight: 700;
   color: var(--color-primary);
+}
+
+.statcard__note {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.55;
+  color: var(--color-text-muted);
 }
 
 /* ---------- Access code keepsake ---------- */
@@ -608,6 +612,58 @@ const { clinics } = useClinics(
   color: var(--color-accent);
 }
 
+/* ---------- Share / referral nudge ---------- */
+.share-card {
+  border-left: 4px solid var(--color-accent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.share-card__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.share-card__text {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.share-card__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-light);
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+}
+
+.share-card__btn:hover {
+  background: var(--color-accent-hover);
+}
+
+.share-card__btn:active {
+  transform: scale(0.97);
+}
+
+.share-card__btn.is-copied {
+  background: var(--color-success);
+}
+
 /* ---------- Next steps ---------- */
 .next {
   margin-top: var(--space-sm);
@@ -723,13 +779,13 @@ const { clinics } = useClinics(
   }
 
   .cf__title,
-  .cf__channel,
-  .cf__species {
+  .cf__lead,
+  .cf__channel {
     animation: rise 0.5s ease both;
   }
 
-  .cf__channel { animation-delay: 0.08s; }
-  .cf__species { animation-delay: 0.14s; }
+  .cf__lead { animation-delay: 0.08s; }
+  .cf__channel { animation-delay: 0.14s; }
 
   .action {
     animation: rise 0.4s ease both;

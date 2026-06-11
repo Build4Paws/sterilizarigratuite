@@ -91,7 +91,7 @@
 
       <!-- Species & slots -->
       <section class="detail__card">
-        <h2 class="detail__section-title">Specii și locuri disponibile</h2>
+        <h2 class="detail__section-title">Specii și numarul de locuri alocate campaniei</h2>
         <div class="species">
           <div v-if="campaign.species.dog !== undefined" class="species__item">
             <span class="species__emoji" aria-hidden="true">🐕</span>

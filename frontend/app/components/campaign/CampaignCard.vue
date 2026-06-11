@@ -36,7 +36,7 @@
         <Dog :size="32" class="campaign-card__slot-icon" aria-hidden="true" />
         <div class="campaign-card__slot-info">
           <span class="campaign-card__slot-count">{{ campaign.slotsDogs }}</span>
-          <span class="campaign-card__slot-label">{{ Number(campaign.slotsDogs) === 1 ? 'loc câine' : 'locuri câini' }}</span>
+          <span class="campaign-card__slot-label">{{ Number(campaign.slotsDogs) === 1 ? 'loc alocat câine' : 'locuri alocate câini' }}</span>
         </div>
       </li>
       <li
@@ -46,7 +46,7 @@
         <Cat :size="32" class="campaign-card__slot-icon" aria-hidden="true" />
         <div class="campaign-card__slot-info">
           <span class="campaign-card__slot-count">{{ campaign.slotsCats }}</span>
-          <span class="campaign-card__slot-label">{{ Number(campaign.slotsCats) === 1 ? 'loc pisică' : 'locuri pisici' }}</span>
+          <span class="campaign-card__slot-label">{{ Number(campaign.slotsCats) === 1 ? 'loc pisică alocat' : 'locuri alocate pisici' }}</span>
         </div>
       </li>
     </ul>

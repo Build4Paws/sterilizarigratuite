@@ -124,7 +124,7 @@ const faqItems = [
   },
   {
     q: 'Ce date despre organizație sunt publice?',
-    a: 'Publicăm doar numele organizației, locația, datele campaniei, locurile disponibile, medicul (dacă îl specifici) și un telefon de contact pentru cetățeni. Emailul tău și telefonul de contact intern nu apar pe pagina publică.',
+    a: 'Publicăm doar numele organizației, locația, datele campaniei, numărul de locuri alocate campaniei, medicul (dacă îl specifici) și un telefon de contact pentru cetățeni. Emailul tău și telefonul de contact intern nu apar pe pagina publică.',
   },
 ]
 
