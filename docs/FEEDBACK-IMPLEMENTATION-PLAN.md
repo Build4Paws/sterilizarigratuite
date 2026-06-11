@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T10, T12.
+**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T12.
 
 ## Sumar task-uri
 
@@ -43,7 +43,7 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T7 | ⬜ Todo | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
 | T8 | ✅ Done | „locuri disponibile" → „numărul de locuri alocate campaniei" | `app/pages/organizatori.vue` | mic |
 | T9 | ⬜ Todo | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
-| T10 | ⬜ Todo | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
+| T10 | ✅ Done | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
 | T11 | ✅ Done | Pagină dedicată de donații / sprijin | nou `app/pages/sustine.vue` + nav/footer | mediu |
 | T12 | ⬜ Todo | Numerotarea paragrafelor din Termeni și Condiții | de localizat | INVESTIGHează |
 | T13 | ✅ Done | Format dată lună/zi/an în formular campanii + „rest" stray | `app/components/forms/CampaignForm.vue` | INVESTIGHează |
@@ -365,7 +365,18 @@ introdus). `npm run typecheck` trece.
 
 ---
 
-## T10 — Buton „înapoi sus" pe orice pagină
+## T10 — Buton „înapoi sus" pe orice pagină ✅ DONE
+
+**Status:** implementat și verificat în browser. Creat `app/components/layout/BackToTop.vue` (buton
+`position: fixed` dreapta-jos, apare după `y > 600` via `useWindowScroll` din `@vueuse/core`, iconiță
+`ArrowUp`, `aria-label="Înapoi sus"`, fundal `--color-primary`, hover `--color-primary-hover`,
+`border-radius: var(--radius-full)`, `z-index: 90` (sub toast/nav), tranziție fade+slide care respectă
+`prefers-reduced-motion`). Click → `window.scrollTo({ top: 0, behavior: 'smooth' })` (fără `smooth`
+când reduce-motion). Montat global în `app/layouts/default.vue` lângă `<UiToaster />` (deci apare pe
+toate paginile publice). Verificat: butonul apare la scroll, scrolează sus la click și se ascunde.
+Layout-ul `admin.vue` a fost lăsat fără buton (intern) — se poate adăuga ușor dacă owner-ul vrea.
+
+Detaliile de mai jos rămân ca referință a planului inițial.
 
 **Pas 1 — componentă.** Creează `app/components/layout/BackToTop.vue`:
 - Buton `position: fixed; right/bottom`, ascuns inițial, apare după `window.scrollY > 600`

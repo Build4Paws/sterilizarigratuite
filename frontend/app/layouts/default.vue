@@ -5,6 +5,7 @@
       <slot />
     </main>
     <LayoutFooter />
+    <LayoutBackToTop />
     <UiToaster />
   </div>
 </template>
