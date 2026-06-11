@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T10, T11, T12, T13.
+**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T10, T11, T12.
 
 ## Sumar task-uri
 
@@ -46,7 +46,7 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T10 | ⬜ Todo | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
 | T11 | ⬜ Todo | Pagină dedicată de donații / sprijin | nou `app/pages/sustine.vue` + nav/footer | mediu |
 | T12 | ⬜ Todo | Numerotarea paragrafelor din Termeni și Condiții | de localizat | INVESTIGHează |
-| T13 | ⬜ Todo | Format dată lună/zi/an în formular campanii + „rest" stray | `app/components/forms/CampaignForm.vue` | INVESTIGHează |
+| T13 | ✅ Done | Format dată lună/zi/an în formular campanii + „rest" stray | `app/components/forms/CampaignForm.vue` | INVESTIGHează |
 
 ---
 
@@ -444,7 +444,19 @@ buton de copiere, e linkată din footer, arată bine pe mobil, `npm run typechec
 
 ---
 
-## T13 — Format dată lună/zi/an în formular campanii + „rest" stray (INVESTIGHează)
+## T13 — Format dată lună/zi/an în formular campanii + „rest" stray ✅ DONE
+
+**Status:** implementat opțiunea A. Adăugat prop opțional `hint?: string` în `app/components/ui/UiInput.vue`
+(randat sub input doar când nu există eroare, legat prin `aria-describedby`) și pus
+`hint="Format: zi/lună/an"` pe ambele câmpuri de dată din `CampaignForm.vue` (Data început / Data sfârșit).
+
+**Investigația „rest" (stray US date):** nu există nicio dată afișată în format US în fluxul de organizator.
+Toate datele randate trec prin `formatDate` / `formatDateRange` / `formatDateTime` din `app/utils/format.ts`
+(toate RO): preview-ul (`CampaignCard` → `formatDateRange`), `confirmare-campanie.vue` (`formatDateTime`),
+`organizator/[id].vue` (string-compare, fără afișare). Singurul loc unde apare `MM/DD/YYYY` este chiar
+`<input type="date">`-ul nativ, al cărui format afișat urmează locale-ul browserului/OS, nu `lang="ro"`.
+Hint-ul de format rezolvă confuzia fără picker custom. (Notă: nu am rulat `npm run typecheck` — tooling-ul
+e momentan blocat și nu e prioritate în această etapă.)
 
 **Context:** câmpurile de dată din `app/components/forms/CampaignForm.vue` (liniile ~116–138) sunt
 `<UiInput type="date">` native. Formatul AFIȘAT al unui `<input type="date">` urmează **locale-ul

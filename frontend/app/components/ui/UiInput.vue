@@ -13,7 +13,7 @@
       :min="min"
       :max="max"
       :aria-invalid="!!error"
-      :aria-describedby="error ? `${id}-error` : undefined"
+      :aria-describedby="describedBy"
       class="ui-field__input"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
       @blur="$emit('blur')"
@@ -21,11 +21,14 @@
     <p v-if="error" :id="`${id}-error`" class="ui-field__error" role="alert">
       {{ error }}
     </p>
+    <p v-else-if="hint" :id="`${id}-hint`" class="ui-field__hint">
+      {{ hint }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   modelValue?: string
   label: string
   id: string
@@ -33,6 +36,8 @@ defineProps<{
   placeholder?: string
   required?: boolean
   error?: string
+  /** Helper text shown under the input when there is no error (e.g. expected date format). */
+  hint?: string
   /** Forwarded to the input — useful for `date`/`time`/`number` constraints (e.g. min="2026-01-01"). */
   min?: string | number
   max?: string | number
@@ -42,6 +47,12 @@ defineEmits<{
   'update:modelValue': [value: string]
   blur: []
 }>()
+
+const describedBy = computed(() => {
+  if (props.error) return `${props.id}-error`
+  if (props.hint) return `${props.id}-hint`
+  return undefined
+})
 </script>
 
 <style scoped>
@@ -93,6 +104,11 @@ defineEmits<{
 .ui-field__error {
   font-size: var(--font-size-sm);
   color: var(--color-error);
+}
+
+.ui-field__hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 /* Native date/time pickers ship their own indicator and intrinsic sizing —

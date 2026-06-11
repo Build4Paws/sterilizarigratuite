@@ -122,6 +122,7 @@
               type="date"
               :min="todayISO"
               :required="true"
+              hint="Format: zi/lună/an"
               :error="submitted ? errors.dateStart : undefined"
             />
           </UiFormItem>
@@ -133,6 +134,7 @@
               type="date"
               :min="form.dateStart || todayISO"
               :required="true"
+              hint="Format: zi/lună/an"
               :error="submitted ? errors.dateEnd : undefined"
             />
           </UiFormItem>
