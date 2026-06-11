@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T10, T11, T12.
+**Rămase de făcut:** T3, T4, T5, T6, T7, T9, T10, T12.
 
 ## Sumar task-uri
 
@@ -44,7 +44,7 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T8 | ✅ Done | „locuri disponibile" → „numărul de locuri alocate campaniei" | `app/pages/organizatori.vue` | mic |
 | T9 | ⬜ Todo | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
 | T10 | ⬜ Todo | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
-| T11 | ⬜ Todo | Pagină dedicată de donații / sprijin | nou `app/pages/sustine.vue` + nav/footer | mediu |
+| T11 | ✅ Done | Pagină dedicată de donații / sprijin | nou `app/pages/sustine.vue` + nav/footer | mediu |
 | T12 | ⬜ Todo | Numerotarea paragrafelor din Termeni și Condiții | de localizat | INVESTIGHează |
 | T13 | ✅ Done | Format dată lună/zi/an în formular campanii + „rest" stray | `app/components/forms/CampaignForm.vue` | INVESTIGHează |
 
@@ -387,7 +387,19 @@ nu apare cât timp ești în partea de sus; funcționează pe mobil și desktop.
 
 ---
 
-## T11 — Pagină dedicată de donații / sprijin
+## T11 — Pagină dedicată de donații / sprijin ✅ DONE
+
+**Status:** implementat și verificat în browser. Creat `app/pages/sustine.vue` (hero navy cu iconiță
+`Heart`, două carduri albe care se suprapun peste hero: „Donează prin transfer bancar" cu accent
+portocaliu la stânga + „Date asociație"). Design inspirat de `build4paws.ro/contact`. IBAN-ul real
+**RO55RNCB0068185806750001** e completat (afișat grupat „RO55 RNCB …", copiat fără spații), bancă
+**Banca Comercială Română (BCR)** (dedus din codul RNCB), buton „Copiază IBAN" cu pattern
+`navigator.clipboard` + toast. Datele legale (denumire, formă juridică, hotărâre, CIF, email) sunt
+cele din task. Link „Susține-ne" adăugat în footer (coloana Navigare) și **banner pe homepage**
+(strip navy între cardurile de jos și footer, CTA portocaliu → `/sustine`). `routeRules` în
+`nuxt.config.ts`: `'/sustine': { prerender: true }`. (Nu am rulat typecheck — tooling blocat, vezi T13.)
+
+Detaliile de mai jos rămân ca referință a planului inițial.
 
 **Pas 1 — pagină.** Creează `app/pages/sustine.vue` (slug RO „susține"; alternativă `donatii.vue`
 dacă preferi). Conținut și ton ca restul site-ului (hero navy + corp pe `--color-bg-muted`, carduri

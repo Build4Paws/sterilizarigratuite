@@ -26,6 +26,7 @@
             <NuxtLink to="/ghid-sterilizare">Ghid sterilizare</NuxtLink>
             <NuxtLink to="/organizatori">Organizatori</NuxtLink>
             <NuxtLink to="/harta">Harta</NuxtLink>
+            <NuxtLink to="/sustine">Susține-ne</NuxtLink>
           </nav>
         </div>
 

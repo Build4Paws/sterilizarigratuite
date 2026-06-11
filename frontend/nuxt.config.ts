@@ -111,6 +111,7 @@ export default defineNuxtConfig({
     // the backend's responsibility. Only static, data-free pages are prerendered.
     '/organizatori': { prerender: true },
     '/ghid-sterilizare': { prerender: true },
+    '/sustine': { prerender: true },
     // Old guide URL → new one (page renamed "Despre sterilizare" → "Ghid sterilizare").
     '/despre-sterilizare': { redirect: '/ghid-sterilizare' },
     '/despre': { redirect: '/harta' },
