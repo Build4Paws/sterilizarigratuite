@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { LayoutDashboard, CalendarCheck, Users, Building2, FileBarChart, ScrollText, LogOut, ExternalLink } from 'lucide-vue-next'
+import { LayoutDashboard, CalendarCheck, Users, Building2, FileBarChart, ScrollText, MessageSquare, LogOut, ExternalLink } from 'lucide-vue-next'
 import type { AdminOverview } from '~/types'
 
 const { me, logout } = useAdminAuth()
@@ -86,6 +86,7 @@ const nav = computed(() => [
     items: [
       { to: '/admin/rapoarte', label: 'Rapoarte', icon: FileBarChart },
       { to: '/admin/audit', label: 'Jurnal audit', icon: ScrollText },
+      { to: '/admin/messengeros', label: 'SMS', icon: MessageSquare },
     ],
   },
 ])

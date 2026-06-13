@@ -57,8 +57,11 @@ python3 -m pip install \
   --upgrade \
   --quiet
 
-# 3. App code on top of the deps.
-cp "$HERE/lambda_function.py" "$HERE/email_templates.py" "$BUILD/"
+# 3. App code on top of the deps: the entry shim, the api/ package, and the
+#    email/SMS template modules.
+cp "$HERE/lambda_function.py" "$HERE/email_templates.py" "$HERE/sms_templates.py" "$BUILD/"
+cp -r "$HERE/api" "$BUILD/api"
+rm -rf "$BUILD/api/__pycache__"
 
 # 4. Zip (exclude bytecode/caches for a lean, reproducible artifact).
 ( cd "$BUILD" && zip -qr "$ZIP" . -x '*.pyc' -x '*/__pycache__/*' )

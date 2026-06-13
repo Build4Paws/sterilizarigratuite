@@ -102,7 +102,7 @@ Table citizens {
     county_code [note: 'partial: status = active']
   }
 
-  Note: 'CHECK: phone OR email required. CHECK: gdpr_consent = TRUE unless deleted.'
+  Note: 'CHECK: phone OR email required UNLESS deleted (erased rows are anonymized). CHECK: gdpr_consent = TRUE unless deleted.'
 }
 
 Table citizen_species {

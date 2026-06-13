@@ -6,12 +6,26 @@ the frontend that calls it.
 
 ```
 lambda/
-├── lambda_function.py   # router + all handlers (entry: lambda_function.lambda_handler)
+├── lambda_function.py   # thin entry — re-exports api.router.lambda_handler
+├── api/                 # the implementation package
+│   ├── config.py        # env vars, per-environment selection, constants, active-env state
+│   ├── helpers.py       # DB, HTTP responses, security/captcha, tokens, email, SMS
+│   ├── models.py        # Pydantic request models + validation-error mapping
+│   ├── public_handlers.py  # public + magic-link route handlers
+│   ├── admin.py         # admin auth helpers + admin route handlers
+│   ├── reports.py       # admin CSV report handlers
+│   └── router.py        # ROUTES/DISPATCH + lambda_handler (env select, admin gate)
 ├── email_templates.py   # branded transactional emails (organizer + citizen)
+├── sms_templates.py     # short SMS bodies (messengeros)
+├── migrations/          # one-off SQL migrations (run manually against RDS)
 ├── requirements.txt     # psycopg, pydantic, email-validator (boto3 is in the runtime)
-├── deploy.sh            # build matching-platform wheels + update-function-code
+├── deploy.sh            # build matching-platform wheels + bundle api/ + update-function-code
 └── .env.example         # documents the function's env vars (no secrets)
 ```
+
+The AWS handler is still `lambda_function.lambda_handler` (unchanged function
+config). Cross-module shared state (the active environment) lives only in
+`config` behind `set_active_env()` / `current_env()` / `current_origin()`.
 
 ## Deploy
 

@@ -40,14 +40,14 @@
       <section v-if="session.manageToken" class="keycard">
         <div class="keycard__head">
           <span class="keycard__icon" aria-hidden="true"><KeyRound :size="22" /></span>
-          <h2 class="keycard__title">Codul tău de acces</h2>
+          <h2 class="keycard__title">Link-ul tău de acces</h2>
         </div>
         <p class="keycard__lead">
-          Cu acest cod îți gestionezi înscrierea oricând, fără cont și fără parolă.
-          Salvează-l acum într-un loc sigur, este cheia ta către profil.
+          Cu acest link îți gestionezi înscrierea oricând — te dezabonezi sau îți
+          ștergi datele, fără cont și fără parolă. Salvează-l într-un loc sigur.
         </p>
         <div class="keycard__field">
-          <code class="keycard__token">{{ session.manageToken }}</code>
+          <a class="keycard__token" :href="manageUrl" target="_blank" rel="noopener">{{ manageUrl }}</a>
           <button type="button" class="keycard__copy" :class="{ 'is-copied': copied }" @click="copyToken">
             <component :is="copied ? Check : Copy" :size="18" aria-hidden="true" />
             <span>{{ copied ? 'Copiat' : 'Copiază' }}</span>
@@ -152,17 +152,22 @@ const actions = [
   { to: '/harta', icon: Map, title: 'Harta înscrierilor', desc: 'Vezi câți oameni din județul tău așteaptă o campanie.' },
 ]
 
+// The "access code" is the citizen-manage token; surface it as the ready-to-use
+// management link (/cont/{token}), not the raw token.
+const requestUrl = useRequestURL()
+const manageUrl = computed(() =>
+  session.value?.manageToken ? `${requestUrl.origin}/cont/${session.value.manageToken}` : '')
+
 const copied = ref(false)
 async function copyToken() {
-  const token = session.value?.manageToken
-  if (!token) return
+  if (!manageUrl.value) return
   try {
-    await navigator.clipboard.writeText(token)
+    await navigator.clipboard.writeText(manageUrl.value)
     copied.value = true
-    toast.success('Cod copiat. Salvează-l într-un loc sigur.')
+    toast.success('Link copiat. Salvează-l într-un loc sigur.')
     setTimeout(() => { copied.value = false }, 2500)
   } catch {
-    toast.error('Nu am putut copia codul. Selectează-l și copiază-l manual.')
+    toast.error('Nu am putut copia linkul. Selectează-l și copiază-l manual.')
   }
 }
 
@@ -500,7 +505,9 @@ const { clinics } = useClinics(
   color: var(--color-text-light);
   padding: var(--space-xs) var(--space-sm);
   user-select: all;
+  text-decoration: none;
 }
+.keycard__token:hover { text-decoration: underline; }
 
 .keycard__copy {
   display: inline-flex;

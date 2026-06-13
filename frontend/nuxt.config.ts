@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   },
 
   robots: {
-    disallow: ['/m/', '/r/', '/confirmare', '/confirmare-campanie', '/admin'],
+    disallow: ['/m/', '/r/', '/cont/', '/confirmare', '/confirmare-campanie', '/admin'],
   },
 
   sitemap: {
@@ -78,6 +78,11 @@ export default defineNuxtConfig({
     // proxies on EC2; the VPC Lambda has no egress). NEVER expose to the browser.
     // Empty = dev mode → captcha verification skipped.
     turnstileSecretKey: process.env.NUXT_TURNSTILE_SECRET_KEY || '',
+    // messengeros (SMS) service-account login — server-only. The admin proxy
+    // (server/utils/messengeros.ts) logs in to get a Bearer JWT for /backend/*.
+    // NEVER expose to the browser.
+    messengerosEmail: process.env.NUXT_MESSENGEROS_EMAIL || '',
+    messengerosPassword: process.env.NUXT_MESSENGEROS_PASSWORD || '',
     public: {
       turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '',
     },
@@ -127,6 +132,7 @@ export default defineNuxtConfig({
     '/organizator/**': { robots: false },
     '/m/**': { robots: false },
     '/r/**': { robots: false },
+    '/cont/**': { robots: false },
   },
 
   nitro: {
