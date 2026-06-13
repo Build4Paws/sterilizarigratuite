@@ -7,27 +7,27 @@
     <section class="dash__tiles">
       <NuxtLink to="/admin/campanii?status=pending" class="tile tile--accent tile--link">
         <span class="tile__icon"><Clock :size="20" /></span>
-        <span class="tile__value">{{ overview?.pendingCampaigns ?? '—' }}</span>
+        <span class="tile__value">{{ overview?.pendingCampaigns ?? '–' }}</span>
         <span class="tile__label">Campanii în așteptare</span>
         <span class="tile__cta">Moderează →</span>
       </NuxtLink>
 
       <article class="tile">
         <span class="tile__icon"><CalendarCheck :size="20" /></span>
-        <span class="tile__value">{{ overview?.approvedUpcoming ?? '—' }}</span>
+        <span class="tile__value">{{ overview?.approvedUpcoming ?? '–' }}</span>
         <span class="tile__label">Aprobate, viitoare</span>
       </article>
 
       <NuxtLink to="/admin/cetateni" class="tile tile--link">
         <span class="tile__icon"><Users :size="20" /></span>
-        <span class="tile__value">{{ overview?.citizensActive ?? '—' }}</span>
+        <span class="tile__value">{{ overview?.citizensActive ?? '–' }}</span>
         <span class="tile__label">Cetățeni activi</span>
         <span class="tile__cta">Vezi lista →</span>
       </NuxtLink>
 
       <article class="tile">
         <span class="tile__icon"><UserPlus :size="20" /></span>
-        <span class="tile__value">{{ overview?.registrationsToday ?? '—' }}</span>
+        <span class="tile__value">{{ overview?.registrationsToday ?? '–' }}</span>
         <span class="tile__label">Înscrieri azi</span>
       </article>
     </section>
@@ -58,7 +58,7 @@ import { Clock, CalendarCheck, Users, UserPlus, Building2, FileBarChart, Chevron
 import type { AdminOverview } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Panou', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Panou', robots: 'noindex, nofollow' })
 
 const { me } = useAdminAuth()
 const { data: overview, error } = await useFetch<AdminOverview>('/api/admin/stats/overview', {

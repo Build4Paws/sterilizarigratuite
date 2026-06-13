@@ -41,7 +41,7 @@
 import type { AdminOrganizerDetail } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Detalii organizator', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Detalii organizator', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))

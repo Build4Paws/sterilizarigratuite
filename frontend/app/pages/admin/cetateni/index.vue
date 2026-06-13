@@ -56,7 +56,7 @@
 import type { AdminCitizenList } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Cetățeni', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Cetățeni', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const activeStatus = computed(() => String(route.query.status ?? ''))

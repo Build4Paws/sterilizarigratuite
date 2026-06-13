@@ -91,7 +91,7 @@
 
       <!-- Species & slots -->
       <section class="detail__card">
-        <h2 class="detail__section-title">Specii și locuri disponibile</h2>
+        <h2 class="detail__section-title">Specii și numarul de locuri alocate campaniei</h2>
         <div class="species">
           <div v-if="campaign.species.dog !== undefined" class="species__item">
             <span class="species__emoji" aria-hidden="true">🐕</span>
@@ -119,7 +119,7 @@ import { Clock, AlertCircle, CalendarCheck } from 'lucide-vue-next'
 import type { PublicCampaign } from '~/types'
 
 definePageMeta({ layout: 'default' })
-useSeoMeta({ robots: 'noindex, nofollow', title: 'Detalii campanie — Sterilizări Gratuite' })
+useSeoMeta({ robots: 'noindex, nofollow', title: 'Detalii campanie · Sterilizări Gratuite' })
 
 const route = useRoute()
 const id = computed(() => String(route.params.id ?? ''))

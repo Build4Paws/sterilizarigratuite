@@ -19,7 +19,7 @@
           <div><dt>Interval orar</dt><dd>{{ c.timeStart }}–{{ c.timeEnd }}</dd></div>
           <div><dt>Adresă</dt><dd>{{ c.address }}</dd></div>
           <div><dt>Telefon public</dt><dd>{{ formatPhone(c.phonePublic) }}</dd></div>
-          <div><dt>Medic</dt><dd>{{ c.doctor || '—' }}</dd></div>
+          <div><dt>Medic</dt><dd>{{ c.doctor || '–' }}</dd></div>
           <div><dt>Locuri</dt><dd>{{ slotsText }}</dd></div>
         </dl>
       </section>
@@ -74,7 +74,7 @@
 import type { AdminCampaignDetail, AdminCampaignStatus } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Detalii campanie', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Detalii campanie', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))
@@ -116,7 +116,7 @@ const slotsText = computed(() => {
   const parts: string[] = []
   if (s.dog != null) parts.push(`${s.dog} câini`)
   if (s.cat != null) parts.push(`${s.cat} pisici`)
-  return parts.join(', ') || '—'
+  return parts.join(', ') || '–'
 })
 
 async function approve() {

@@ -11,7 +11,7 @@
     >
       <tr v-for="e in data?.entries ?? []" :key="e.id">
         <td class="nowrap">{{ formatDateTime(e.occurredAt) }}</td>
-        <td>{{ e.actor || '—' }}</td>
+        <td>{{ e.actor || '–' }}</td>
         <td><code>{{ e.action }}</code></td>
         <td>{{ e.entityType }}{{ e.entityId != null ? ` #${e.entityId}` : '' }}</td>
         <td class="meta">{{ metaText(e.metadata) }}</td>
@@ -24,12 +24,12 @@
 import type { AuditList } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Jurnal audit', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Jurnal audit', robots: 'noindex, nofollow' })
 
 const { data, pending, error } = await useFetch<AuditList>('/api/admin/audit', { key: 'admin-audit' })
 
 function metaText(meta?: Record<string, unknown> | null): string {
-  if (!meta || Object.keys(meta).length === 0) return '—'
+  if (!meta || Object.keys(meta).length === 0) return '–'
   return Object.entries(meta).map(([k, v]) => `${k}: ${v}`).join(', ')
 }
 </script>

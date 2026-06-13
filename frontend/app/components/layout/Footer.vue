@@ -3,7 +3,7 @@
     <div class="container footer__body">
 
       <div class="footer__brand">
-        <a href="https://sterilizarigratuite.ro" class="footer__logo-link" aria-label="Sterilizări Gratuite — acasă">
+        <a href="https://sterilizarigratuite.ro" class="footer__logo-link" aria-label="Sterilizări Gratuite, acasă">
           <img
             src="~/assets/images/logo-horizontal.svg"
             alt="Sterilizări Gratuite"
@@ -26,6 +26,7 @@
             <NuxtLink to="/ghid-sterilizare">Ghid sterilizare</NuxtLink>
             <NuxtLink to="/organizatori">Organizatori</NuxtLink>
             <NuxtLink to="/harta">Harta</NuxtLink>
+            <NuxtLink to="/sustine">Susține-ne</NuxtLink>
           </nav>
         </div>
 

@@ -89,7 +89,7 @@ import { CalendarCheck, Users, Building2, ScrollText, Download, Check } from 'lu
 import type { ReportType } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Rapoarte', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Rapoarte', robots: 'noindex, nofollow' })
 
 const toast = useToast()
 const { counties, init } = useLocationData()

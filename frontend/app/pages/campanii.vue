@@ -51,7 +51,7 @@
           <div class="guide-banner__body">
             <p class="guide-banner__eyebrow">Înainte de programare</p>
             <p class="guide-banner__title">
-              Citește ghidul nostru de sterilizare — ce ai de făcut înainte, după și ce să știi despre procedură.
+              Citește ghidul nostru de sterilizare: ce ai de făcut înainte, după și ce să știi despre procedură.
             </p>
           </div>
           <span class="guide-banner__cta">
@@ -101,7 +101,7 @@
               Vezi toate campaniile
             </NuxtLink>
             <NuxtLink to="/" class="empty__cta">
-              Anunțați-mă
+              Anunță-mă
             </NuxtLink>
           </div>
         </div>
@@ -230,11 +230,13 @@ const emptyTitle = computed(() => {
   return `Nu sunt campanii pentru ${sp} momentan.`
 })
 
-const emptyText = computed(() =>
-  hasActiveFilters.value
-    ? 'Încearcă alt județ sau altă specie.'
-    : 'Lasă-ne telefonul sau emailul și te anunțăm când apare una în zona ta.',
-)
+const emptyText = computed(() => {
+  if (!hasActiveFilters.value) {
+    return 'Lasă-ne telefonul sau emailul și te anunțăm când apare una în zona ta.'
+  }
+  if (species.value) return 'Încearcă alt județ sau altă specie.'
+  return 'Încearcă alt județ.'
+})
 
 // Filter handlers — write to URL; refs follow reactively.
 function onCountyChange(code: string) {
@@ -295,9 +297,9 @@ const robotsValue = computed(() =>
 
 const seoTitle = computed(() => {
   if (countyName.value) {
-    return `Campanii de sterilizare gratuită în ${countyName.value} — Sterilizări Gratuite`
+    return `Campanii de sterilizare gratuită în ${countyName.value} · Sterilizări Gratuite`
   }
-  return 'Campanii de sterilizare gratuită — toate județele active în România'
+  return 'Campanii de sterilizare gratuită în toate județele active din România'
 })
 
 const seoDescription = computed(() => {
@@ -331,7 +333,7 @@ const eventsLd = computed(() => {
   return campaigns.value.map((c) => ({
     '@context': 'https://schema.org',
     '@type': 'Event',
-    name: `Campanie sterilizare gratuită — ${c.locality}`,
+    name: `Campanie sterilizare gratuită în ${c.locality}`,
     startDate: isoDateTime(c.dateStart, c.timeStart),
     endDate: isoDateTime(c.dateEnd || c.dateStart, c.timeEnd),
     eventStatus: 'https://schema.org/EventScheduled',
@@ -567,13 +569,29 @@ useHead(() => ({
 }
 
 @media (max-width: 600px) {
+  .guide-banner {
+    padding-top: var(--space-md);
+  }
+
   .guide-banner__card {
+    /* Icon + text on the first row, CTA on its own full-width row below. */
     flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-sm) var(--space-md);
     padding: var(--space-md);
   }
 
+  .guide-banner__icon {
+    width: 38px;
+    height: 38px;
+  }
+
   .guide-banner__cta {
-    margin-left: calc(44px + var(--space-md));
+    flex-basis: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border-light);
   }
 }
 

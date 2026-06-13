@@ -203,8 +203,8 @@ useSeoMeta({
   robots: 'noindex, nofollow',
   title: computed(() =>
     profile.value?.organizationName
-      ? `${profile.value.organizationName} — campanii de sterilizare`
-      : 'Organizator — Sterilizări Gratuite',
+      ? `${profile.value.organizationName} · campanii de sterilizare`
+      : 'Organizator · Sterilizări Gratuite',
   ),
 })
 </script>

@@ -31,14 +31,14 @@
         <div v-if="!showAllLocalities" class="side-panel__species">
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
-              <Dog :size="15" class="side-panel__species-icon" />
+              <UiSpeciesIcon species="dog" :size="15" class="side-panel__species-icon" />
               Câini
             </span>
             <strong>{{ (countyData.species?.dog ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
-              <Cat :size="15" class="side-panel__species-icon" />
+              <UiSpeciesIcon species="cat" :size="15" class="side-panel__species-icon" />
               Pisici
             </span>
             <strong>{{ (countyData.species?.cat ?? 0).toLocaleString('ro-RO') }}</strong>
@@ -138,8 +138,8 @@
             :class="['side-panel__sort-btn', { 'is-active': species === opt.key }]"
             @click="species = opt.key"
           >
-            <Dog v-if="opt.key === 'dog'" :size="12" aria-hidden="true" />
-            <Cat v-if="opt.key === 'cat'" :size="12" aria-hidden="true" />
+            <UiSpeciesIcon v-if="opt.key === 'dog'" species="dog" :size="12" />
+            <UiSpeciesIcon v-if="opt.key === 'cat'" species="cat" :size="12" />
             {{ opt.label }}
           </button>
         </div>
@@ -159,8 +159,8 @@
               <span class="side-panel__rank">{{ i + 1 }}</span>
               <span class="side-panel__county-name">{{ codeToName(item.code) }}</span>
               <span class="side-panel__value">
-                <Dog v-if="view === 'cerere' && species === 'dog'" :size="13" aria-hidden="true" />
-                <Cat v-else-if="view === 'cerere' && species === 'cat'" :size="13" aria-hidden="true" />
+                <UiSpeciesIcon v-if="view === 'cerere' && species === 'dog'" species="dog" :size="13" />
+                <UiSpeciesIcon v-else-if="view === 'cerere' && species === 'cat'" species="cat" :size="13" />
                 {{ item.value.toLocaleString('ro-RO') }}
               </span>
             </div>
@@ -182,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { X, Dog, Cat, ArrowLeft } from 'lucide-vue-next'
+import { X, ArrowLeft } from 'lucide-vue-next'
 import type { Campaign, CountyStats } from '~/types'
 import { countyCodeToNameSync, countyCodeToSlugSync } from '~/composables/useLocationData'
 

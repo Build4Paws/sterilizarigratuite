@@ -18,8 +18,8 @@
           </button>
         </div>
         <dl class="kv">
-          <div><dt>Telefon</dt><dd>{{ z.phone ? (revealed ? formatPhone(z.phone) : mask(z.phone)) : '—' }}</dd></div>
-          <div><dt>Email</dt><dd>{{ z.email ? (revealed ? z.email : maskEmail(z.email)) : '—' }}</dd></div>
+          <div><dt>Telefon</dt><dd>{{ z.phone ? (revealed ? formatPhone(z.phone) : mask(z.phone)) : '–' }}</dd></div>
+          <div><dt>Email</dt><dd>{{ z.email ? (revealed ? z.email : maskEmail(z.email)) : '–' }}</dd></div>
           <div><dt>Localitate</dt><dd>{{ z.locality }}, {{ z.countyName }}</dd></div>
           <div><dt>Animale</dt><dd>{{ animalsText }}</dd></div>
           <div><dt>Consimțământ GDPR</dt><dd>{{ formatDateTime(z.gdprConsentAt) }}</dd></div>
@@ -73,7 +73,7 @@
 import type { AdminCitizenDetail, CitizenStatus } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
-useSeoMeta({ title: 'Admin — Detalii cetățean', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Admin · Detalii cetățean', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const id = computed(() => String(route.params.id))
@@ -105,7 +105,7 @@ const animalsText = computed(() => {
   const parts: string[] = []
   if (s.dog != null) parts.push(`${s.dog} câini`)
   if (s.cat != null) parts.push(`${s.cat} pisici`)
-  return parts.join(', ') || '—'
+  return parts.join(', ') || '–'
 })
 
 function mask(v: string) {

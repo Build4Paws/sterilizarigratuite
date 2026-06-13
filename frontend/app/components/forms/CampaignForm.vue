@@ -127,6 +127,7 @@
               type="date"
               :min="todayISO"
               :required="true"
+              hint="Format: zi/lună/an"
               :error="submitted ? errors.dateStart : undefined"
             />
           </UiFormItem>
@@ -138,6 +139,7 @@
               type="date"
               :min="form.dateStart || todayISO"
               :required="true"
+              hint="Format: zi/lună/an"
               :error="submitted ? errors.dateEnd : undefined"
             />
           </UiFormItem>
@@ -471,12 +473,12 @@ function validate(): boolean {
 
   const contactPhoneClean = stripPhone(form.contactPhone)
   if (!contactPhoneClean) e.contactPhone = 'Telefonul de contact este obligatoriu.'
-  else if (!isValidPhone(form.contactPhone)) e.contactPhone = 'Introdu 9 cifre după +40.'
+  else if (!isValidPhone(form.contactPhone)) e.contactPhone = 'Introdu un număr de telefon valid (ex: 0712 345 678).'
 
   if (!form.samePublicPhone) {
     const publicPhoneClean = stripPhone(form.phonePublic)
     if (!publicPhoneClean) e.phonePublic = 'Telefonul public este obligatoriu.'
-    else if (!isValidPhone(form.phonePublic)) e.phonePublic = 'Introdu 9 cifre după +40.'
+    else if (!isValidPhone(form.phonePublic)) e.phonePublic = 'Introdu un număr de telefon valid (ex: 0712 345 678).'
   }
 
   if (!form.county) e.county = 'Alege județul.'

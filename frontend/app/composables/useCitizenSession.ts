@@ -11,6 +11,8 @@ export interface CitizenSession {
   countyName: string
   locality: string
   species: ('dog' | 'cat')[]
+  dogCount?: number
+  catCount?: number
   submittedAt: string
   stats?: RegistrationStats
   /** Persisted for a future "manage my subscription" link (magic-link UI deferred). */
