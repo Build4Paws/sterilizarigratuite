@@ -74,8 +74,12 @@ export default defineNuxtConfig({
     cognitoUserPoolId: process.env.COGNITO_USER_POOL_ID || '',
     cognitoClientId: process.env.COGNITO_CLIENT_ID || '',
     cognitoClientSecret: process.env.COGNITO_CLIENT_SECRET || '',
+    // Cloudflare Turnstile secret — server-only (verified in the register/submit
+    // proxies on EC2; the VPC Lambda has no egress). NEVER expose to the browser.
+    // Empty = dev mode → captcha verification skipped.
+    turnstileSecretKey: process.env.NUXT_TURNSTILE_SECRET_KEY || '',
     public: {
-      hcaptchaSiteKey: process.env.NUXT_PUBLIC_HCAPTCHA_SITE_KEY || '',
+      turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '',
     },
   },
 
@@ -89,12 +93,12 @@ export default defineNuxtConfig({
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://hcaptcha.com",
+          "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com data:",
           "img-src 'self' data: https:",
-          "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com",
-          "frame-src https://*.hcaptcha.com https://hcaptcha.com",
+          "connect-src 'self' https://challenges.cloudflare.com",
+          "frame-src https://challenges.cloudflare.com",
           "frame-ancestors 'none'",
           "base-uri 'self'",
         ].join('; '),

@@ -2,9 +2,10 @@ import { AwsClient } from 'aws4fetch'
 
 /**
  * Proxy for POST /register.
- * hCaptcha verification is handled exclusively by the AWS backend —
- * we forward the full body (including hcaptchaToken) as-is and sign
- * the request with SigV4 so the backend trusts the origin.
+ * Cloudflare Turnstile is verified HERE (this box has internet egress; the
+ * VPC Lambda does not), then we forward the body — including the now-verified
+ * turnstileToken — to the backend SigV4-signed. The Lambda runs with
+ * TURNSTILE_ENABLED=false so it trusts this proxy and doesn't re-verify.
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -24,6 +25,19 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = (await readBody(event)) as Record<string, unknown> | null
+
+  // Captcha gate (before signing/forwarding). Maps to RO copy via captcha_failed.
+  const ok = await verifyTurnstile(
+    body?.turnstileToken as string | undefined,
+    getRequestIP(event, { xForwardedFor: true }),
+  )
+  if (!ok) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Captcha invalid',
+      data: { error: 'captcha_failed' },
+    })
+  }
 
   const aws = new AwsClient({
     accessKeyId: awsAccessKeyId as string,

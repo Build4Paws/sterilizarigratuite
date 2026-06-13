@@ -5,7 +5,7 @@ import { AwsClient } from 'aws4fetch'
  *
  * Returns { localities: [{ id, name }] } from the backend as-is.
  * Cached 24 h — locality lists rarely change.
- * No hCaptcha needed (read endpoint).
+ * No captcha needed (read endpoint).
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

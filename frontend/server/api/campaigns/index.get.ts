@@ -31,7 +31,7 @@ function mapCampaign(c: Record<string, any>): PublicCampaign {
  * (2-letter `auto` code). The backend already filters by status and end date,
  * so the frontend trusts the response.
  *
- * No hCaptcha here — this is a read endpoint.
+ * No captcha here — this is a read endpoint.
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

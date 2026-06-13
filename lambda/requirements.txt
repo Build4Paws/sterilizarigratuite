@@ -1,0 +1,11 @@
+# Runtime dependencies for the sterilizarigratuite API Lambda.
+# boto3/botocore are provided by the AWS Python runtime — do NOT pin them here.
+#
+# These are installed as Linux wheels matching the function's runtime +
+# architecture by deploy.sh (pip --platform/--python-version --only-binary).
+# Keep ranges loose enough to pick up wheels for whatever python3.x the
+# function runs, but inside a major that we've validated.
+
+psycopg[binary]>=3.2,<3.3
+pydantic>=2.7,<3
+email-validator>=2.1,<3

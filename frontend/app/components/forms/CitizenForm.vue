@@ -1,5 +1,10 @@
 <template>
   <form class="citizen-form" novalidate @submit.prevent="handleSubmit">
+    <!-- Honeypot: hidden from people; a filled value means a bot, dropped client-side. -->
+    <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+      <label>Website</label>
+      <input v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
     <!-- Card header -->
     <div class="citizen-form__header">
       <h2 class="citizen-form__title">Înscrie-te gratuit</h2>
@@ -152,12 +157,12 @@
         </UiFormItem>
       </UiFormRow>
 
-      <UiFormRow v-if="hcaptchaSiteKey">
+      <UiFormRow v-if="turnstileSiteKey">
         <UiFormItem>
           <ClientOnly>
-            <VueHcaptcha
-              ref="hcaptchaRef"
-              :sitekey="hcaptchaSiteKey"
+            <UiTurnstile
+              ref="turnstileRef"
+              :site-key="turnstileSiteKey"
               @verify="onCaptchaVerify"
               @expired="onCaptchaExpired"
               @error="onCaptchaError"
@@ -196,36 +201,35 @@
 </template>
 
 <script setup lang="ts">
-import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
 import { AlertCircle } from 'lucide-vue-next'
 import type { CitizenFormState, CitizenRegistration, CitizenRegistrationResponse } from '~/types'
 import type { ContactChannel } from '~/composables/useCitizenSession'
 
 const router = useRouter()
 const runtimeConfig = useRuntimeConfig()
-const hcaptchaSiteKey = runtimeConfig.public.hcaptchaSiteKey as string
+const turnstileSiteKey = runtimeConfig.public.turnstileSiteKey as string
 const { counties, init: initLocations } = useLocationData()
 const citizenSession = useCitizenSession()
 
-const hcaptchaRef = ref<InstanceType<typeof VueHcaptcha> | null>(null)
-const hcaptchaToken = ref('')
+const turnstileRef = ref<{ reset: () => void } | null>(null)
+const turnstileToken = ref('')
 const captchaError = ref('')
+const honeypot = ref('')
 
 function onCaptchaVerify(token: string) {
-  hcaptchaToken.value = token
+  turnstileToken.value = token
   captchaError.value = ''
 }
 function onCaptchaExpired() {
-  hcaptchaToken.value = ''
+  turnstileToken.value = ''
 }
 function onCaptchaError() {
-  hcaptchaToken.value = ''
+  turnstileToken.value = ''
   captchaError.value = 'Captcha a eșuat. Te rugăm să încerci din nou.'
 }
 function resetCaptcha() {
-  hcaptchaToken.value = ''
-  const instance = hcaptchaRef.value as { reset?: () => void } | null
-  instance?.reset?.()
+  turnstileToken.value = ''
+  turnstileRef.value?.reset()
 }
 
 const isMobile = ref(false)
@@ -312,6 +316,10 @@ function onCountyChange() {
 }
 
 async function handleSubmit() {
+  // Honeypot: a hidden field no human can fill. If it has a value it's a bot —
+  // drop the submit silently, without ever contacting the backend.
+  if (honeypot.value) return
+
   submitted.value = true
 
   if (!validate()) {
@@ -323,7 +331,7 @@ async function handleSubmit() {
     return
   }
 
-  if (hcaptchaSiteKey && !hcaptchaToken.value) {
+  if (turnstileSiteKey && !turnstileToken.value) {
     captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
     return
   }
@@ -349,7 +357,7 @@ async function handleSubmit() {
 
     const response = await $fetch<CitizenRegistrationResponse>('/api/register', {
       method: 'POST',
-      body: { ...payload, hcaptchaToken: hcaptchaToken.value || undefined },
+      body: { ...payload, turnstileToken: turnstileToken.value || undefined },
     })
 
     const emailClean = form.email?.trim() || undefined

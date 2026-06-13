@@ -1,7 +1,14 @@
 /**
- * Maps backend error codes (returned in `error.data.error`) to user-facing
- * Romanian copy. Keys must stay in sync with the codes documented in
- * docs/CAMPAIGNS-FLOW-PLAN.md §5 and the citizen registration contract.
+ * Maps backend error codes to user-facing Romanian copy. Keys must stay in sync
+ * with the codes documented in docs/CAMPAIGNS-FLOW-PLAN.md §5 and the citizen
+ * registration contract.
+ *
+ * NOTE on shape: when a Nitro server route throws `createError({ data })`, the
+ * error response body is the *envelope*
+ *   { error: true, statusCode, statusMessage, message, data: <payload> }
+ * so the backend code lives at `error.data.data`, not `error.data`. `<payload>`
+ * is whatever we passed as `data` — an object (`{ error, errors? }`) or a raw
+ * JSON string (the public proxies forward the upstream body verbatim).
  */
 const ERROR_MESSAGES: Record<string, string> = {
   duplicate_submission:
@@ -45,38 +52,56 @@ interface ApiErrorShape {
 }
 
 /**
+ * Pulls a usable message out of one candidate payload (an object, a JSON string,
+ * or anything else). Returns the mapped/derived message, or `null` if this
+ * candidate carries nothing usable.
+ *
+ * Priority within a candidate:
+ *   1. Mapped Romanian copy for a known `error` code
+ *   2. Backend-provided `errors[]` list (joined) or `message`
+ *   3. The raw `error` code as a last resort
+ */
+function messageFromPayload(raw: unknown): string | null {
+  let data = raw
+  if (typeof data === 'string') {
+    const str = data
+    try { data = JSON.parse(str) } catch { return str || null }
+  }
+  if (!data || typeof data !== 'object') return null
+
+  const d = data as { errors?: string[]; message?: string; error?: string }
+  if (d.error) {
+    const mapped = ERROR_MESSAGES[d.error]
+    if (mapped) return mapped
+  }
+  if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
+  if (d.message) return d.message
+  if (typeof d.error === 'string') return d.error
+  return null
+}
+
+/**
  * Extracts a user-facing message from an error thrown by `$fetch`/`createError`.
  *
- * Priority:
- *   1. Mapped Romanian copy for a known `data.error` code
- *   2. Backend-provided `data.errors[]` list (joined) or `data.message`
- *   3. The handler's `statusMessage` (already in Romanian for our routes)
- *   4. Generic fallback
+ * `err.data` is the response body, which for our routes is the Nitro error
+ * envelope (see the note above). We therefore look at the nested payload
+ * (`err.data.data`) first, then fall back to the envelope itself (covers
+ * non-wrapped shapes), then the handler's `statusMessage`, then a generic copy.
  */
 export function extractApiError(err: unknown): string {
   if (!err || typeof err !== 'object') return FALLBACK
 
   const e = err as ApiErrorShape
+  const envelope = e.data
+  const inner = envelope && typeof envelope === 'object'
+    ? (envelope as { data?: unknown }).data
+    : undefined
 
-  let data: unknown = e.data
-  if (typeof data === 'string') {
-    const raw = data
-    try { data = JSON.parse(raw) }
-    catch { return raw || e.statusMessage || FALLBACK }
-  }
-
-  if (data && typeof data === 'object') {
-    const d = data as { errors?: string[]; message?: string; error?: string }
-
-    if (d.error) {
-      const mapped = ERROR_MESSAGES[d.error]
-      if (mapped) return mapped
-    }
-
-    if (Array.isArray(d.errors) && d.errors.length) return d.errors.join('. ')
-    if (d.message) return d.message
-    if (d.error) return d.error
-  }
-
-  return e.statusMessage || e.message || FALLBACK
+  return (
+    messageFromPayload(inner)
+    || messageFromPayload(envelope)
+    || e.statusMessage
+    || e.message
+    || FALLBACK
+  )
 }

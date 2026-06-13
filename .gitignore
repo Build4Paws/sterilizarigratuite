@@ -37,3 +37,11 @@ next-env.d.ts
 
 # build script cache (GeoNames downloads etc.)
 frontend/scripts/.cache/
+
+# lambda build artifacts + local env (never commit secrets)
+lambda/build/
+lambda/dist/
+lambda/*.zip
+lambda/.env
+lambda/.env.*
+!lambda/.env.example

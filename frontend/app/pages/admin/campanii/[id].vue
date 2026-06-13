@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AdminCampaignDetail } from '~/types'
+import type { AdminCampaignDetail, AdminCampaignStatus } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 useSeoMeta({ title: 'Admin — Detalii campanie', robots: 'noindex, nofollow' })
@@ -79,11 +79,33 @@ useSeoMeta({ title: 'Admin — Detalii campanie', robots: 'noindex, nofollow' })
 const route = useRoute()
 const id = computed(() => String(route.params.id))
 const toast = useToast()
+const { me } = useAdminAuth()
 
-const { data: c, pending, error, refresh } = await useFetch<AdminCampaignDetail>(
+const { data: c, pending, error } = await useFetch<AdminCampaignDetail>(
   () => `/api/admin/campaigns/${id.value}`,
   { key: `admin-campaign-${id.value}` },
 )
+
+/**
+ * Apply the result of a moderation action locally instead of immediately
+ * re-reading the backend. A successful POST is authoritative (it hit the
+ * writer), but an immediate GET can race replica propagation and return the
+ * pre-action `pending` row — which made approvals appear to "revert". We patch
+ * the known new state here, and invalidate the shared list + sidebar-badge
+ * caches so they refetch fresh on next view.
+ */
+function applyReviewed(status: AdminCampaignStatus, rejectionReason?: string) {
+  if (c.value) {
+    c.value = {
+      ...c.value,
+      status,
+      reviewedBy: me.value?.email ?? c.value.reviewedBy ?? null,
+      reviewedAt: new Date().toISOString(),
+      ...(rejectionReason ? { rejectionReason } : {}),
+    }
+  }
+  refreshNuxtData(['admin-campaigns', 'admin-overview'])
+}
 
 const busy = ref(false)
 const rejecting = ref(false)
@@ -101,8 +123,8 @@ async function approve() {
   busy.value = true
   try {
     await $fetch(`/api/admin/campaigns/${id.value}/approve`, { method: 'POST' })
+    applyReviewed('approved')
     toast.success('Campania a fost aprobată.')
-    await refresh()
   } catch (err) {
     toast.error(extractApiError(err))
   } finally {
@@ -111,14 +133,15 @@ async function approve() {
 }
 
 async function reject() {
-  if (!reason.value.trim()) return
+  const why = reason.value.trim()
+  if (!why) return
   busy.value = true
   try {
-    await $fetch(`/api/admin/campaigns/${id.value}/reject`, { method: 'POST', body: { reason: reason.value.trim() } })
+    await $fetch(`/api/admin/campaigns/${id.value}/reject`, { method: 'POST', body: { reason: why } })
+    applyReviewed('rejected', why)
     toast.success('Campania a fost respinsă.')
     rejecting.value = false
     reason.value = ''
-    await refresh()
   } catch (err) {
     toast.error(extractApiError(err))
   } finally {

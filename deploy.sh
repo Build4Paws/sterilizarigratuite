@@ -5,8 +5,8 @@ set -euo pipefail
 # Run from the repo root:  ./deploy.sh
 #
 # NOTE: server runtime secrets (AWS creds, AWS_API_BASE, AWS_REGION) and the
-# public hCaptcha site key are read from frontend/.env at BUILD time and baked
-# into .output — the EC2 box has no .env of its own. Build with .env present.
+# public Cloudflare Turnstile site key are read from frontend/.env at BUILD time
+# and baked into .output — the EC2 box has no .env of its own. Build with .env present.
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 KEY="$ROOT/cosmin.pem"

@@ -1,5 +1,10 @@
 <template>
   <form class="campaign-form" novalidate @submit.prevent="handleSubmit">
+    <!-- Honeypot: hidden from people; a filled value means a bot, dropped client-side. -->
+    <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+      <label>Website</label>
+      <input v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
     <!-- ============================================================ -->
     <!-- STEP 1 — Fill                                                  -->
     <!-- ============================================================ -->
@@ -294,11 +299,11 @@
     <template v-else>
       <CampaignCard :campaign="cardData" :show-call-cta="true" />
 
-      <div v-if="hcaptchaSiteKey" class="campaign-form__captcha">
+      <div v-if="turnstileSiteKey" class="campaign-form__captcha">
         <ClientOnly>
-          <VueHcaptcha
-            ref="hcaptchaRef"
-            :sitekey="hcaptchaSiteKey"
+          <UiTurnstile
+            ref="turnstileRef"
+            :site-key="turnstileSiteKey"
             @verify="onCaptchaVerify"
             @expired="onCaptchaExpired"
             @error="onCaptchaError"
@@ -318,7 +323,7 @@
           type="submit"
           variant="primary"
           :loading="submitting"
-          :disabled="submitting || (!!hcaptchaSiteKey && !hcaptchaToken)"
+          :disabled="submitting || (!!turnstileSiteKey && !turnstileToken)"
         >
           Trimite spre aprobare
         </UiButton>
@@ -328,7 +333,6 @@
 </template>
 
 <script setup lang="ts">
-import VueHcaptcha from '@hcaptcha/vue3-hcaptcha'
 import { Users, ArrowLeft, AlertCircle } from 'lucide-vue-next'
 
 const emit = defineEmits<{ stepChange: [step: 1 | 2] }>()
@@ -341,28 +345,28 @@ import type {
 
 const router = useRouter()
 const runtimeConfig = useRuntimeConfig()
-const hcaptchaSiteKey = runtimeConfig.public.hcaptchaSiteKey as string
+const turnstileSiteKey = runtimeConfig.public.turnstileSiteKey as string
 const { counties, init: initLocations } = useLocationData()
 const organizerSubmission = useOrganizerSubmission()
 const toast = useToast()
 
-const hcaptchaRef = ref<InstanceType<typeof VueHcaptcha> | null>(null)
-const hcaptchaToken = ref('')
+const turnstileRef = ref<{ reset: () => void } | null>(null)
+const turnstileToken = ref('')
 const captchaError = ref('')
+const honeypot = ref('')
 
 function onCaptchaVerify(token: string) {
-  hcaptchaToken.value = token
+  turnstileToken.value = token
   captchaError.value = ''
 }
-function onCaptchaExpired() { hcaptchaToken.value = '' }
+function onCaptchaExpired() { turnstileToken.value = '' }
 function onCaptchaError() {
-  hcaptchaToken.value = ''
+  turnstileToken.value = ''
   captchaError.value = 'Captcha a eșuat. Te rugăm să încerci din nou.'
 }
 function resetCaptcha() {
-  hcaptchaToken.value = ''
-  const instance = hcaptchaRef.value as { reset?: () => void } | null
-  instance?.reset?.()
+  turnstileToken.value = ''
+  turnstileRef.value?.reset()
 }
 
 const isMobile = ref(false)
@@ -549,6 +553,10 @@ function goBackToEdit() {
 }
 
 async function handleSubmit() {
+  // Honeypot: a hidden field no human can fill. If it has a value it's a bot —
+  // drop the submit silently, without ever contacting the backend.
+  if (honeypot.value) return
+
   // Step 1 — validate then advance to preview.
   if (step.value === 1) {
     submitted.value = true
@@ -567,7 +575,7 @@ async function handleSubmit() {
   }
 
   // Step 2 — POST to backend and persist session.
-  if (hcaptchaSiteKey && !hcaptchaToken.value) {
+  if (turnstileSiteKey && !turnstileToken.value) {
     captchaError.value = 'Te rugăm să confirmi că nu ești robot.'
     return
   }
@@ -597,7 +605,7 @@ async function handleSubmit() {
 
     const response = await $fetch<CampaignSubmissionResponse>('/api/campaigns/submit', {
       method: 'POST',
-      body: { ...payload, hcaptchaToken: hcaptchaToken.value || undefined },
+      body: { ...payload, turnstileToken: turnstileToken.value || undefined },
     })
 
     organizerSubmission.setSession({

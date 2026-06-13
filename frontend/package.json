@@ -20,7 +20,6 @@
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
-    "@hcaptcha/vue3-hcaptcha": "^1.3.0",
     "@nuxtjs/seo": "^5.1.3",
     "@vueuse/nuxt": "^14.2.1",
     "typescript": "^6.0.2"

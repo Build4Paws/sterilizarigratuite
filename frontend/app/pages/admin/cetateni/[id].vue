@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AdminCitizenDetail } from '~/types'
+import type { AdminCitizenDetail, CitizenStatus } from '~/types'
 
 definePageMeta({ layout: 'admin', middleware: 'admin-auth' })
 useSeoMeta({ title: 'Admin — Detalii cetățean', robots: 'noindex, nofollow' })
@@ -79,10 +79,21 @@ const route = useRoute()
 const id = computed(() => String(route.params.id))
 const toast = useToast()
 
-const { data: z, pending, error, refresh } = await useFetch<AdminCitizenDetail>(
+const { data: z, pending, error } = await useFetch<AdminCitizenDetail>(
   () => `/api/admin/citizens/${id.value}`,
   { key: `admin-citizen-${id.value}` },
 )
+
+/**
+ * Apply an action's result locally rather than immediately re-reading the
+ * backend — an immediate GET can race replica propagation and return the
+ * pre-action state. Invalidate the shared list + dashboard caches so they
+ * refetch fresh on next view.
+ */
+function applyStatus(status: CitizenStatus) {
+  if (z.value) z.value = { ...z.value, status }
+  refreshNuxtData(['admin-citizens', 'admin-overview'])
+}
 
 const revealed = ref(false)
 const erasing = ref(false)
@@ -110,8 +121,8 @@ async function unsubscribe() {
   busy.value = 'unsub'
   try {
     await $fetch(`/api/admin/citizens/${id.value}/unsubscribe`, { method: 'POST' })
+    applyStatus('unsubscribed')
     toast.success('Cetățeanul a fost dezabonat.')
-    await refresh()
   } catch (err) {
     toast.error(extractApiError(err))
   } finally {
@@ -124,10 +135,12 @@ async function erase() {
   busy.value = 'erase'
   try {
     await $fetch(`/api/admin/citizens/${id.value}/erase`, { method: 'POST', body: { reason: reason.value.trim() } })
+    // Reflect the GDPR anonymization locally so no "deleted" PII lingers on screen.
+    if (z.value) z.value = { ...z.value, phone: null, email: null, notes: null }
+    applyStatus('deleted')
     toast.success('Datele au fost șterse.')
     erasing.value = false
     reason.value = ''
-    await refresh()
   } catch (err) {
     toast.error(extractApiError(err))
   } finally {
