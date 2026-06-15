@@ -27,23 +27,28 @@
           <span class="side-panel__unit">persoane înscrise</span>
         </p>
 
-        <!-- Species breakdown — hidden while viewing all localities -->
+        <!-- Species breakdown — hidden while viewing all localities. These are
+             requests per species (a person can ask for both), so they don't sum
+             to the "persoane înscrise" total. -->
         <div v-if="!showAllLocalities" class="side-panel__species">
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
               <UiSpeciesIcon species="dog" :size="15" class="side-panel__species-icon" />
-              Câini
+              Cereri câini
             </span>
             <strong>{{ (countyData.species?.dog ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
               <UiSpeciesIcon species="cat" :size="15" class="side-panel__species-icon" />
-              Pisici
+              Cereri pisici
             </span>
             <strong>{{ (countyData.species?.cat ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
         </div>
+        <p v-if="!showAllLocalities" class="side-panel__hint">
+          O persoană poate cere sterilizare pentru mai multe specii.
+        </p>
 
         <button
           v-if="showAllLocalities"
@@ -254,8 +259,12 @@ const visibleTopTen = computed(() =>
 )
 
 const defaultTitle = computed(() => {
-  if (props.view === 'cerere') return 'Top județe după cerere'
   if (props.view === 'oferta') return 'Top județe după campanii'
+  if (props.view === 'cerere') {
+    if (species.value === 'dog') return 'Top județe după cerere câini'
+    if (species.value === 'cat') return 'Top județe după cerere pisici'
+    return 'Top județe după persoane înscrise'
+  }
   return 'Istoric campanii'
 })
 
@@ -364,6 +373,14 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   padding: var(--space-sm) 0;
   border-top: 1px solid var(--color-border-light);
   border-bottom: 1px solid var(--color-border-light);
+}
+
+/* Clarifies that per-species requests don't sum to the people total. */
+.side-panel__hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-top: var(--space-xs);
 }
 
 .side-panel__species-row {

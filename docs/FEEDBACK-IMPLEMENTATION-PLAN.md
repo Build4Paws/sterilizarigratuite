@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T5, T6, T7.
+**Rămase de făcut:** T6.
 
 ## Sumar task-uri
 
@@ -38,9 +38,9 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T2 | ✅ Done | „alt județ sau altă specie" doar când e specie selectată | `app/pages/campanii.vue` | mic |
 | T3 | ✅ Done | Iconițe distincte și consistente câine/pisică | nou `app/components/ui/SpeciesIcon.vue` + 2 fișiere | mediu |
 | T4 | ✅ Done | Elimină em dash-ul peste tot (inclusiv meta) | global | mediu |
-| T5 | ⬜ Todo | Redenumește „Top județe după…" + clarifică matematica speciilor | `app/components/map/SidePanel.vue` | mediu |
+| T5 | ✅ Done | Redenumește „Top județe după…" + clarifică matematica speciilor | `app/components/map/SidePanel.vue` | mediu |
 | T6 | ⬜ Todo | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
-| T7 | ⬜ Todo | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
+| T7 | ✅ Done | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
 | T8 | ✅ Done | „locuri disponibile" → „numărul de locuri alocate campaniei" | `app/pages/organizatori.vue` | mic |
 | T9 | ✅ Done | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
 | T10 | ✅ Done | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
@@ -256,7 +256,15 @@ rg -n --glob '!node_modules' "—" app nuxt.config.ts
 
 ---
 
-## T5 — Redenumește „Top județe după…" + clarifică matematica speciilor
+## T5 — Redenumește „Top județe după…" + clarifică matematica speciilor ✅ DONE
+
+**Status:** implementat și verificat în browser. (5a) Titlul listei e acum dinamic în funcție de specia
+activă: Ofertă → „Top județe după campanii"; Cerere/Total → „Top județe după persoane înscrise";
+Cerere/Câini → „Top județe după cerere câini"; Cerere/Pisici → „Top județe după cerere pisici" (computed
+`defaultTitle`, citește `species`). (5b) Breakdown-ul de specie e redenumit „Cereri câini" / „Cereri
+pisici" (eticheta totalului rămâne „persoane înscrise"), plus un rând fin explicativ
+„O persoană poate cere sterilizare pentru mai multe specii." (`.side-panel__hint`). Verificat pe Vaslui:
+total 27, Cereri câini 19, Cereri pisici 22 — nota explică de ce 19+22 ≠ 27.
 
 **Fișier:** `app/components/map/SidePanel.vue`.
 
@@ -331,7 +339,12 @@ Note:
 
 ---
 
-## T7 — Harta pornește pe „Ofertă" implicit
+## T7 — Harta pornește pe „Ofertă" implicit ✅ DONE
+
+**Status:** implementat și verificat în browser. Default-ul `activeView` e acum `'oferta'` când lipsește
+`?view=`. În `setView`, „Ofertă" e canonic (șterge `q.view`) și „Cerere" e explicit (`q.view = 'cerere'`).
+Verificat: `/harta` → tab Ofertă, fără query; click Cerere → `?view=cerere`; revenire pe Ofertă → query
+curățat. `onMounted` / `?judet=` funcționează în continuare pe ambele view-uri (e independent de view).
 
 **Fișier:** `app/pages/harta.vue`.
 
