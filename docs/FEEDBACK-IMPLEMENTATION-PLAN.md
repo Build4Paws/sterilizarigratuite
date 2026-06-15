@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T6.
+**Rămase de făcut:** —
 
 ## Sumar task-uri
 
@@ -39,7 +39,7 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T3 | ✅ Done | Iconițe distincte și consistente câine/pisică | nou `app/components/ui/SpeciesIcon.vue` + 2 fișiere | mediu |
 | T4 | ✅ Done | Elimină em dash-ul peste tot (inclusiv meta) | global | mediu |
 | T5 | ✅ Done | Redenumește „Top județe după…" + clarifică matematica speciilor | `app/components/map/SidePanel.vue` | mediu |
-| T6 | ⬜ Todo | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
+| T6 | ✅ Done | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
 | T7 | ✅ Done | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
 | T8 | ✅ Done | „locuri disponibile" → „numărul de locuri alocate campaniei" | `app/pages/organizatori.vue` | mic |
 | T9 | ✅ Done | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
@@ -303,7 +303,15 @@ cu nota explicativă; nicio sumă nu mai pare greșită.
 
 ---
 
-## T6 — Telefon + detalii + link campanie în panoul hărții (Ofertă)
+## T6 — Telefon + detalii + link campanie în panoul hărții (Ofertă) ✅ DONE
+
+**Status:** implementat și verificat în browser (`/harta?judet=timis`, tab Ofertă). Datele complete erau
+deja disponibile în `selectedCampaigns` (harta folosește `useCampaigns` → `GET /api/campaigns`, care
+întoarce `PublicCampaign` complet cu `phonePublic`, `timeStart/End`, `submissionId`); **nu a fost nevoie
+de niciun apel API nou**. Fiecare rând din blocul Ofertă e acum un `<NuxtLink>` spre `/campanie/{id}` și
+afișează data + intervalul orar (`09:00–17:00`, en dash) + localitatea + organizația + telefonul. Telefonul
+e un `<a :href="tel:…" @click.stop>` separat (apelabil direct fără a declanșa link-ul rândului). Verificat:
+rândul → `/campanie/8fee14b3-…`, telefonul → `tel:+40700000116`, fără erori în consolă.
 
 **Fișier:** `app/components/map/SidePanel.vue`, blocul „Ofertă selected" (liniile ~92–112).
 

@@ -99,15 +99,28 @@
         <p class="side-panel__unit">campanii active</p>
 
         <div v-if="countyCampaigns?.length" class="side-panel__campaigns">
-          <div
+          <NuxtLink
             v-for="c in countyCampaigns"
             :key="c.id"
+            :to="`/campanie/${c.id}`"
             class="side-panel__campaign-row"
           >
-            <span class="side-panel__campaign-date">{{ formatDate(c.dateStart) }}</span>
+            <span class="side-panel__campaign-date">
+              {{ formatDate(c.dateStart)
+              }}<template v-if="c.timeStart && c.timeEnd">, {{ c.timeStart }}–{{ c.timeEnd }}</template>
+            </span>
             <span class="side-panel__campaign-loc">{{ c.locality }}</span>
             <span class="side-panel__campaign-org">{{ c.organizationName }}</span>
-          </div>
+            <a
+              v-if="c.phonePublic"
+              :href="`tel:${c.phonePublic}`"
+              class="side-panel__campaign-phone"
+              @click.stop
+            >
+              <Phone :size="12" aria-hidden="true" />
+              {{ c.phonePublic }}
+            </a>
+          </NuxtLink>
         </div>
         <p v-else class="side-panel__empty">Nicio campanie activă în acest județ.</p>
 
@@ -187,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { X, ArrowLeft } from 'lucide-vue-next'
+import { X, ArrowLeft, Phone } from 'lucide-vue-next'
 import type { Campaign, CountyStats } from '~/types'
 import { countyCodeToNameSync, countyCodeToSlugSync } from '~/composables/useLocationData'
 
@@ -299,6 +312,11 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   flex-direction: column;
   gap: var(--space-md);
   min-height: 300px;
+  /* Never let an item's text widen the panel — long words wrap instead of
+     forcing a horizontal scrollbar. `min-width: 0` lets the panel shrink inside
+     its grid column rather than being sized by its widest unbreakable child. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* ── Header ── */
@@ -630,15 +648,31 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   gap: var(--space-xs);
   max-height: 240px;
   overflow-y: auto;
+  /* Contain the rows' negative-margin hover breakout so it doesn't spill past
+     the container and trigger a horizontal scrollbar (overflow-y: auto makes
+     overflow-x compute to auto). Also hard-clip any residual x overflow. */
+  padding-inline: var(--space-xs);
+  overflow-x: hidden;
 }
 
 .side-panel__campaign-row {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: var(--space-xs) 0;
+  gap: 2px;
+  padding: var(--space-xs);
+  margin: 0 calc(-1 * var(--space-xs));
   border-bottom: 1px solid var(--color-border-light);
   font-size: var(--font-size-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+  /* Let the row shrink to the panel and wrap long org names/addresses. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.side-panel__campaign-row:hover {
+  background: var(--color-bg-muted);
 }
 
 .side-panel__campaign-date {
@@ -653,6 +687,23 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
 .side-panel__campaign-org {
   color: var(--color-text-muted);
   font-size: 0.8rem;
+}
+
+.side-panel__campaign-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.side-panel__campaign-phone:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
 }
 
 /* ── Misc ── */
