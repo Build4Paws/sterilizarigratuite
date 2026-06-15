@@ -43,7 +43,7 @@
             <UiInput
               id="campaign-contact-email"
               v-model="form.contactEmail"
-              label="Email de contact"
+              label="Email de contact organizator"
               type="email"
               placeholder="contact@organizatie.ro"
               :required="true"
@@ -54,7 +54,7 @@
             <UiPhoneInput
               id="campaign-contact-phone"
               v-model="form.contactPhone"
-              label="Telefon de contact"
+              label="Telefon de contact organizator"
               :error="submitted ? errors.contactPhone : undefined"
             />
           </UiFormItem>
@@ -234,10 +234,10 @@
       <!-- Medic + telefon public -->
       <div class="form-section">
         <div class="form-section__header">
-          <h3 class="form-section__title">Ce apare public?</h3>
-          <p class="form-section__hint">
-            Aceste date apar pe pagina publică a campaniei, alături de numărul de contact pentru cetățeni.
-          </p>
+          <h3 class="form-section__title">Informații adiționale despre campanie</h3>
+          <!-- <p class="form-section__hint">
+            Aceste date apar pe pagina publică a campaniei.
+          </p> -->
         </div>
         <UiFormRow>
           <UiFormItem>
@@ -252,19 +252,19 @@
         <UiFormRow>
           <UiFormItem :grow="false" basis="auto">
             <UiCheckbox id="campaign-same-phone" v-model="form.samePublicPhone">
-              Numărul public de contact este același cu telefonul de contact al organizației
+              Numărul public de contact pentru cetățeni este același cu telefonul de contact al organizației
             </UiCheckbox>
           </UiFormItem>
         </UiFormRow>
         <p class="form-section__hint campaign-form__public-phone-hint">
-          Debifează dacă vrei să afișezi un alt număr public (de exemplu al medicului) decât telefonul intern al organizației.
+          Debifează dacă vrei să afișezi un alt număr public (de exemplu al medicului) decât telefonul intern al organizației ({{ form.contactPhone }}).
         </p>
         <UiFormRow v-if="!form.samePublicPhone">
           <UiFormItem basis="200px">
             <UiPhoneInput
               id="campaign-phone-public"
               v-model="form.phonePublic"
-              label="Telefon public diferit (afișat pe pagina campaniei)"
+              label="Telefon public pentru cetățeni (afișat pe pagina campaniei)"
               :error="submitted ? errors.phonePublic : undefined"
             />
           </UiFormItem>
