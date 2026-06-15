@@ -16,6 +16,10 @@
           Platformă digitală pentru campanii de sterilizare gratuită a animalelor de companie din România.
           <br />Un proiect <a href="https://build4paws.ro" target="_blank" rel="noopener">Build4Paws</a>.
         </p>
+        <p class="footer__donate">
+          Dacă vrei să ne susții inițiativele,
+          <NuxtLink to="/sustine" class="footer__donate-link block">donează aici</NuxtLink>.
+        </p>
       </div>
 
       <div class="footer__cols">
@@ -105,6 +109,25 @@ const currentYear = new Date().getFullYear()
 }
 
 .footer__tagline a:hover {
+  text-decoration: underline;
+}
+
+/* ── Donation note ── */
+.footer__donate {
+  font-size: var(--font-size-sm);
+  color: var(--color-slate-300);
+  line-height: 1.6;
+}
+
+.footer__donate-link {
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer__donate-link:hover {
+  color: var(--color-accent-hover);
   text-decoration: underline;
 }
 

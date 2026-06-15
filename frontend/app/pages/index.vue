@@ -54,28 +54,11 @@
         />
       </div>
     </section>
-
-    <!-- Donation banner -->
-    <section class="donate-band">
-      <div class="container donate-band__inner">
-        <div class="donate-band__text">
-          <Heart class="donate-band__icon" :size="32" aria-hidden="true" />
-          <div>
-            <p class="donate-band__title">Susține campaniile de sterilizare gratuită</p>
-            <p class="donate-band__desc">
-              Suntem o asociație non-profit. Orice donație ne ajută să ținem platforma online
-              și să ajungem la cât mai mulți oameni.
-            </p>
-          </div>
-        </div>
-        <NuxtLink to="/sustine" class="donate-band__cta">Susține-ne</NuxtLink>
-      </div>
-    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PawPrint, Megaphone, Stethoscope, Heart } from 'lucide-vue-next'
+import { PawPrint, Megaphone, Stethoscope } from 'lucide-vue-next'
 
 // Social-proof counter — national total of registered citizens.
 // `/` is prerendered, so we fetch client-side after hydration to show a live
@@ -249,76 +232,6 @@ useHead({
 }
 
 
-/* ---- Donation banner ---- */
-.donate-band {
-  padding: 0 0 var(--space-3xl);
-  background: var(--color-bg);
-}
-
-.donate-band__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-lg);
-  background: var(--color-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-2xl);
-}
-
-.donate-band__text {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
-.donate-band__icon {
-  color: var(--color-accent);
-  flex-shrink: 0;
-}
-
-.donate-band__title {
-  font-family: var(--font-heading);
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-text-light);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.donate-band__desc {
-  font-size: var(--font-size-sm);
-  color: var(--color-slate-300);
-  margin: var(--space-xs) 0 0;
-  line-height: 1.5;
-  max-width: 560px;
-}
-
-.donate-band__cta {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: var(--font-size-base);
-  color: var(--color-text-light);
-  background: var(--color-accent);
-  padding: var(--space-sm) var(--space-xl);
-  border-radius: var(--radius-full);
-  text-decoration: none;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.donate-band__cta:hover {
-  background: var(--color-accent-hover);
-  text-decoration: none;
-}
-
-.donate-band__cta:active {
-  transform: scale(0.98);
-}
-
 /* ---- Responsive ---- */
 @media (min-width: 1300px) {
   .hero {
@@ -370,17 +283,6 @@ useHead({
   .bottom-band__inner {
     grid-template-columns: 1fr;
     gap: var(--space-lg);
-  }
-
-  .donate-band__inner {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: var(--space-lg);
-  }
-
-  .donate-band__cta {
-    width: 100%;
-    justify-content: center;
   }
 }
 
