@@ -11,7 +11,7 @@
         <h2>1. Cine suntem și cum ne poți contacta</h2>
         <p>Asociația Build4Paws este un ONG Tech dedicat bunăstării animalelor, care dezvoltă soluții digitale menite să faciliteze colaborarea dintre cetățeni, ONG-uri, medici veterinari și autorități publice în domeniul protecției animalelor.</p>
         <p>În această calitate, Asociația Build4Paws are rolul de <strong>operator de date cu caracter personal</strong>, colectând și prelucrând datele necesare pentru funcționarea serviciilor oferite și pentru îndeplinirea scopurilor legitime ale Platformei.</p>
-        <p>În exercitarea activității sale, Asociația Build4Paws operează platforma <a href="https://sterilizarigratuite.ro" target="_blank" rel="noopener">sterilizărigratuite.ro</a> (denumită în continuare „Platforma"), destinată informării și conectării cetățenilor cu ONG-uri și alți actori relevanți care organizează campanii de sterilizare gratuită pentru animale de companie.</p>
+        <p>În exercitarea activității sale, Asociația Build4Paws operează platforma <a :href="siteUrl" target="_blank" rel="noopener">{{ siteHost }}</a> (denumită în continuare „Platforma"), destinată informării și conectării cetățenilor cu ONG-uri și alți actori relevanți care organizează campanii de sterilizare gratuită pentru animale de companie.</p>
         <div class="privacy-card">
           <p class="privacy-card__title">Operatorul de date cu caracter personal este:</p>
           <ul>
@@ -24,7 +24,7 @@
 
       <section class="privacy-section">
         <h2>2. Ce date cu caracter personal colectăm</h2>
-        <p>Platforma sterilizarigratuite.ro deservește mai multe tipuri de utilizatori, fiecare cu propriul set de date:</p>
+        <p>Platforma {{ siteHost }} deservește mai multe tipuri de utilizatori, fiecare cu propriul set de date:</p>
 
         <h3>2.1 Utilizatori persoane fizice</h3>
         <p>Când te înscrii pentru a primi notificări despre campanii de sterilizare gratuită, colectăm:</p>
@@ -51,7 +51,7 @@
         </ul>
 
         <h3>2.4 Date colectate automat</h3>
-        <p>Când vizitezi sterilizarigratuite.ro, serverele noastre pot înregistra automat:</p>
+        <p>Când vizitezi {{ siteHost }}, serverele noastre pot înregistra automat:</p>
         <ul>
           <li>Adresa IP (anonimizată sau stocată temporar pentru securitate)</li>
           <li>Tipul de browser și sistemul de operare</li>
@@ -196,6 +196,11 @@
 </template>
 
 <script setup lang="ts">
+// Platform domain is environment-driven (nuxt.config `site.url`), so the policy
+// references the right host on prod/dev rather than a hardcoded literal.
+const siteUrl = useSiteConfig().url
+const siteHost = computed(() => siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''))
+
 useSeoMeta({
   title: 'Politică de Confidențialitate · Sterilizări Gratuite',
   description: 'Politica de confidențialitate a platformei Sterilizări Gratuite: cum colectăm, prelucrăm și protejăm datele tale cu caracter personal.',

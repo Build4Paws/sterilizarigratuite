@@ -3,7 +3,7 @@
     <div class="manage__card">
       <NuxtLink to="/" class="manage__brand">
         <img src="/favicon.svg" alt="" width="28" height="28" />
-        <span>sterilizarigratuite.ro</span>
+        <span>{{ siteHost }}</span>
       </NuxtLink>
 
       <h1 class="manage__title">Gestionează înscrierea ta</h1>
@@ -87,6 +87,11 @@ useSeoMeta({ title: 'Gestionează înscrierea · Sterilizări Gratuite', robots:
 const route = useRoute()
 const token = String(route.params.token)
 const toast = useToast()
+
+// Bare host (no protocol) shown in the brand wordmark — derived from the
+// environment-driven site URL so dev/prod display the right domain.
+const siteConfig = useSiteConfig()
+const siteHost = computed(() => siteConfig.url.replace(/^https?:\/\//, '').replace(/\/$/, ''))
 
 const { data, error: fetchError } = await useFetch<ManageResponse>(
   () => `/api/m/${token}`,

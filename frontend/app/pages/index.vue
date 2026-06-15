@@ -81,6 +81,8 @@ import { PawPrint, Megaphone, Stethoscope, Heart } from 'lucide-vue-next'
 // `/` is prerendered, so we fetch client-side after hydration to show a live
 // value instead of a build-time stale one. Hidden until at least 20 sign-ups.
 // (When per-county data is available, switch this to the visitor's județ.)
+const siteConfig = useSiteConfig()
+
 const signupCount = ref(0)
 const showSignupCount = computed(() => signupCount.value >= 20)
 
@@ -115,8 +117,8 @@ useHead({
           },
           {
             '@type': 'WebSite',
-            name: 'Sterilizări Gratuite',
-            url: 'https://sterilizarigratuite.ro',
+            name: siteConfig.name,
+            url: siteConfig.url,
             description: 'Platformă de sterilizare gratuită pentru câini și pisici în România.',
             publisher: {
               '@type': 'Organization',

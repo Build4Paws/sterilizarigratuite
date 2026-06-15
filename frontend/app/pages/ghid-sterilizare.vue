@@ -293,7 +293,7 @@ useSeoMeta({
 })
 
 const siteConfig = useSiteConfig()
-const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizarigratuite.ro'
+const siteUrl = siteConfig.url
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: `${siteUrl}/ghid-sterilizare` }],

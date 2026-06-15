@@ -118,6 +118,7 @@ definePageMeta({ layout: 'default' })
 useSeoMeta({ robots: 'noindex, nofollow', title: 'Înscriere confirmată · Sterilizări Gratuite' })
 
 const router = useRouter()
+const siteConfig = useSiteConfig()
 const { session } = useCitizenSession()
 const toast = useToast()
 
@@ -173,7 +174,7 @@ async function copyToken() {
 
 const linkCopied = ref(false)
 async function copyLink() {
-  const url = 'https://sterilizarigratuite.ro/'
+  const url = siteConfig.url
   try {
     await navigator.clipboard.writeText(url)
     linkCopied.value = true

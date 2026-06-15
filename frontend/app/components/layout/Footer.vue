@@ -3,7 +3,7 @@
     <div class="container footer__body">
 
       <div class="footer__brand">
-        <a href="https://sterilizarigratuite.ro" class="footer__logo-link" aria-label="Sterilizări Gratuite, acasă">
+        <a :href="siteUrl" class="footer__logo-link" aria-label="Sterilizări Gratuite, acasă">
           <img
             src="~/assets/images/logo-horizontal.svg"
             alt="Sterilizări Gratuite"
@@ -53,6 +53,9 @@
 </template>
 
 <script setup lang="ts">
+// Site URL is environment-driven (nuxt.config `site.url` ← NUXT_PUBLIC_SITE_URL),
+// so the footer logo links to prod/dev domain automatically — never hardcoded.
+const siteUrl = useSiteConfig().url
 const currentYear = new Date().getFullYear()
 </script>
 
