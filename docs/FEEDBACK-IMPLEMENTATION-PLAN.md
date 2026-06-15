@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T5, T6, T7, T9, T12.
+**Rămase de făcut:** T5, T6, T7.
 
 ## Sumar task-uri
 
@@ -42,10 +42,10 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T6 | ⬜ Todo | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
 | T7 | ⬜ Todo | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
 | T8 | ✅ Done | „locuri disponibile" → „numărul de locuri alocate campaniei" | `app/pages/organizatori.vue` | mic |
-| T9 | ⬜ Todo | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
+| T9 | ✅ Done | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
 | T10 | ✅ Done | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
 | T11 | ✅ Done | Pagină dedicată de donații / sprijin | nou `app/pages/sustine.vue` + nav/footer | mediu |
-| T12 | ⬜ Todo | Numerotarea paragrafelor din Termeni și Condiții | de localizat | INVESTIGHează |
+| T12 | ✅ Done | Numerotarea paragrafelor (era Politica de confidențialitate) | `app/pages/politica-de-confidentialitate.vue` | INVESTIGHează |
 | T13 | ✅ Done | Format dată lună/zi/an în formular campanii + „rest" stray | `app/components/forms/CampaignForm.vue` | INVESTIGHează |
 
 ---
@@ -373,7 +373,18 @@ campaniei"; nu mai există „locuri disponibile" în `app/`.
 
 ---
 
-## T9 — Telefon public diferit pentru medic în formularul de organizator
+## T9 — Telefon public diferit pentru medic în formularul de organizator ✅ DONE
+
+**Status:** implementat și verificat în browser (clarificare UI peste câmpul existent, fără schimbare de
+logică/payload). În secțiunea „Ce apare public?" din `CampaignForm.vue`: adăugat un hint sub titlu
+(„Aceste date apar pe pagina publică…"), reformulat label-ul checkbox-ului în „Numărul public de contact
+este același cu telefonul de contact al organizației", adăugat helper text indentat sub checkbox
+(„Debifează dacă vrei să afișezi un alt număr public (de exemplu al medicului)…"), și reformulat label-ul
+câmpului condițional în „Telefon public diferit (afișat pe pagina campaniei)". Validarea (~474-478) și
+maparea la submit (`phonePublic` din `samePublicPhone`, ~582) au rămas neatinse. Verificat: debifarea
+afișează câmpul de telefon public RO; submit-ul trimite numărul corect.
+
+Detaliile de mai jos rămân ca referință a planului inițial.
 
 **Fișier:** `app/components/forms/CampaignForm.vue`, secțiunea „Ce apare public?" (liniile ~215–247).
 
@@ -487,10 +498,25 @@ buton de copiere, e linkată din footer, arată bine pe mobil, `npm run typechec
 
 ---
 
-## T12 — Numerotarea paragrafelor din Termeni și Condiții (INVESTIGHează)
+## T12 — Numerotarea paragrafelor din Termeni și Condiții (INVESTIGHează) ✅ DONE
 
-**Status:** în repo **nu există** o pagină „Termeni și Condiții" (există doar
-`app/pages/politica-de-confidentialitate.vue`, care are secțiuni numerotate `8.1…8.5`).
+**Rezultatul investigației:** în repo **nu există** nicio pagină „Termeni și Condiții" și niciun link
+către una (căutare `Termeni/Terms/condiții` → 0 rezultate vizibile). Singura pagină legală este
+`app/pages/politica-de-confidentialitate.vue`. Feedback-ul se referea la aceasta, care avea o **gaură
+de numerotare**: secțiunile săreau de la **5 direct la 8** (lipseau 6 și 7), iar drepturile erau `8.1–8.6`
+și cookies `9/9.1`.
+
+**Ce am făcut:** renumerotat ca să fie continuu (fără a inventa conținut legal nou): secțiunea
+„Drepturile tale (GDPR)" `8 → 6` (+ `8.1–8.6 → 6.1–6.6`) și „Cookies" `9 → 7` (+ `9.1 → 7.1`). Nu există
+referințe încrucișate la numere în proză (verificat). Secvența finală: **1, 2, 3, 4, 5, 6 (6.1–6.6),
+7 (7.1)** — verificat în browser.
+
+> Notă pentru owner: secțiunile 6 și 7 par să fi fost eliminate cândva (probabil „Cu cine partajăm
+> datele" și „Securitate"). Am ales renumerotarea ca fix de secvență. Dacă vrei de fapt acele secțiuni,
+> trebuie adăugat conținut legal — spune și le inserăm la pozițiile corecte.
+
+**Status original (păstrat ca referință):** în repo nu există o pagină „Termeni și Condiții" (există doar
+`app/pages/politica-de-confidentialitate.vue`).
 
 **Ce faci:**
 1. Confirmă cu owner-ul / caută dacă pagina de Termeni e: (a) încă de creat, (b) în

@@ -152,25 +152,25 @@
       </section>
 
       <section class="privacy-section">
-        <h2>8. Drepturile tale (GDPR)</h2>
+        <h2>6. Drepturile tale (GDPR)</h2>
         <p>Ne poți contacta la <a href="mailto:contact@build4paws.ro">contact@build4paws.ro</a> pentru exercitarea următoarelor drepturi specifice GDPR:</p>
 
-        <h3>8.1 Dreptul de acces (Art. 15 GDPR)</h3>
+        <h3>6.1 Dreptul de acces (Art. 15 GDPR)</h3>
         <p>Poți solicita oricând o copie a datelor pe care le deținem despre tine.</p>
 
-        <h3>8.2 Dreptul la rectificare (Art. 16 GDPR)</h3>
+        <h3>6.2 Dreptul la rectificare (Art. 16 GDPR)</h3>
         <p>Dacă datele tale sunt incorecte sau incomplete, le poți actualiza.</p>
 
-        <h3>8.3 Dreptul la ștergere, „dreptul de a fi uitat" (Art. 17 GDPR)</h3>
+        <h3>6.3 Dreptul la ștergere, „dreptul de a fi uitat" (Art. 17 GDPR)</h3>
         <p>Poți cere ștergerea completă a datelor tale.</p>
 
-        <h3>8.4 Dreptul de opoziție și dezabonare (Art. 21 GDPR)</h3>
+        <h3>6.4 Dreptul de opoziție și dezabonare (Art. 21 GDPR)</h3>
         <p>Te poți dezabona de la notificările SMS oricând, printr-un singur click pe link-ul din SMS-ul primit de la noi.</p>
 
-        <h3>8.5 Dreptul la portabilitate (Art. 20 GDPR)</h3>
+        <h3>6.5 Dreptul la portabilitate (Art. 20 GDPR)</h3>
         <p>Poți solicita datele tale într-un format structurat, uzual și care poate fi citit automat.</p>
 
-        <h3>8.6 Dreptul de a depune plângere</h3>
+        <h3>6.6 Dreptul de a depune plângere</h3>
         <p>Dacă consideri că prelucrăm datele tale în mod ilegal, poți depune o plângere la:</p>
         <div class="privacy-card">
           <p class="privacy-card__title">Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</p>
@@ -184,10 +184,10 @@
       </section>
 
       <section class="privacy-section">
-        <h2>9. Cookies și tehnologii de urmărire</h2>
+        <h2>7. Cookies și tehnologii de urmărire</h2>
         <p>build4paws.ro poate utiliza cookies și tehnologii similare.</p>
 
-        <h3>9.1 Cookies strict necesare</h3>
+        <h3>7.1 Cookies strict necesare</h3>
         <p>Esențiale pentru funcționarea site-ului (sesiune, securitate). Nu necesită consimțământ.</p>
       </section>
 
