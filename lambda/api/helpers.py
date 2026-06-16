@@ -40,8 +40,15 @@ def get_conn() -> psycopg.Connection:
             return conn
         except psycopg.OperationalError:
             log.warning("Stale %s connection, reconnecting", env)
+    # autocommit=True so idle statements (the SELECT 1 health check above, and
+    # every read-only GET handler) don't leave an implicit transaction open on
+    # the reused warm connection. With a transaction left open, the next
+    # `with conn.transaction()` degrades to a mere SAVEPOINT that releases
+    # without committing the enclosing transaction — so writes silently never
+    # persist. In autocommit mode each `with conn.transaction()` brackets a real
+    # top-level transaction that COMMITs on exit (nested blocks stay savepoints).
     _conns[env] = psycopg.connect(
-        ENVIRONMENTS[env]["dsn"], row_factory=dict_row, autocommit=False
+        ENVIRONMENTS[env]["dsn"], row_factory=dict_row, autocommit=True
     )
     return _conns[env]
 
