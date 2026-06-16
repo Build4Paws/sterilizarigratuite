@@ -46,19 +46,13 @@
           title="Ghid sterilizare"
           desc="Ghid medical. Tot ce trebuie să știi înainte și după procedură"
         />
-        <UiLinkCard
-          to="/organizatori"
-          :icon="Megaphone"
-          title="Ești ONG sau primărie?"
-          desc="Anunță o campanie de sterilizare și ajunge la cetățeni"
-        />
       </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PawPrint, Megaphone, Stethoscope } from 'lucide-vue-next'
+import { PawPrint, Stethoscope } from 'lucide-vue-next'
 
 // Social-proof counter — national total of registered citizens.
 // `/` is prerendered, so we fetch client-side after hydration to show a live
@@ -227,7 +221,7 @@ useHead({
 
 .bottom-band__inner {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-xl);
 }
 

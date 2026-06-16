@@ -6,7 +6,6 @@
       <div class="cf__badge" aria-hidden="true">
         <CircleCheck :size="44" :stroke-width="2.25" />
       </div>
-      <p class="cf__eyebrow">Înscriere confirmată</p>
       <h1 class="cf__title">Gata, {{ firstName }}!</h1>
       <p class="cf__lead">De acum primești notificări despre campaniile gratuite din localitatea ta.</p>
       <p class="cf__channel">{{ channelMessage }}</p>
@@ -23,35 +22,15 @@
       <section class="card statcard">
         <span class="statcard__icon" aria-hidden="true"><Users :size="22" /></span>
         <div>
-          <p class="card__eyebrow">În zona ta</p>
           <p class="statcard__text">
             <template v-for="(seg, i) in rankParts" :key="i">
               <strong v-if="seg.b">{{ seg.t }}</strong><template v-else>{{ seg.t }}</template>
             </template>
           </p>
-          <p class="statcard__note">
+          <p class="statcard__text statcard__text--law">
             Dacă se strâng suficiente cereri din {{ session.locality }}, notificăm oficial primăria,
             care poate aloca fonduri pentru sterilizare gratuită (Legea 258/2013).
           </p>
-        </div>
-      </section>
-
-      <!-- Access code keepsake -->
-      <section v-if="session.manageToken" class="keycard">
-        <div class="keycard__head">
-          <span class="keycard__icon" aria-hidden="true"><KeyRound :size="22" /></span>
-          <h2 class="keycard__title">Link-ul tău de acces</h2>
-        </div>
-        <p class="keycard__lead">
-          Cu acest link îți gestionezi înscrierea oricând — te dezabonezi sau îți
-          ștergi datele, fără cont și fără parolă. Salvează-l într-un loc sigur.
-        </p>
-        <div class="keycard__field">
-          <a class="keycard__token" :href="manageUrl" target="_blank" rel="noopener">{{ manageUrl }}</a>
-          <button type="button" class="keycard__copy" :class="{ 'is-copied': copied }" @click="copyToken">
-            <component :is="copied ? Check : Copy" :size="18" aria-hidden="true" />
-            <span>{{ copied ? 'Copiat' : 'Copiază' }}</span>
-          </button>
         </div>
       </section>
 
@@ -86,6 +65,25 @@
         </button>
       </section>
 
+      <!-- Manage / unsubscribe link -->
+      <section v-if="session.manageToken" class="card keycard">
+        <div class="keycard__head">
+          <span class="keycard__icon" aria-hidden="true"><KeyRound :size="22" /></span>
+          <h2 class="keycard__title">Gestionează sau anulează înscrierea</h2>
+        </div>
+        <p class="keycard__lead">
+          Accesează acest link oricând ca să te dezabonezi sau să-ți ștergi datele —
+          fără cont și fără parolă. Salvează-l într-un loc sigur.
+        </p>
+        <div class="keycard__field">
+          <a class="keycard__token" :href="manageUrl" target="_blank" rel="noopener">{{ manageUrl }}</a>
+          <button type="button" class="keycard__copy" :class="{ 'is-copied': copied }" @click="copyToken">
+            <component :is="copied ? Check : Copy" :size="18" aria-hidden="true" />
+            <span>{{ copied ? 'Copiat' : 'Copiază' }}</span>
+          </button>
+        </div>
+      </section>
+
       <!-- Next steps -->
       <section class="next">
         <h2 class="next__label">Între timp, poți vedea:</h2>
@@ -110,20 +108,29 @@
 
 <script setup lang="ts">
 import {
-  CircleCheck, Users, MapPin, KeyRound, Copy, Check, ShieldCheck,
-  PawPrint, Stethoscope, Map, ArrowUpRight, Share2,
+  CircleCheck, Users, MapPin, KeyRound, Copy, Check,
+  PawPrint, Stethoscope, ArrowUpRight, Share2,
 } from 'lucide-vue-next'
+import { countyCodeToSlugSync, ensureLocationIndexes } from '~/composables/useLocationData'
 
 definePageMeta({ layout: 'default' })
-useSeoMeta({ robots: 'noindex, nofollow', title: 'Înscriere confirmată · Sterilizări Gratuite' })
+useSeoMeta({ robots: 'noindex, nofollow', title: 'Înregistrare confirmată · Sterilizări Gratuite' })
 
 const router = useRouter()
 const siteConfig = useSiteConfig()
 const { session } = useCitizenSession()
 const toast = useToast()
 
-onMounted(() => {
-  if (!session.value) router.replace('/')
+// The campaigns link on THIS page pre-filters /campanii to the citizen's county.
+// Resolve the code → slug once the location index is loaded (client-only page).
+const countySlug = ref('')
+onMounted(async () => {
+  if (!session.value) {
+    router.replace('/')
+    return
+  }
+  await ensureLocationIndexes()
+  countySlug.value = countyCodeToSlugSync(session.value.countyCode)
 })
 
 const firstName = computed(() => session.value?.name.trim().split(/\s+/)[0] ?? '')
@@ -147,11 +154,20 @@ const channelMessage = computed(() => {
   }
 })
 
-const actions = [
-  { to: '/campanii', icon: PawPrint, title: 'Campanii active', desc: 'Vezi campaniile de sterilizare gratuită din toată țara.' },
-  { to: '/ghid-sterilizare', icon: Stethoscope, title: 'Ghid de sterilizare', desc: 'Tot ce e bine să știi înainte și după procedură.' },
-  { to: '/harta', icon: Map, title: 'Harta înscrierilor', desc: 'Vezi câți oameni din județul tău așteaptă o campanie.' },
-]
+const actions = computed(() => [
+  {
+    to: countySlug.value ? `/campanii?judet=${countySlug.value}` : '/campanii',
+    icon: PawPrint,
+    title: 'Campanii active',
+    desc: 'Vezi campaniile de sterilizare gratuită din zona ta.',
+  },
+  {
+    to: '/ghid-sterilizare',
+    icon: Stethoscope,
+    title: 'Ghid de sterilizare',
+    desc: 'Tot ce e bine să știi înainte și după procedură.',
+  },
+])
 
 // The "access code" is the citizen-manage token; surface it as the ready-to-use
 // management link (/cont/{token}), not the raw token.
@@ -357,8 +373,9 @@ const { clinics } = useClinics(
 
 .cf__channel {
   margin: var(--space-sm) auto 0;
-  max-width: 40ch;
-  font-size: var(--font-size-sm);
+  max-width: 42ch;
+  font-size: 1.1rem;
+  line-height: 1.5;
   color: var(--color-slate-300);
 }
 
@@ -434,24 +451,17 @@ const { clinics } = useClinics(
   color: var(--color-primary);
 }
 
-.statcard__note {
-  margin: var(--space-sm) 0 0;
-  font-size: var(--font-size-sm);
-  line-height: 1.55;
-  color: var(--color-text-muted);
+/* Second line in the stat card (Legea 258/2013) — same size as the rank line
+   above it, just nudged down for separation. */
+.statcard__text--law {
+  margin-top: var(--space-sm);
 }
 
-/* ---------- Access code keepsake ---------- */
+/* ---------- Manage / unsubscribe link ---------- */
+/* Intentionally light (bordered card) so it reads as a calm utility, not a
+   second hero. Matches the rest of the site's card surfaces. */
 .keycard {
   position: relative;
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  color: var(--color-text-light);
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(249, 89, 5, 0.22) 0%, rgba(249, 89, 5, 0) 55%),
-    var(--color-primary);
-  box-shadow: 0 12px 32px rgba(4, 26, 73, 0.22);
-  overflow: hidden;
 }
 
 .keycard__head {
@@ -468,24 +478,24 @@ const { clinics } = useClinics(
   width: 40px;
   height: 40px;
   border-radius: var(--radius-md);
-  background: var(--color-accent);
-  color: var(--color-text-light);
+  background: var(--color-bg-muted);
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 
 .keycard__title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: var(--color-text-light);
+  color: var(--color-primary);
 }
 
 .keycard__lead {
   margin: 0 0 var(--space-md);
   font-size: var(--font-size-base);
   line-height: 1.55;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--color-text-muted);
 }
 
 .keycard__field {
@@ -494,8 +504,8 @@ const { clinics } = useClinics(
   gap: var(--space-sm);
   padding: var(--space-sm);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border-light);
 }
 
 .keycard__token {
@@ -503,7 +513,7 @@ const { clinics } = useClinics(
   font-size: 0.95rem;
   letter-spacing: 0.02em;
   word-break: break-all;
-  color: var(--color-text-light);
+  color: var(--color-accent);
   padding: var(--space-xs) var(--space-sm);
   user-select: all;
   text-decoration: none;
@@ -849,7 +859,7 @@ const { clinics } = useClinics(
   }
 
   .next__grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .action {
