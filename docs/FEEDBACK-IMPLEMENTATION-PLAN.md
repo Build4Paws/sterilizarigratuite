@@ -28,7 +28,7 @@ Fiecare task spune **unde** (fișier + reper de linie), **ce** se schimbă și *
 **Făcute:** T1, T2, T8 — implementate și verificate în browser (mobil + desktop), `npm run typecheck`
 trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 
-**Rămase de făcut:** T5, T6, T7, T9, T12.
+**Rămase de făcut:** —
 
 ## Sumar task-uri
 
@@ -38,14 +38,14 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 | T2 | ✅ Done | „alt județ sau altă specie" doar când e specie selectată | `app/pages/campanii.vue` | mic |
 | T3 | ✅ Done | Iconițe distincte și consistente câine/pisică | nou `app/components/ui/SpeciesIcon.vue` + 2 fișiere | mediu |
 | T4 | ✅ Done | Elimină em dash-ul peste tot (inclusiv meta) | global | mediu |
-| T5 | ⬜ Todo | Redenumește „Top județe după…" + clarifică matematica speciilor | `app/components/map/SidePanel.vue` | mediu |
-| T6 | ⬜ Todo | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
-| T7 | ⬜ Todo | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
+| T5 | ✅ Done | Redenumește „Top județe după…" + clarifică matematica speciilor | `app/components/map/SidePanel.vue` | mediu |
+| T6 | ✅ Done | Telefon + detalii + link campanie în panoul hărții | `app/components/map/SidePanel.vue` | mediu |
+| T7 | ✅ Done | Harta pornește pe „Ofertă" implicit | `app/pages/harta.vue` | mic |
 | T8 | ✅ Done | „locuri disponibile" → „numărul de locuri alocate campaniei" | `app/pages/organizatori.vue` | mic |
-| T9 | ⬜ Todo | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
+| T9 | ✅ Done | Telefon public diferit pentru medic în formular organizator | `app/components/forms/CampaignForm.vue` | mic |
 | T10 | ✅ Done | Buton „înapoi sus" pe orice pagină | nou `app/components/layout/BackToTop.vue` + layout | mic |
 | T11 | ✅ Done | Pagină dedicată de donații / sprijin | nou `app/pages/sustine.vue` + nav/footer | mediu |
-| T12 | ⬜ Todo | Numerotarea paragrafelor din Termeni și Condiții | de localizat | INVESTIGHează |
+| T12 | ✅ Done | Numerotarea paragrafelor (era Politica de confidențialitate) | `app/pages/politica-de-confidentialitate.vue` | INVESTIGHează |
 | T13 | ✅ Done | Format dată lună/zi/an în formular campanii + „rest" stray | `app/components/forms/CampaignForm.vue` | INVESTIGHează |
 
 ---
@@ -256,7 +256,15 @@ rg -n --glob '!node_modules' "—" app nuxt.config.ts
 
 ---
 
-## T5 — Redenumește „Top județe după…" + clarifică matematica speciilor
+## T5 — Redenumește „Top județe după…" + clarifică matematica speciilor ✅ DONE
+
+**Status:** implementat și verificat în browser. (5a) Titlul listei e acum dinamic în funcție de specia
+activă: Ofertă → „Top județe după campanii"; Cerere/Total → „Top județe după persoane înscrise";
+Cerere/Câini → „Top județe după cerere câini"; Cerere/Pisici → „Top județe după cerere pisici" (computed
+`defaultTitle`, citește `species`). (5b) Breakdown-ul de specie e redenumit „Cereri câini" / „Cereri
+pisici" (eticheta totalului rămâne „persoane înscrise"), plus un rând fin explicativ
+„O persoană poate cere sterilizare pentru mai multe specii." (`.side-panel__hint`). Verificat pe Vaslui:
+total 27, Cereri câini 19, Cereri pisici 22 — nota explică de ce 19+22 ≠ 27.
 
 **Fișier:** `app/components/map/SidePanel.vue`.
 
@@ -295,7 +303,15 @@ cu nota explicativă; nicio sumă nu mai pare greșită.
 
 ---
 
-## T6 — Telefon + detalii + link campanie în panoul hărții (Ofertă)
+## T6 — Telefon + detalii + link campanie în panoul hărții (Ofertă) ✅ DONE
+
+**Status:** implementat și verificat în browser (`/harta?judet=timis`, tab Ofertă). Datele complete erau
+deja disponibile în `selectedCampaigns` (harta folosește `useCampaigns` → `GET /api/campaigns`, care
+întoarce `PublicCampaign` complet cu `phonePublic`, `timeStart/End`, `submissionId`); **nu a fost nevoie
+de niciun apel API nou**. Fiecare rând din blocul Ofertă e acum un `<NuxtLink>` spre `/campanie/{id}` și
+afișează data + intervalul orar (`09:00–17:00`, en dash) + localitatea + organizația + telefonul. Telefonul
+e un `<a :href="tel:…" @click.stop>` separat (apelabil direct fără a declanșa link-ul rândului). Verificat:
+rândul → `/campanie/8fee14b3-…`, telefonul → `tel:+40700000116`, fără erori în consolă.
 
 **Fișier:** `app/components/map/SidePanel.vue`, blocul „Ofertă selected" (liniile ~92–112).
 
@@ -331,7 +347,12 @@ Note:
 
 ---
 
-## T7 — Harta pornește pe „Ofertă" implicit
+## T7 — Harta pornește pe „Ofertă" implicit ✅ DONE
+
+**Status:** implementat și verificat în browser. Default-ul `activeView` e acum `'oferta'` când lipsește
+`?view=`. În `setView`, „Ofertă" e canonic (șterge `q.view`) și „Cerere" e explicit (`q.view = 'cerere'`).
+Verificat: `/harta` → tab Ofertă, fără query; click Cerere → `?view=cerere`; revenire pe Ofertă → query
+curățat. `onMounted` / `?judet=` funcționează în continuare pe ambele view-uri (e independent de view).
 
 **Fișier:** `app/pages/harta.vue`.
 
@@ -373,7 +394,18 @@ campaniei"; nu mai există „locuri disponibile" în `app/`.
 
 ---
 
-## T9 — Telefon public diferit pentru medic în formularul de organizator
+## T9 — Telefon public diferit pentru medic în formularul de organizator ✅ DONE
+
+**Status:** implementat și verificat în browser (clarificare UI peste câmpul existent, fără schimbare de
+logică/payload). În secțiunea „Ce apare public?" din `CampaignForm.vue`: adăugat un hint sub titlu
+(„Aceste date apar pe pagina publică…"), reformulat label-ul checkbox-ului în „Numărul public de contact
+este același cu telefonul de contact al organizației", adăugat helper text indentat sub checkbox
+(„Debifează dacă vrei să afișezi un alt număr public (de exemplu al medicului)…"), și reformulat label-ul
+câmpului condițional în „Telefon public diferit (afișat pe pagina campaniei)". Validarea (~474-478) și
+maparea la submit (`phonePublic` din `samePublicPhone`, ~582) au rămas neatinse. Verificat: debifarea
+afișează câmpul de telefon public RO; submit-ul trimite numărul corect.
+
+Detaliile de mai jos rămân ca referință a planului inițial.
 
 **Fișier:** `app/components/forms/CampaignForm.vue`, secțiunea „Ce apare public?" (liniile ~215–247).
 
@@ -487,10 +519,25 @@ buton de copiere, e linkată din footer, arată bine pe mobil, `npm run typechec
 
 ---
 
-## T12 — Numerotarea paragrafelor din Termeni și Condiții (INVESTIGHează)
+## T12 — Numerotarea paragrafelor din Termeni și Condiții (INVESTIGHează) ✅ DONE
 
-**Status:** în repo **nu există** o pagină „Termeni și Condiții" (există doar
-`app/pages/politica-de-confidentialitate.vue`, care are secțiuni numerotate `8.1…8.5`).
+**Rezultatul investigației:** în repo **nu există** nicio pagină „Termeni și Condiții" și niciun link
+către una (căutare `Termeni/Terms/condiții` → 0 rezultate vizibile). Singura pagină legală este
+`app/pages/politica-de-confidentialitate.vue`. Feedback-ul se referea la aceasta, care avea o **gaură
+de numerotare**: secțiunile săreau de la **5 direct la 8** (lipseau 6 și 7), iar drepturile erau `8.1–8.6`
+și cookies `9/9.1`.
+
+**Ce am făcut:** renumerotat ca să fie continuu (fără a inventa conținut legal nou): secțiunea
+„Drepturile tale (GDPR)" `8 → 6` (+ `8.1–8.6 → 6.1–6.6`) și „Cookies" `9 → 7` (+ `9.1 → 7.1`). Nu există
+referințe încrucișate la numere în proză (verificat). Secvența finală: **1, 2, 3, 4, 5, 6 (6.1–6.6),
+7 (7.1)** — verificat în browser.
+
+> Notă pentru owner: secțiunile 6 și 7 par să fi fost eliminate cândva (probabil „Cu cine partajăm
+> datele" și „Securitate"). Am ales renumerotarea ca fix de secvență. Dacă vrei de fapt acele secțiuni,
+> trebuie adăugat conținut legal — spune și le inserăm la pozițiile corecte.
+
+**Status original (păstrat ca referință):** în repo nu există o pagină „Termeni și Condiții" (există doar
+`app/pages/politica-de-confidentialitate.vue`).
 
 **Ce faci:**
 1. Confirmă cu owner-ul / caută dacă pagina de Termeni e: (a) încă de creat, (b) în

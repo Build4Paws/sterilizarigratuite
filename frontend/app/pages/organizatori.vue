@@ -116,7 +116,7 @@ const faqItems = [
   },
   {
     q: 'Cum sunt notificate persoanele înscrise?',
-    a: 'Imediat ce campania ta este aprobată, trimitem automat SMS și email tuturor cetățenilor înregistrați din localitatea (și județul) tău. Tu nu trebuie să faci nimic.',
+    a: 'Imediat ce campania ta este aprobată, trimitem automat SMS sau email tuturor cetățenilor înregistrați din localitatea (și județul) unde are loc. Tu nu trebuie să faci nimic.',
   },
   {
     q: 'Pot modifica o campanie după trimitere?',

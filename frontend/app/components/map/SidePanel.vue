@@ -27,23 +27,28 @@
           <span class="side-panel__unit">persoane înscrise</span>
         </p>
 
-        <!-- Species breakdown — hidden while viewing all localities -->
+        <!-- Species breakdown — hidden while viewing all localities. These are
+             requests per species (a person can ask for both), so they don't sum
+             to the "persoane înscrise" total. -->
         <div v-if="!showAllLocalities" class="side-panel__species">
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
               <UiSpeciesIcon species="dog" :size="15" class="side-panel__species-icon" />
-              Câini
+              Cereri câini
             </span>
             <strong>{{ (countyData.species?.dog ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
           <div class="side-panel__species-row">
             <span class="side-panel__species-label">
               <UiSpeciesIcon species="cat" :size="15" class="side-panel__species-icon" />
-              Pisici
+              Cereri pisici
             </span>
             <strong>{{ (countyData.species?.cat ?? 0).toLocaleString('ro-RO') }}</strong>
           </div>
         </div>
+        <p v-if="!showAllLocalities" class="side-panel__hint">
+          O persoană poate cere sterilizare pentru mai multe specii.
+        </p>
 
         <button
           v-if="showAllLocalities"
@@ -94,15 +99,28 @@
         <p class="side-panel__unit">campanii active</p>
 
         <div v-if="countyCampaigns?.length" class="side-panel__campaigns">
-          <div
+          <NuxtLink
             v-for="c in countyCampaigns"
             :key="c.id"
+            :to="`/campanie/${c.id}`"
             class="side-panel__campaign-row"
           >
-            <span class="side-panel__campaign-date">{{ formatDate(c.dateStart) }}</span>
+            <span class="side-panel__campaign-date">
+              {{ formatDate(c.dateStart)
+              }}<template v-if="c.timeStart && c.timeEnd">, {{ c.timeStart }}–{{ c.timeEnd }}</template>
+            </span>
             <span class="side-panel__campaign-loc">{{ c.locality }}</span>
             <span class="side-panel__campaign-org">{{ c.organizationName }}</span>
-          </div>
+            <a
+              v-if="c.phonePublic"
+              :href="`tel:${c.phonePublic}`"
+              class="side-panel__campaign-phone"
+              @click.stop
+            >
+              <Phone :size="12" aria-hidden="true" />
+              {{ c.phonePublic }}
+            </a>
+          </NuxtLink>
         </div>
         <p v-else class="side-panel__empty">Nicio campanie activă în acest județ.</p>
 
@@ -182,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { X, ArrowLeft } from 'lucide-vue-next'
+import { X, ArrowLeft, Phone } from 'lucide-vue-next'
 import type { Campaign, CountyStats } from '~/types'
 import { countyCodeToNameSync, countyCodeToSlugSync } from '~/composables/useLocationData'
 
@@ -254,8 +272,12 @@ const visibleTopTen = computed(() =>
 )
 
 const defaultTitle = computed(() => {
-  if (props.view === 'cerere') return 'Top județe după cerere'
   if (props.view === 'oferta') return 'Top județe după campanii'
+  if (props.view === 'cerere') {
+    if (species.value === 'dog') return 'Top județe după cerere câini'
+    if (species.value === 'cat') return 'Top județe după cerere pisici'
+    return 'Top județe după persoane înscrise'
+  }
   return 'Istoric campanii'
 })
 
@@ -290,6 +312,11 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   flex-direction: column;
   gap: var(--space-md);
   min-height: 300px;
+  /* Never let an item's text widen the panel — long words wrap instead of
+     forcing a horizontal scrollbar. `min-width: 0` lets the panel shrink inside
+     its grid column rather than being sized by its widest unbreakable child. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* ── Header ── */
@@ -364,6 +391,14 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   padding: var(--space-sm) 0;
   border-top: 1px solid var(--color-border-light);
   border-bottom: 1px solid var(--color-border-light);
+}
+
+/* Clarifies that per-species requests don't sum to the people total. */
+.side-panel__hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-top: var(--space-xs);
 }
 
 .side-panel__species-row {
@@ -613,15 +648,31 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
   gap: var(--space-xs);
   max-height: 240px;
   overflow-y: auto;
+  /* Contain the rows' negative-margin hover breakout so it doesn't spill past
+     the container and trigger a horizontal scrollbar (overflow-y: auto makes
+     overflow-x compute to auto). Also hard-clip any residual x overflow. */
+  padding-inline: var(--space-xs);
+  overflow-x: hidden;
 }
 
 .side-panel__campaign-row {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: var(--space-xs) 0;
+  gap: 2px;
+  padding: var(--space-xs);
+  margin: 0 calc(-1 * var(--space-xs));
   border-bottom: 1px solid var(--color-border-light);
   font-size: var(--font-size-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s;
+  /* Let the row shrink to the panel and wrap long org names/addresses. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.side-panel__campaign-row:hover {
+  background: var(--color-bg-muted);
 }
 
 .side-panel__campaign-date {
@@ -636,6 +687,23 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
 .side-panel__campaign-org {
   color: var(--color-text-muted);
   font-size: 0.8rem;
+}
+
+.side-panel__campaign-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.side-panel__campaign-phone:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
 }
 
 /* ── Misc ── */

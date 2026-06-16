@@ -1,9 +1,21 @@
 <template>
   <form class="campaign-form" novalidate @submit.prevent="handleSubmit">
-    <!-- Honeypot: hidden from people; a filled value means a bot, dropped client-side. -->
+    <!-- Honeypot: hidden from people; a filled value means a bot, dropped client-side.
+         Neutral name + autofill/password-manager ignore hints so the browser never
+         auto-fills it — a "website"/profile autofill here silently blocked real submits. -->
     <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
-      <label>Website</label>
-      <input v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+      <label for="campaign-extra-field">Lasă acest câmp gol</label>
+      <input
+        id="campaign-extra-field"
+        v-model="honeypot"
+        type="text"
+        name="campaign_extra_field"
+        tabindex="-1"
+        autocomplete="off"
+        data-1p-ignore="true"
+        data-lpignore="true"
+        data-form-type="other"
+      />
     </div>
     <!-- ============================================================ -->
     <!-- STEP 1 — Fill                                                  -->
@@ -31,7 +43,7 @@
             <UiInput
               id="campaign-contact-email"
               v-model="form.contactEmail"
-              label="Email de contact"
+              label="Email de contact organizator"
               type="email"
               placeholder="contact@organizatie.ro"
               :required="true"
@@ -42,7 +54,7 @@
             <UiPhoneInput
               id="campaign-contact-phone"
               v-model="form.contactPhone"
-              label="Telefon de contact"
+              label="Telefon de contact organizator"
               :error="submitted ? errors.contactPhone : undefined"
             />
           </UiFormItem>
@@ -222,7 +234,10 @@
       <!-- Medic + telefon public -->
       <div class="form-section">
         <div class="form-section__header">
-          <h3 class="form-section__title">Ce apare public?</h3>
+          <h3 class="form-section__title">Informații adiționale despre campanie</h3>
+          <!-- <p class="form-section__hint">
+            Aceste date apar pe pagina publică a campaniei.
+          </p> -->
         </div>
         <UiFormRow>
           <UiFormItem>
@@ -237,16 +252,19 @@
         <UiFormRow>
           <UiFormItem :grow="false" basis="auto">
             <UiCheckbox id="campaign-same-phone" v-model="form.samePublicPhone">
-              Folosește telefonul de contact și ca telefon public
+              Numărul public de contact pentru cetățeni este același cu telefonul de contact al organizației
             </UiCheckbox>
           </UiFormItem>
         </UiFormRow>
+        <p class="form-section__hint campaign-form__public-phone-hint">
+          Debifează dacă vrei să afișezi un alt număr public (de exemplu al medicului) decât telefonul intern al organizației ({{ form.contactPhone }}).
+        </p>
         <UiFormRow v-if="!form.samePublicPhone">
           <UiFormItem basis="200px">
             <UiPhoneInput
               id="campaign-phone-public"
               v-model="form.phonePublic"
-              label="Telefon public (afișat pe campanie)"
+              label="Telefon public pentru cetățeni (afișat pe pagina campaniei)"
               :error="submitted ? errors.phonePublic : undefined"
             />
           </UiFormItem>
@@ -557,7 +575,7 @@ function goBackToEdit() {
 async function handleSubmit() {
   // Honeypot: a hidden field no human can fill. If it has a value it's a bot —
   // drop the submit silently, without ever contacting the backend.
-  if (honeypot.value) return
+  if (honeypot.value.trim()) return
 
   // Step 1 — validate then advance to preview.
   if (step.value === 1) {
@@ -678,6 +696,14 @@ async function handleSubmit() {
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   margin-top: 2px;
+}
+
+/* Sits under the "same public phone" checkbox — indent to align with the
+   checkbox label text (box width + gap) rather than the box itself. */
+.campaign-form__public-phone-hint {
+  margin-top: var(--space-xs);
+  padding-left: calc(20px + var(--space-sm));
+  line-height: 1.45;
 }
 
 .campaign-form__error {

@@ -110,7 +110,7 @@ const router = useRouter()
 const activeView = ref<ActiveView>(
   (['cerere', 'oferta', 'istoric'] as const).includes(route.query.view as ActiveView)
     ? (route.query.view as ActiveView)
-    : 'cerere',
+    : 'oferta',
 )
 
 const selectedCode = ref('')
@@ -258,7 +258,8 @@ async function setView(view: ActiveView) {
   cerereSpecies.value = 'total'
   const q = { ...route.query } as Record<string, string | undefined>
   delete q.judet
-  if (view === 'cerere') {
+  // Ofertă is canonical (no query); Cerere is explicit (?view=cerere).
+  if (view === 'oferta') {
     delete q.view
   } else {
     q.view = view

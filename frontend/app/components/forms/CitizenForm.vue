@@ -1,9 +1,21 @@
 <template>
   <form class="citizen-form" novalidate @submit.prevent="handleSubmit">
-    <!-- Honeypot: hidden from people; a filled value means a bot, dropped client-side. -->
+    <!-- Honeypot: hidden from people; a filled value means a bot, dropped client-side.
+         Neutral name + autofill/password-manager ignore hints so the browser never
+         auto-fills it — a "website"/profile autofill here silently blocked real submits. -->
     <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
-      <label>Website</label>
-      <input v-model="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" />
+      <label for="citizen-extra-field">Lasă acest câmp gol</label>
+      <input
+        id="citizen-extra-field"
+        v-model="honeypot"
+        type="text"
+        name="citizen_extra_field"
+        tabindex="-1"
+        autocomplete="off"
+        data-1p-ignore="true"
+        data-lpignore="true"
+        data-form-type="other"
+      />
     </div>
     <!-- Card header -->
     <div class="citizen-form__header">
@@ -318,7 +330,7 @@ function onCountyChange() {
 async function handleSubmit() {
   // Honeypot: a hidden field no human can fill. If it has a value it's a bot —
   // drop the submit silently, without ever contacting the backend.
-  if (honeypot.value) return
+  if (honeypot.value.trim()) return
 
   submitted.value = true
 

@@ -38,6 +38,7 @@ const links = [
   { to: '/ghid-sterilizare', label: 'Ghid sterilizare' },
   { to: '/organizatori', label: 'Organizatori' },
   { to: '/harta', label: 'Harta' },
+  { to: '/sustine', label: 'Doneaza' },
 ]
 </script>
 

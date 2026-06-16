@@ -11,7 +11,7 @@
         <h2>1. Cine suntem și cum ne poți contacta</h2>
         <p>Asociația Build4Paws este un ONG Tech dedicat bunăstării animalelor, care dezvoltă soluții digitale menite să faciliteze colaborarea dintre cetățeni, ONG-uri, medici veterinari și autorități publice în domeniul protecției animalelor.</p>
         <p>În această calitate, Asociația Build4Paws are rolul de <strong>operator de date cu caracter personal</strong>, colectând și prelucrând datele necesare pentru funcționarea serviciilor oferite și pentru îndeplinirea scopurilor legitime ale Platformei.</p>
-        <p>În exercitarea activității sale, Asociația Build4Paws operează platforma <a href="https://sterilizarigratuite.ro" target="_blank" rel="noopener">sterilizărigratuite.ro</a> (denumită în continuare „Platforma"), destinată informării și conectării cetățenilor cu ONG-uri și alți actori relevanți care organizează campanii de sterilizare gratuită pentru animale de companie.</p>
+        <p>În exercitarea activității sale, Asociația Build4Paws operează platforma <a :href="siteUrl" target="_blank" rel="noopener">{{ siteHost }}</a> (denumită în continuare „Platforma"), destinată informării și conectării cetățenilor cu ONG-uri și alți actori relevanți care organizează campanii de sterilizare gratuită pentru animale de companie.</p>
         <div class="privacy-card">
           <p class="privacy-card__title">Operatorul de date cu caracter personal este:</p>
           <ul>
@@ -24,7 +24,7 @@
 
       <section class="privacy-section">
         <h2>2. Ce date cu caracter personal colectăm</h2>
-        <p>Platforma sterilizarigratuite.ro deservește mai multe tipuri de utilizatori, fiecare cu propriul set de date:</p>
+        <p>Platforma {{ siteHost }} deservește mai multe tipuri de utilizatori, fiecare cu propriul set de date:</p>
 
         <h3>2.1 Utilizatori persoane fizice</h3>
         <p>Când te înscrii pentru a primi notificări despre campanii de sterilizare gratuită, colectăm:</p>
@@ -51,7 +51,7 @@
         </ul>
 
         <h3>2.4 Date colectate automat</h3>
-        <p>Când vizitezi sterilizarigratuite.ro, serverele noastre pot înregistra automat:</p>
+        <p>Când vizitezi {{ siteHost }}, serverele noastre pot înregistra automat:</p>
         <ul>
           <li>Adresa IP (anonimizată sau stocată temporar pentru securitate)</li>
           <li>Tipul de browser și sistemul de operare</li>
@@ -152,25 +152,25 @@
       </section>
 
       <section class="privacy-section">
-        <h2>8. Drepturile tale (GDPR)</h2>
+        <h2>6. Drepturile tale (GDPR)</h2>
         <p>Ne poți contacta la <a href="mailto:contact@build4paws.ro">contact@build4paws.ro</a> pentru exercitarea următoarelor drepturi specifice GDPR:</p>
 
-        <h3>8.1 Dreptul de acces (Art. 15 GDPR)</h3>
+        <h3>6.1 Dreptul de acces (Art. 15 GDPR)</h3>
         <p>Poți solicita oricând o copie a datelor pe care le deținem despre tine.</p>
 
-        <h3>8.2 Dreptul la rectificare (Art. 16 GDPR)</h3>
+        <h3>6.2 Dreptul la rectificare (Art. 16 GDPR)</h3>
         <p>Dacă datele tale sunt incorecte sau incomplete, le poți actualiza.</p>
 
-        <h3>8.3 Dreptul la ștergere, „dreptul de a fi uitat" (Art. 17 GDPR)</h3>
+        <h3>6.3 Dreptul la ștergere, „dreptul de a fi uitat" (Art. 17 GDPR)</h3>
         <p>Poți cere ștergerea completă a datelor tale.</p>
 
-        <h3>8.4 Dreptul de opoziție și dezabonare (Art. 21 GDPR)</h3>
+        <h3>6.4 Dreptul de opoziție și dezabonare (Art. 21 GDPR)</h3>
         <p>Te poți dezabona de la notificările SMS oricând, printr-un singur click pe link-ul din SMS-ul primit de la noi.</p>
 
-        <h3>8.5 Dreptul la portabilitate (Art. 20 GDPR)</h3>
+        <h3>6.5 Dreptul la portabilitate (Art. 20 GDPR)</h3>
         <p>Poți solicita datele tale într-un format structurat, uzual și care poate fi citit automat.</p>
 
-        <h3>8.6 Dreptul de a depune plângere</h3>
+        <h3>6.6 Dreptul de a depune plângere</h3>
         <p>Dacă consideri că prelucrăm datele tale în mod ilegal, poți depune o plângere la:</p>
         <div class="privacy-card">
           <p class="privacy-card__title">Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</p>
@@ -184,10 +184,10 @@
       </section>
 
       <section class="privacy-section">
-        <h2>9. Cookies și tehnologii de urmărire</h2>
+        <h2>7. Cookies și tehnologii de urmărire</h2>
         <p>build4paws.ro poate utiliza cookies și tehnologii similare.</p>
 
-        <h3>9.1 Cookies strict necesare</h3>
+        <h3>7.1 Cookies strict necesare</h3>
         <p>Esențiale pentru funcționarea site-ului (sesiune, securitate). Nu necesită consimțământ.</p>
       </section>
 
@@ -196,6 +196,11 @@
 </template>
 
 <script setup lang="ts">
+// Platform domain is environment-driven (nuxt.config `site.url`), so the policy
+// references the right host on prod/dev rather than a hardcoded literal.
+const siteUrl = useSiteConfig().url
+const siteHost = computed(() => siteUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''))
+
 useSeoMeta({
   title: 'Politică de Confidențialitate · Sterilizări Gratuite',
   description: 'Politica de confidențialitate a platformei Sterilizări Gratuite: cum colectăm, prelucrăm și protejăm datele tale cu caracter personal.',

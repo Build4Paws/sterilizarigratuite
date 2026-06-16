@@ -282,7 +282,7 @@ function toCardData(c: Campaign): CampaignCardData {
 }
 
 // ---- SEO ---------------------------------------------------------------
-const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizarigratuite.ro'
+const siteUrl = siteConfig.url
 
 const canonicalHref = computed(() => {
   // Specie variants canonicalize to the no-specie URL — avoids duplicate content.
