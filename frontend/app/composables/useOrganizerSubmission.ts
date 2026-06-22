@@ -4,7 +4,7 @@ export interface OrganizerSubmissionSession {
   campaign: CampaignSubmission
   countyName: string
   submissionId: string
-  status: 'pending'
+  status: 'pending' | 'approved'
   stats?: CampaignSubmissionResponse['stats']
   submittedAt: string
 }

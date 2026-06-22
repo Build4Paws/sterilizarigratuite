@@ -125,7 +125,10 @@ export default defineNuxtConfig({
     '/despre-sterilizare': { redirect: '/ghid-sterilizare' },
     '/despre': { redirect: '/harta' },
     '/confirmare': { robots: false, ssr: false },
-    '/confirmare-campanie': { robots: false },
+    // Purely sessionStorage-driven (submission session + live approval polling),
+    // so render client-side only — same as `/confirmare` — to avoid an empty
+    // SSR shell and hydration mismatches on refresh.
+    '/confirmare-campanie': { robots: false, ssr: false },
     // Authenticated internal admin — never indexed. Plain SSR (auth-gated).
     '/admin/**': { robots: false },
     '/campanie/**': { robots: false },

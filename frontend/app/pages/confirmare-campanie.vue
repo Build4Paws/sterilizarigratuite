@@ -14,9 +14,13 @@
       <section class="confirmare__block">
         <div class="confirmare__block-header">
           <Eye :size="20" />
-          <h2>Așa va apărea campania ta după aprobare</h2>
+          <h2>{{ approved ? 'Așa arată campania ta acum' : 'Așa va apărea campania ta după aprobare' }}</h2>
         </div>
-        <CampaignCard :campaign="cardData" :show-call-cta="true" />
+        <CampaignCard
+          :campaign="cardData"
+          :variant="approved ? 'default' : 'pending'"
+          :show-call-cta="true"
+        />
       </section>
 
       <section v-if="hasStats" class="confirmare__block confirmare__block--stats">
@@ -50,7 +54,11 @@
           </div>
           <div class="confirmare__meta-row">
             <dt>Status</dt>
-            <dd><span class="status-pill">În așteptarea aprobării</span></dd>
+            <dd>
+              <span class="status-pill" :class="approved ? 'status-pill--approved' : 'status-pill--pending'">
+                {{ approved ? 'Aprobată' : 'În așteptarea aprobării' }}
+              </span>
+            </dd>
           </div>
         </dl>
 
@@ -74,10 +82,31 @@ useSeoMeta({
 })
 
 const router = useRouter()
-const { session } = useOrganizerSubmission()
+const { session, setSession } = useOrganizerSubmission()
+
+// Poll the backend so the status badge flips to "Aprobată" the moment an admin
+// approves the campaign — this is the only thing on the page that changes.
+const { approved, start } = useCampaignApproval(
+  () => session.value?.submissionId,
+  () => session.value?.campaign.county,
+)
+
+// Already approved earlier this session (e.g. a reload)? Reflect it immediately.
+if (session.value?.status === 'approved') approved.value = true
 
 onMounted(() => {
-  if (!session.value) router.replace('/organizatori')
+  if (!session.value) {
+    router.replace('/organizatori')
+    return
+  }
+  if (!approved.value) start()
+})
+
+// Persist approval so a reload keeps the badge approved.
+watch(approved, (isApproved) => {
+  if (isApproved && session.value && session.value.status !== 'approved') {
+    setSession({ ...session.value, status: 'approved' })
+  }
 })
 
 const cardData = computed<CampaignCardData>(() => {
@@ -97,6 +126,9 @@ const cardData = computed<CampaignCardData>(() => {
     slotsCats: c.slotsCats,
     doctor: c.doctor,
     phonePublic: c.phonePublic,
+    // Drives the card's badge: undefined → "În așteptarea aprobării" (pending
+    // variant); once polling sees approval it flips to the live status badge.
+    status: approved.value ? 'APPROVED' : undefined,
   }
 })
 
@@ -295,12 +327,20 @@ const submittedLabel = computed(() => formatDateTime(session.value?.submittedAt)
 
 .status-pill {
   display: inline-block;
-  background: #fef3c7;
-  color: #92400e;
   padding: 2px 10px;
   border-radius: 999px;
   font-size: var(--font-size-sm);
   font-weight: 600;
+}
+
+.status-pill--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-pill--approved {
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .confirmare__footer {
