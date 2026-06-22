@@ -51,7 +51,13 @@ const links = [
 const { y } = useWindowScroll()
 const { width: winWidth, height: winHeight } = useWindowSize()
 
-const scrolled = computed(() => y.value > 8)
+const SCROLL_ENTER = 64
+const SCROLL_EXIT = 8
+const scrolled = ref(false)
+watch(y, (val) => {
+  if (!scrolled.value && val > SCROLL_ENTER) scrolled.value = true
+  else if (scrolled.value && val < SCROLL_EXIT) scrolled.value = false
+}, { immediate: true })
 
 // 0 → 1 reading progress for the accent bar along the header's bottom edge.
 const progress = computed(() => {
