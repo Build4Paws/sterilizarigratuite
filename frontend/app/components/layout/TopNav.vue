@@ -24,11 +24,6 @@
         </li>
       </ul>
     </nav>
-
-    <!-- Reading-progress indicator: grows as the page scrolls. Purely decorative. -->
-    <div class="top-nav__progress" aria-hidden="true">
-      <div class="top-nav__progress-bar" :style="{ transform: `scaleX(${progress})` }" />
-    </div>
   </header>
 </template>
 

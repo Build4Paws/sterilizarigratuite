@@ -82,7 +82,7 @@ Both forms follow the same UX rule: **submit-only validation**. Errors are store
 
 - `<CampaignCard>` is the **single source of truth** for how a campaign renders — used by the organizer preview step *and* (eventually) `/campanii`. It accepts `CampaignCardData` (county code already resolved to county name by the caller).
 - Phones use `<UiPhoneInput>`, which displays the national `07XX XXX XXX` format (leading `0` as Romanians write it — no visible `+40` prefix) but still emits/stores the canonical `+40XXXXXXXXX` form. `stripPhone` + `PHONE_RE` in `utils/validators.ts` are the canonical normalize/validate pair (both still keyed to `+40`) — prefer these over re-deriving.
-- Date/time inputs are `<UiInput type="date|time" />` (extended in story #1) — don't introduce a separate date-picker component.
+- **Dates use `<UiDateInput>`** (`components/ui/UiDateInput.vue`) — a fully Romanian custom calendar (month/weekday names, `dd/mm/yyyy` display, `zz/ll/aaaa` placeholder) built on `Intl.DateTimeFormat('ro-RO')`. Native `<input type="date">` is intentionally NOT used: its filled value and calendar popup follow the browser locale, which can't be forced to Romanian (full localization is a hard requirement for the rural audience). `v-model` stays canonical ISO `yyyy-mm-dd`; props mirror `UiInput` (`label/id/required/error/hint/min/max`). Times are `<UiSelect>` dropdowns, not native time inputs.
 
 ### SEO + routing rules
 

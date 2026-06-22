@@ -48,8 +48,8 @@
             >{{ p.label }}</button>
           </div>
           <div class="rep__dates">
-            <UiInput id="rep-from" v-model="from" label="De la" type="date" />
-            <UiInput id="rep-to" v-model="to" label="Până la" type="date" />
+            <UiDateInput id="rep-from" v-model="from" label="De la" />
+            <UiDateInput id="rep-to" v-model="to" label="Până la" />
           </div>
         </div>
 

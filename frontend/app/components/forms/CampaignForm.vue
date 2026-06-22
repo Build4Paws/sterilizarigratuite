@@ -132,11 +132,10 @@
         </UiFormRow>
         <UiFormRow :nowrap="!isMobile">
           <UiFormItem basis="160px">
-            <UiInput
+            <UiDateInput
               id="campaign-date-start"
               v-model="form.dateStart"
               :label="form.isMultiDay ? 'Data început' : 'Data'"
-              type="date"
               :min="todayISO"
               :required="true"
               hint="Format: zi/lună/an"
@@ -144,11 +143,10 @@
             />
           </UiFormItem>
           <UiFormItem v-if="form.isMultiDay" basis="160px">
-            <UiInput
+            <UiDateInput
               id="campaign-date-end"
               v-model="form.dateEnd"
               label="Data sfârșit"
-              type="date"
               :min="form.dateStart || todayISO"
               :required="true"
               hint="Format: zi/lună/an"
