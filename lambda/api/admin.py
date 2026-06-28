@@ -1,7 +1,6 @@
 """Admin auth helpers + admin route handlers."""
 import json
 import re
-from datetime import timedelta
 from typing import Optional
 from uuid import UUID
 
@@ -10,9 +9,8 @@ from .config import (
     current_origin, log,
 )
 from .helpers import (
-    respond, err, client_ip, client_ua, get_conn, audit, issue_token,
+    respond, err, client_ip, client_ua, get_conn, audit,
     fetch_campaign_email_payload, send_campaign_email, send_citizen_email,
-    send_citizens_sms_batch, _citizen_manage_url,
 )
 
 
@@ -166,76 +164,30 @@ def handle_admin_approve_campaign(event: dict, public_id: str) -> dict:
                 return err(404, "not_found")
             if row["status"] != "pending":
                 return err(409, "invalid_state", "Only pending campaigns can be approved.")
+            # Queue the citizen alert (alert_status='pending'). The fan-out is NOT
+            # done here: approval can happen during quiet hours, so the scheduled
+            # drainer (api/notifications.py) dispatches it inside the allowed send
+            # window, applying the SMS-preferred channel rule.
             cur.execute("""UPDATE campaigns SET status='approved', reviewed_at=now(),
-                           reviewed_by=%s WHERE id=%s RETURNING reviewed_at""", (actor, row["id"]))
+                           reviewed_by=%s, alert_status='pending' WHERE id=%s
+                           RETURNING reviewed_at""", (actor, row["id"]))
             reviewed_at = cur.fetchone()["reviewed_at"]
             audit(cur, actor=actor, action="campaign.approve", entity_type="campaign",
                   entity_id=row["id"], ip=ip, ua=ua)
             # Read the email payload while still in the transaction; send after commit.
             email_payload = fetch_campaign_email_payload(cur, row["id"])
 
-            # Citizens to notify: active, with an email, in the campaign's locality.
-            # Issue a fresh per-recipient manage token so each alert carries a
-            # working unsubscribe link (raw tokens aren't recoverable — only their
-            # hashes are stored). Tokens commit with the approval, so the links work.
-            alert_recipients = []
-            if email_payload:
-                cur.execute(
-                    """SELECT id, email FROM citizens
-                       WHERE status = 'active' AND email IS NOT NULL AND locality_id = %s""",
-                    (email_payload["locality_id"],),
-                )
-                for cz in cur.fetchall():
-                    tok = issue_token(cur, kind="citizen_manage",
-                                      citizen_id=cz["id"], ttl=timedelta(days=365))
-                    alert_recipients.append((cz["email"], tok))
-
-            # SMS recipients: active citizens with a phone in the same locality.
-            # Sent as ONE batched messengeros call (no per-recipient token/link —
-            # one shared body), so this is just the phone list.
-            sms_phones = []
-            if email_payload:
-                cur.execute(
-                    """SELECT phone FROM citizens
-                       WHERE status = 'active' AND phone IS NOT NULL AND locality_id = %s""",
-                    (email_payload["locality_id"],),
-                )
-                sms_phones = [r["phone"] for r in cur.fetchall()]
-
-        # Transaction committed. All sends below are best-effort (never raise).
+        # Transaction committed. Tell the organizer immediately — this is
+        # transactional and is NOT subject to quiet hours. Best-effort (never raises).
         if email_payload:
-            site = current_origin()
-            campaign_url = f"{site}/campanie/{email_payload['campaign_public_id']}"
-            # 1) tell the organizer it's approved
             send_campaign_email(
                 "approved",
                 to_email=email_payload["contact_email"],
                 organization_name=email_payload["organization_name"],
                 campaign_public_id=str(email_payload["campaign_public_id"]),
                 organizer_public_id=str(email_payload["organizer_public_id"]),
-                site_url=site,
+                site_url=current_origin(),
                 details=email_payload,
-            )
-            # 2) alert citizens in the area (each with their own unsubscribe link)
-            for cz_email, cz_tok in alert_recipients:
-                send_citizen_email(
-                    "campaign_alert",
-                    to_email=cz_email,
-                    locality=email_payload["locality"],
-                    organization_name=email_payload["organization_name"],
-                    details=email_payload,
-                    campaign_url=campaign_url,
-                    manage_url=_citizen_manage_url(cz_tok),
-                )
-            if alert_recipients:
-                log.info("campaign alert fan-out", extra={"recipients": len(alert_recipients)})
-            # 3) SMS the phone holders in the locality (one batched call)
-            send_citizens_sms_batch(
-                "campaign_alert",
-                phones=sms_phones,
-                locality=email_payload["locality"],
-                organization_name=email_payload["organization_name"],
-                campaign_url=campaign_url,
             )
         return respond(200, {"status": "approved", "reviewedAt": reviewed_at, "reviewedBy": actor})
     except Exception:

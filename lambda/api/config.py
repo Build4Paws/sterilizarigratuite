@@ -34,6 +34,16 @@ MESSENGEROS_DELIVERY_PROVIDER = os.environ.get("MESSENGEROS_DELIVERY_PROVIDER")
 MESSENGEROS_PROJECT = os.environ.get("MESSENGEROS_PROJECT")  # optional
 MESSENGEROS_SMS_URL = os.environ.get("MESSENGEROS_SMS_URL", "https://inbound.messengeros.com/2.0/send")
 
+# Quiet hours for citizen campaign-alert fan-out. Alerts are dispatched only
+# inside [NOTIFY_ALLOWED_START, NOTIFY_ALLOWED_END] local time (NOTIFY_TZ).
+# Approvals outside the window are queued (campaigns.alert_status='pending') and
+# picked up by the scheduled drainer at the next tick inside the window. This
+# applies ONLY to citizen alerts — transactional mail (organizer confirmations,
+# the citizen welcome email) is always sent immediately. Times are "HH:MM".
+NOTIFY_TZ = os.environ.get("NOTIFY_TZ", "Europe/Bucharest")
+NOTIFY_ALLOWED_START = os.environ.get("NOTIFY_ALLOWED_START", "09:00")
+NOTIFY_ALLOWED_END = os.environ.get("NOTIFY_ALLOWED_END", "20:00")
+
 PII_FIELDS = {"phone", "email", "name", "contactEmail", "contactPhone", "phonePublic", "address"}
 
 # Admin enums / limits

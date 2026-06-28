@@ -97,6 +97,15 @@ DISPATCH = {
 
 
 def lambda_handler(event, context):
+    # Scheduled (EventBridge) invocation: no HTTP request context. Drain the
+    # quiet-hours citizen-alert queue instead of routing an HTTP request. The
+    # drainer scopes itself per-environment (the scheduled event carries no
+    # domain), so we don't set_active_env here.
+    if event.get("source") == "aws.events" or event.get("detail-type") == "Scheduled Event":
+        from .notifications import drain_pending_alerts
+        log.info("scheduled drain tick")
+        return {"ok": True, "drained": drain_pending_alerts()}
+
     method = (event.get("requestContext", {}).get("http", {}).get("method")
               or event.get("httpMethod"))
     path = event.get("rawPath") or event.get("path") or ""

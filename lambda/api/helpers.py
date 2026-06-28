@@ -11,6 +11,7 @@ import urllib.request
 from datetime import date, datetime, time as _time, timedelta, timezone
 from typing import Any, Optional
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 import boto3
 from botocore.config import Config as _BotoConfig
@@ -22,6 +23,7 @@ from .config import (
     TURNSTILE_SECRET, TURNSTILE_ENABLED, TURNSTILE_VERIFY_URL, TOKEN_PEPPER,
     SES_SENDER, SES_REGION,
     MESSENGEROS_API_KEY, MESSENGEROS_DELIVERY_PROVIDER, MESSENGEROS_PROJECT, MESSENGEROS_SMS_URL,
+    NOTIFY_TZ, NOTIFY_ALLOWED_START, NOTIFY_ALLOWED_END,
 )
 
 # Per-environment connections, keyed by env so a warm container can't serve a
@@ -361,9 +363,12 @@ def _send_sms(recipients: list[dict], sms_body: str) -> None:
         "recipients": recipients,
         "sms_body": sms_body,
     }
+    # `project` is a TOP-LEVEL field per the messengeros API (sibling of
+    # `notification`), not part of the sms object.
+    body = {"notification": {"sms": [sms_obj]}}
     if MESSENGEROS_PROJECT:
-        sms_obj["project"] = MESSENGEROS_PROJECT
-    payload = json.dumps({"notification": {"sms": [sms_obj]}}).encode()
+        body["project"] = MESSENGEROS_PROJECT
+    payload = json.dumps(body).encode()
 
     def _call() -> int:
         req = urllib.request.Request(
@@ -414,6 +419,27 @@ def send_citizens_sms_batch(kind: str, *, phones: list, **kw) -> None:
     body = _render_sms(kind, **kw)
     if body:
         _send_sms([{"phone_number": p} for p in nums], body)
+
+
+def _parse_hhmm(s: str) -> _time:
+    h, m = s.strip().split(":")
+    return _time(int(h), int(m))
+
+
+def within_send_window(now: Optional[datetime] = None) -> bool:
+    """True if the current local time (NOTIFY_TZ) is inside the allowed
+    quiet-hours window. Supports windows that wrap midnight (start > end, e.g.
+    '22:00'..'06:00'). On bad/missing config it fails OPEN (returns True) so a
+    misconfiguration never silently halts all notifications."""
+    try:
+        local = (now or datetime.now(timezone.utc)).astimezone(ZoneInfo(NOTIFY_TZ)).time()
+        start, end = _parse_hhmm(NOTIFY_ALLOWED_START), _parse_hhmm(NOTIFY_ALLOWED_END)
+    except Exception:
+        log.exception("bad NOTIFY_* window config; allowing send")
+        return True
+    if start <= end:
+        return start <= local <= end
+    return local >= start or local <= end  # window wraps midnight
 
 
 def audit(cur, *, actor: str, action: str, entity_type: str, entity_id: Optional[int],
