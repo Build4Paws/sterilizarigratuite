@@ -3,6 +3,7 @@
     <!-- Hero: navy background with centered title -->
     <section class="hero">
       <div class="container hero__inner">
+        <p class="hero__eyebrow">Sterilizări gratuite</p>
         <h1 class="hero__title">
           Te anunțăm când apare o campanie de sterilizare gratuită în localitatea ta.
         </h1>
@@ -123,6 +124,15 @@ useHead({
 .hero__inner {
   position: relative;
   z-index: 2;
+}
+
+.hero__eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-sm);
 }
 
 .hero__title {

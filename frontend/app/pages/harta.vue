@@ -97,8 +97,8 @@ import { slugToCountyCode, countyCodeToSlug, ensureLocationIndexes } from '~/com
 type ActiveView = 'cerere' | 'oferta' | 'istoric'
 
 const TABS = [
-  { id: 'cerere', label: 'Cerere', disabled: false },
-  { id: 'oferta', label: 'Ofertă', disabled: false },
+  { id: 'cerere', label: 'Cereri in zonă', disabled: false },
+  { id: 'oferta', label: 'Campanii', disabled: false },
   // { id: 'istoric', label: 'Istoric', disabled: true },
 ] as const
 
