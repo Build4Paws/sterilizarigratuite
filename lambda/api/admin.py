@@ -229,13 +229,16 @@ def handle_admin_approve_campaign(event: dict, public_id: str) -> dict:
                 )
             if alert_recipients:
                 log.info("campaign alert fan-out", extra={"recipients": len(alert_recipients)})
-            # 3) SMS the phone holders in the locality (one batched call)
+            # 3) SMS the phone holders in the locality (one batched call). Locality
+            #    is ASCII-folded inside the template (no diacritics -> 1 GSM-7
+            #    segment); phone_public is shown as the organizer entered it.
             send_citizens_sms_batch(
                 "campaign_alert",
                 phones=sms_phones,
                 locality=email_payload["locality"],
-                organization_name=email_payload["organization_name"],
-                campaign_url=campaign_url,
+                species=list((email_payload.get("species") or {}).keys()),
+                date_start=email_payload["date_start"],
+                phone=email_payload["phone_public"],
             )
         return respond(200, {"status": "approved", "reviewedAt": reviewed_at, "reviewedBy": actor})
     except Exception:

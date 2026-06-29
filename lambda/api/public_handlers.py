@@ -13,7 +13,6 @@ from .helpers import (
     verify_turnstile, normalize_phone, resolve_locality,
     audit, issue_token, _load_token, _citizen_manage_url,
     send_campaign_email, send_citizen_email,
-    send_citizen_sms,
 )
 from .models import CitizenRegistration, CampaignSubmission, pydantic_errors_to_response
 
@@ -240,9 +239,9 @@ def handle_register(event: dict) -> dict:
 
         log.info("citizen registered", extra={"public_id": str(row["public_id"])})
 
-        # Confirmation (best-effort, per channel the citizen gave). Email if an
-        # email exists; SMS if a phone exists — so phone-only registrants, who
-        # previously got nothing, are now confirmed too.
+        # Welcome email, best-effort. Email-only by design: a phone-only
+        # registrant gets NO SMS at registration (SMS is reserved for the
+        # campaign-in-area alert). No-ops if the citizen gave no email.
         send_citizen_email(
             "registered",
             to_email=reg.email,
@@ -250,7 +249,6 @@ def handle_register(event: dict) -> dict:
             locality=reg.locality,
             manage_url=_citizen_manage_url(manage_token),
         )
-        send_citizen_sms("registered", to_phone=reg.phone)
 
         return respond(200, {
             "message": "Ești înscris, te anunțăm când apare o campanie.",

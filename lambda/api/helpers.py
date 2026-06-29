@@ -296,7 +296,7 @@ def fetch_campaign_email_payload(cur, campaign_internal_id: int) -> Optional[dic
     cur.execute(
         """
         SELECT o.contact_email, o.name AS organization_name, o.public_id AS organizer_public_id,
-               c.public_id AS campaign_public_id, c.address, c.locality_id,
+               c.public_id AS campaign_public_id, c.address, c.locality_id, c.phone_public,
                c.date_start, c.date_end, c.time_start, c.time_end,
                co.name AS county_name, l.name AS locality,
                (SELECT jsonb_object_agg(cs.species_code, cs.slots)
