@@ -111,8 +111,11 @@
             </span>
             <span class="side-panel__campaign-loc">{{ c.locality }}</span>
             <span class="side-panel__campaign-org">{{ c.organizationName }}</span>
+            <span v-if="isSoldOut(c)" class="side-panel__campaign-soldout">
+              ⛔ Locuri ocupate. Mulțumim!
+            </span>
             <a
-              v-if="c.phonePublic"
+              v-else-if="c.phonePublic"
               :href="`tel:${c.phonePublic}`"
               class="side-panel__campaign-phone"
               @click.stop
@@ -226,6 +229,11 @@ const emit = defineEmits<{
 // Pinned locality (toggled by click; cleared when the county changes). Clicking
 // a locality row also raises its pin/label to the front of the map.
 const pinnedLocality = ref<string | null>(null)
+
+/** Organizer stopped registrations — hide the phone, show a closing notice. */
+function isSoldOut(c: Campaign): boolean {
+  return !!c.isSoldOut || c.status === 'SOLDOUT'
+}
 
 // "Vezi toate" → expand the Cerere panel to list every locality in the county.
 const showAllLocalities = ref(false)
@@ -704,6 +712,14 @@ const hasMoreLocalities = computed(() => allLocalities.value.length > TOP_LOCALI
 .side-panel__campaign-phone:hover {
   color: var(--color-accent-hover);
   text-decoration: underline;
+}
+
+.side-panel__campaign-soldout {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #92400e;
 }
 
 /* ── Misc ── */

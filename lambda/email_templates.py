@@ -269,8 +269,10 @@ def render(
     kind: str, *, organization_name: str, campaign_public_id: str,
     organizer_public_id: Optional[str] = None, site_url: str,
     details: Optional[dict] = None, reason: Optional[str] = None,
+    manage_url: Optional[str] = None,
 ):
-    """Return (subject, html, text) for the given kind. Unknown kind -> ValueError."""
+    """Return (subject, html, text) for the given kind. Unknown kind -> ValueError.
+    `manage_url` (the campaign-management magic link) is rendered only for 'approved'."""
     if kind not in _KINDS:
         raise ValueError(f"unknown email kind: {kind}")
     cfg = _KINDS[kind]
@@ -297,6 +299,22 @@ def render(
         if org_url else ""
     )
 
+    # Approved emails carry the per-campaign management link: the organizer can
+    # stop registrations ("Sold Out") once all slots are booked.
+    manage_html = ""
+    if kind == "approved" and manage_url:
+        manage_html = (
+            f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+            f'style="margin:18px 0 4px;border-top:1px solid {PALETTE["border"]};">'
+            f'<tr><td style="padding-top:16px;">'
+            f'<p style="margin:0 0 8px;font-size:14px;color:{PALETTE["ink"]};">'
+            f'Când toate locurile sunt ocupate, poți opri înscrierile din pagina de '
+            f'gestionare a campaniei. Telefonul public dispare și vizitatorii văd '
+            f'„Locuri ocupate”.</p>'
+            f'{_button_html("Gestionează campania", manage_url)}'
+            f'</td></tr></table>'
+        )
+
     inner_html = (
         f'<p style="margin:0 0 4px;font-size:17px;font-weight:700;">'
         f'Bună, {_esc(organization_name)},</p>'
@@ -308,6 +326,7 @@ def render(
         f'<p style="margin:0 0 16px;font-size:14px;font-family:monospace;'
         f'color:{PALETTE["ink"]};">{_esc(campaign_public_id)}</p>'
         f'{_button_html(cta_label, status_url)}'
+        f'{manage_html}'
         f'{org_link_html}'
         f'<p style="margin:22px 0 0;font-size:15px;">Mulțumim,<br>'
         f'<strong>Echipa {_esc(BRAND)}</strong></p>'
@@ -330,6 +349,8 @@ def render(
         parts += [det, ""]
     parts += [f"ID campanie: {campaign_public_id}",
               f"Vezi campania: {status_url}"]
+    if kind == "approved" and manage_url:
+        parts.append(f"Gestionează campania (oprește înscrierile): {manage_url}")
     if org_url:
         parts.append(f"Toate campaniile tale: {org_url}")
     parts += ["", f"Mulțumim,", f"Echipa {BRAND}"]
@@ -440,6 +461,8 @@ if __name__ == "__main__":
         if k == "rejected":
             kw["reason"] = ("Numărul de telefon de contact nu a putut fi verificat. "
                             "Te rugăm să retrimiți campania cu un număr valid.")
+        if k == "approved":
+            kw["manage_url"] = "https://sterilizarigratuite.ro/gestionare-campanie/TOKEN123"
         subj, html_doc, text_doc = render(k, **kw)
         with open(f"preview-{k}.html", "w", encoding="utf-8") as f:
             f.write(html_doc)

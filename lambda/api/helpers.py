@@ -262,11 +262,13 @@ def send_campaign_email(
     kind: str, *, to_email: str, organization_name: str, campaign_public_id: str,
     organizer_public_id: Optional[str] = None, site_url: str,
     details: Optional[dict] = None, reason: Optional[str] = None,
+    manage_url: Optional[str] = None,
 ) -> None:
     """Send the organizer a lifecycle email: 'submitted' | 'approved' | 'rejected'.
     Renders the STYLED templates from email_templates.py (must be bundled beside
     this file). Best-effort — never raises, never rolls back a transaction (call
-    AFTER commit), never logs the recipient. `reason` is only used for 'rejected'."""
+    AFTER commit), never logs the recipient. `reason` is only used for 'rejected';
+    `manage_url` (the campaign-management magic link) only for 'approved'."""
     try:
         import email_templates  # bundled in the deployment package
         subject, body_html, body_text = email_templates.render(
@@ -277,6 +279,7 @@ def send_campaign_email(
             site_url=site_url,
             details=details,
             reason=reason,
+            manage_url=manage_url,
         )
     except ValueError:
         log.warning("unknown campaign email kind: %s", kind)
@@ -296,6 +299,7 @@ def fetch_campaign_email_payload(cur, campaign_internal_id: int) -> Optional[dic
     cur.execute(
         """
         SELECT o.contact_email, o.name AS organization_name, o.public_id AS organizer_public_id,
+               o.id AS organizer_id,
                c.public_id AS campaign_public_id, c.address, c.locality_id, c.phone_public,
                c.date_start, c.date_end, c.time_start, c.time_end,
                co.name AS county_name, l.name AS locality,
@@ -316,9 +320,17 @@ def fetch_campaign_email_payload(cur, campaign_internal_id: int) -> Optional[dic
 # Nuxt route (the API route is /m/{token}; this is the page that calls it).
 CITIZEN_MANAGE_PATH = "/cont"
 
+# Frontend page that consumes a campaign-management token (the API route is
+# /campaigns/manage/{token}; this is the Nuxt page that calls it).
+CAMPAIGN_MANAGE_PATH = "/gestionare-campanie"
+
 
 def _citizen_manage_url(token: str) -> str:
     return f"{current_origin()}{CITIZEN_MANAGE_PATH}/{token}"
+
+
+def _campaign_manage_url(token: str) -> str:
+    return f"{current_origin()}{CAMPAIGN_MANAGE_PATH}/{token}"
 
 
 def send_citizen_email(
@@ -428,15 +440,16 @@ def audit(cur, *, actor: str, action: str, entity_type: str, entity_id: Optional
 
 
 def issue_token(cur, *, kind: str, citizen_id: Optional[int] = None,
-                organizer_id: Optional[int] = None, ttl: timedelta) -> str:
+                organizer_id: Optional[int] = None, campaign_id: Optional[int] = None,
+                ttl: timedelta) -> str:
     raw, hashed = new_token()
     expires_at = datetime.now(timezone.utc) + ttl
     cur.execute(
         """
-        INSERT INTO tokens (token_hash, kind, citizen_id, organizer_id, expires_at)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO tokens (token_hash, kind, citizen_id, organizer_id, campaign_id, expires_at)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """,
-        (hashed, kind, citizen_id, organizer_id, expires_at),
+        (hashed, kind, citizen_id, organizer_id, campaign_id, expires_at),
     )
     return raw
 
@@ -468,7 +481,7 @@ def _load_token(cur, raw_token: str, expected_kind: str) -> Optional[dict]:
     """Validate token: kind matches, not expired, not used, not revoked."""
     cur.execute(
         """
-        SELECT id, kind, citizen_id, organizer_id, expires_at, used_at, revoked_at
+        SELECT id, kind, citizen_id, organizer_id, campaign_id, expires_at, used_at, revoked_at
         FROM tokens WHERE token_hash = %s
         """,
         (hash_token(raw_token),),

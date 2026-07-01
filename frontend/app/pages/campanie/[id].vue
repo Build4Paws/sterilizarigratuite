@@ -81,9 +81,14 @@
             <dd>{{ campaign.doctor }}</dd>
           </div>
 
-          <div class="detail__row">
+          <div v-if="!isSoldOut" class="detail__row">
             <dt>Telefon public</dt>
             <dd><a :href="`tel:${campaign.phonePublic}`">{{ campaign.phonePublic }}</a></dd>
+          </div>
+
+          <div v-else class="detail__row">
+            <dt>Status</dt>
+            <dd class="detail__soldout">⛔ Locuri ocupate. Mulțumim!</dd>
           </div>
 
         </dl>
@@ -137,6 +142,11 @@ const notFound = computed(() => {
 
 const errorMessage = computed(() => extractApiError(fetchError.value))
 
+/** Organizer stopped registrations — hide the public phone, show a notice. */
+const isSoldOut = computed(() =>
+  !!campaign.value?.isSoldOut || campaign.value?.status === 'SOLDOUT',
+)
+
 // Dates render via the auto-imported `formatDate` (utils/format) — Romanian
 // dd/mm/yyyy.
 </script>
@@ -168,6 +178,11 @@ const errorMessage = computed(() => extractApiError(fetchError.value))
 }
 
 .state-card--pending .state-card__icon { color: #d97706; }
+
+.detail__soldout {
+  font-weight: 600;
+  color: #92400e;
+}
 .state-card--error   .state-card__icon { color: var(--color-error); }
 
 .state-card__title {
