@@ -149,6 +149,21 @@ Query: `view ∈ {cerere, oferta}` optional.
 | POST | `/r/{token}/confirm` | (no body) | `410` `token_invalid` |
 | POST | `/r/{token}/unsubscribe` | (no body) | `410` `token_invalid` |
 
+### Campaign management (organizer magic link)
+
+Issued to the organizer in the **approval** email (`kind: campaign_manage`, 180-day
+TTL, reusable — not consumed). Frontend page: `/gestionare-campanie/{token}`.
+
+| Method | Path | 200 body | Errors |
+|--------|------|----------|--------|
+| GET | `/campaigns/manage/{token}` | `{ valid: true, campaign: { submissionId, organizationName, countyName, locality, address, dateStart, dateEnd, timeStart, timeEnd, status, soldOut } }` | `404` not_found, `410` `token_invalid` |
+| POST | `/campaigns/manage/{token}/sold-out` | `{ soldOut, message }` — body `{ soldOut?: boolean }` (default `true`); sets `campaigns.sold_out` | `410` `token_invalid`, `400` `validation_failed`, `500` |
+
+When `soldOut` is true the public phone is hidden across `/campanii`, `/harta` and
+`/campanie/{id}`, replaced by "⛔ Locuri ocupate. Mulțumim!". The campaign stays
+`approved` so it remains listed. Exposed on reads as `is_sold_out` (list) /
+`isSoldOut` (detail). See `docs/SOLDOUT-FLOW-PLAN.md`.
+
 ---
 
 ## Component schemas

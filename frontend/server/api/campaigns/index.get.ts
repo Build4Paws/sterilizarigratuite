@@ -23,6 +23,9 @@ function mapCampaign(c: Record<string, any>): PublicCampaign {
     timeEnd: (c.time_end ?? '').slice(0, 5),
     doctor: c.doctor ?? null,
     species: c.species_slots ?? {},
+    status: c.status,
+    // Backend may signal sold-out via an explicit flag or the status enum.
+    isSoldOut: c.is_sold_out ?? c.isSoldOut ?? c.status === 'SOLDOUT',
   }
 }
 

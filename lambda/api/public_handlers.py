@@ -11,7 +11,7 @@ from .config import current_origin, log
 from .helpers import (
     respond, err, client_ip, client_ua, get_conn,
     verify_turnstile, normalize_phone, resolve_locality,
-    audit, issue_token, _load_token, _citizen_manage_url,
+    audit, issue_token, _load_token, _citizen_manage_url, _campaign_manage_url,
     send_campaign_email, send_citizen_email,
 )
 from .models import CitizenRegistration, CampaignSubmission, pydantic_errors_to_response
@@ -420,15 +420,31 @@ def handle_list_campaigns(event: dict) -> dict:
         return err(400, "validation_failed",
                    errors=[{"field": "county", "message": "invalid county code"}])
 
+    # Expose the sold-out flag without recreating the view: JOIN the base table
+    # back on public_id (the view's `submission_id`) and add `c.sold_out`. A
+    # sold-out campaign stays status='approved', so the view still returns it.
     conn = get_conn()
     with conn.cursor() as cur:
         if county:
             cur.execute(
-                "SELECT * FROM v_public_campaigns WHERE county_code = %s ORDER BY date_start",
+                """
+                SELECT v.*, c.sold_out AS is_sold_out
+                FROM v_public_campaigns v
+                JOIN campaigns c ON c.public_id = v.submission_id
+                WHERE v.county_code = %s
+                ORDER BY v.date_start
+                """,
                 (county,),
             )
         else:
-            cur.execute("SELECT * FROM v_public_campaigns ORDER BY date_start")
+            cur.execute(
+                """
+                SELECT v.*, c.sold_out AS is_sold_out
+                FROM v_public_campaigns v
+                JOIN campaigns c ON c.public_id = v.submission_id
+                ORDER BY v.date_start
+                """
+            )
         rows = cur.fetchall()
 
     resp = respond(200, {"campaigns": rows})
@@ -455,7 +471,7 @@ def handle_get_campaign(event: dict, public_id: str) -> dict:
                 l.name AS locality,
                 c.address, c.date_start AS "dateStart", c.date_end AS "dateEnd",
                 c.time_start AS "timeStart", c.time_end AS "timeEnd",
-                c.doctor, c.status, c.created_at AS "createdAt",
+                c.doctor, c.status, c.sold_out AS "isSoldOut", c.created_at AS "createdAt",
                 (SELECT jsonb_object_agg(cs.species_code, cs.slots)
                  FROM campaign_species cs WHERE cs.campaign_id = c.id) AS species
             FROM campaigns c
@@ -742,6 +758,78 @@ def handle_refresh_confirm(event: dict, token: str) -> dict:
         return respond(200, {"message": "Mulțumim, rămâi pe listă."})
     except Exception:
         log.exception("refresh confirm failed")
+        return err(500, "internal_error")
+
+
+# ── Campaign management (organizer magic link) ────────────────────────────────
+
+def handle_get_campaign_manage(event: dict, token: str) -> dict:
+    """Validate a campaign-management token (issued to the organizer on approval)
+    and return the campaign summary shown on the /gestionare-campanie/{token} page.
+    Reusable token — NOT consumed, so the organizer can revisit to reopen."""
+    conn = get_conn()
+    with conn.cursor() as cur:
+        tok = _load_token(cur, token, "campaign_manage")
+        if not tok or not tok.get("campaign_id"):
+            return err(410, "token_invalid", "Linkul nu mai este valid.")
+
+        cur.execute(
+            """
+            SELECT c.public_id AS "submissionId", o.name AS "organizationName",
+                   co.name AS "countyName", l.name AS locality, c.address,
+                   c.date_start AS "dateStart", c.date_end AS "dateEnd",
+                   c.time_start AS "timeStart", c.time_end AS "timeEnd",
+                   c.status, c.sold_out AS "soldOut"
+            FROM campaigns c
+            JOIN organizers o ON o.id = c.organizer_id
+            JOIN counties   co ON co.code = c.county_code
+            JOIN localities l  ON l.id = c.locality_id
+            WHERE c.id = %s
+            """,
+            (tok["campaign_id"],),
+        )
+        campaign = cur.fetchone()
+    if not campaign:
+        return err(404, "not_found")
+    return respond(200, {"valid": True, "campaign": campaign})
+
+
+def handle_campaign_set_sold_out(event: dict, token: str) -> dict:
+    """Organizer stops registrations ("Sold Out") — or reopens them. Body:
+    { "soldOut": true|false } (default true). Idempotent; token is not consumed."""
+    ip, ua = client_ip(event), client_ua(event)
+    try:
+        body = json.loads(event.get("body") or "{}")
+    except json.JSONDecodeError:
+        return err(400, "invalid_json")
+    sold_out = body.get("soldOut", True)
+    if not isinstance(sold_out, bool):
+        return err(400, "validation_failed",
+                   errors=[{"field": "soldOut", "message": "must be a boolean"}])
+
+    conn = get_conn()
+    try:
+        with conn.transaction(), conn.cursor() as cur:
+            tok = _load_token(cur, token, "campaign_manage")
+            if not tok or not tok.get("campaign_id"):
+                return err(410, "token_invalid", "Linkul nu mai este valid.")
+
+            cur.execute(
+                "UPDATE campaigns SET sold_out = %s WHERE id = %s RETURNING public_id",
+                (sold_out, tok["campaign_id"]),
+            )
+            if not cur.fetchone():
+                return err(404, "not_found")
+
+            audit(cur, actor="organizer",
+                  action="campaign.sold_out" if sold_out else "campaign.reopen",
+                  entity_type="campaign", entity_id=tok["campaign_id"], ip=ip, ua=ua)
+
+        msg = ("Am oprit înscrierile. Vizitatorii văd acum „Locuri ocupate”."
+               if sold_out else "Am redeschis înscrierile.")
+        return respond(200, {"soldOut": sold_out, "message": msg})
+    except Exception:
+        log.exception("campaign sold-out toggle failed")
         return err(500, "internal_error")
 
 

@@ -12,7 +12,7 @@ from .config import (
 from .helpers import (
     respond, err, client_ip, client_ua, get_conn, audit, issue_token,
     fetch_campaign_email_payload, send_campaign_email, send_citizen_email,
-    send_citizens_sms_batch, _citizen_manage_url,
+    send_citizens_sms_batch, _citizen_manage_url, _campaign_manage_url,
 )
 
 
@@ -174,6 +174,19 @@ def handle_admin_approve_campaign(event: dict, public_id: str) -> dict:
             # Read the email payload while still in the transaction; send after commit.
             email_payload = fetch_campaign_email_payload(cur, row["id"])
 
+            # Per-campaign management magic link, delivered in the approval email.
+            # Reusable (not consumed): the organizer marks the campaign sold out —
+            # or reopens it — from /gestionare-campanie/{token}. Commits with the
+            # approval so the link works immediately.
+            campaign_manage_token = None
+            if email_payload:
+                campaign_manage_token = issue_token(
+                    cur, kind="campaign_manage",
+                    organizer_id=email_payload["organizer_id"],
+                    campaign_id=row["id"],
+                    ttl=timedelta(days=180),
+                )
+
             # Citizens to notify: active, with an email, in the campaign's locality.
             # Issue a fresh per-recipient manage token so each alert carries a
             # working unsubscribe link (raw tokens aren't recoverable — only their
@@ -206,7 +219,7 @@ def handle_admin_approve_campaign(event: dict, public_id: str) -> dict:
         if email_payload:
             site = current_origin()
             campaign_url = f"{site}/campanie/{email_payload['campaign_public_id']}"
-            # 1) tell the organizer it's approved
+            # 1) tell the organizer it's approved (+ their sold-out management link)
             send_campaign_email(
                 "approved",
                 to_email=email_payload["contact_email"],
@@ -215,6 +228,7 @@ def handle_admin_approve_campaign(event: dict, public_id: str) -> dict:
                 organizer_public_id=str(email_payload["organizer_public_id"]),
                 site_url=site,
                 details=email_payload,
+                manage_url=_campaign_manage_url(campaign_manage_token) if campaign_manage_token else None,
             )
             # 2) alert citizens in the area (each with their own unsubscribe link)
             for cz_email, cz_tok in alert_recipients:

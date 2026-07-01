@@ -63,8 +63,11 @@ The base URL defaults to `https://api.sterilizarigratuite.ro` and is overridable
 - `GET /stats/locality?county=&locality=` — locality waiting counts (`stats/locality.get.ts`)
 - `GET /stats/map` — country-wide registration choropleth (`stats/map.get.ts`)
 - `GET /counties/{code}/localities?q=` — async locality typeahead (`counties/[code]/localities.get.ts`)
+- `GET /campaigns/manage/{token}` + `POST /campaigns/manage/{token}/sold-out` — organizer "Sold Out" flow (`campaigns/manage/[token].get.ts`, `.../sold-out.post.ts`; page `/gestionare-campanie/[token]`). See `docs/SOLDOUT-FLOW-PLAN.md`.
 
-Available-but-unused: `GET /register/{id}`, `GET /campaigns/{id}`, `GET /counties`. Magic-link pages (`/m/**`, `/r/**`) remain deferred placeholders.
+Available-but-unused: `GET /register/{id}`, `GET /campaigns/{id}`, `GET /counties`. Citizen magic-link pages (`/m/**`, `/r/**`) remain deferred placeholders; the organizer campaign-management link (`/gestionare-campanie/**`) is wired.
+
+**Sold Out:** an organizer marks a campaign full from the management link they get in the approval email. It sets `campaigns.sold_out`; the campaign stays `approved`/listed but `<CampaignCard>`, the `/harta` side panel and `/campanie/{id}` hide the public phone and show "⛔ Locuri ocupate. Mulțumim!". The flag rides through as `is_sold_out` (list) / `isSoldOut` (detail) → `CampaignCardData.isSoldOut`.
 
 ### Known mocks/stubs (don't ship to prod assuming these are real)
 

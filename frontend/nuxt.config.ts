@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   },
 
   robots: {
-    disallow: ['/m/', '/r/', '/cont/', '/confirmare', '/confirmare-campanie', '/admin'],
+    disallow: ['/m/', '/r/', '/cont/', '/gestionare-campanie/', '/confirmare', '/confirmare-campanie', '/admin'],
   },
 
   sitemap: {
@@ -136,6 +136,7 @@ export default defineNuxtConfig({
     '/m/**': { robots: false },
     '/r/**': { robots: false },
     '/cont/**': { robots: false },
+    '/gestionare-campanie/**': { robots: false },
   },
 
   nitro: {

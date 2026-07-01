@@ -25,6 +25,12 @@ ROUTES = [
     ("GET",  re.compile(r"^/register/(?P<id>[\w-]+)$"),           "get_citizen",      ("id",)),
     ("POST", re.compile(r"^/campaigns/submit$"),                  "campaign_submit",  ()),
     ("GET",  re.compile(r"^/campaigns$"),                         "list_campaigns",   ()),
+    # Campaign-management magic link (organizer). Declared BEFORE the /{id} route
+    # so the two-segment /campaigns/manage/{token} can't be shadowed.
+    ("GET",  re.compile(r"^/campaigns/manage/(?P<token>[\w-]+)$"),
+                                                                  "get_campaign_manage", ("token",)),
+    ("POST", re.compile(r"^/campaigns/manage/(?P<token>[\w-]+)/sold-out$"),
+                                                                  "campaign_sold_out",   ("token",)),
     ("GET",  re.compile(r"^/campaigns/(?P<id>[\w-]+)$"),           "get_campaign",     ("id",)),
     ("GET",  re.compile(r"^/organizer/(?P<id>[\w-]+)$"),           "get_organizer",    ("id",)),
     ("GET",  re.compile(r"^/stats/locality$"),                    "stats_locality",   ()),
@@ -65,6 +71,8 @@ DISPATCH = {
     "campaign_submit":  ph.handle_campaign_submit,
     "list_campaigns":   ph.handle_list_campaigns,
     "get_campaign":     lambda e, id:    ph.handle_get_campaign(e, id),
+    "get_campaign_manage": lambda e, token: ph.handle_get_campaign_manage(e, token),
+    "campaign_sold_out":   lambda e, token: ph.handle_campaign_set_sold_out(e, token),
     "get_organizer":    lambda e, id:    ph.handle_get_organizer(e, id),
     "stats_locality":   ph.handle_stats_locality,
     "stats_map":        ph.handle_stats_map,

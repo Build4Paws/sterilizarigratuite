@@ -18,6 +18,10 @@ export interface PublicCampaign {
   doctor: string | null
   /** Slot counts per species. May be partial if only one species is offered. */
   species: Partial<Record<Species, number>>
+  /** Backend status; `'SOLDOUT'` means the organizer stopped registrations. */
+  status?: CampaignStatus
+  /** Convenience flag — true when the organizer marked the campaign sold out. */
+  isSoldOut?: boolean
 }
 
 export interface Campaign {

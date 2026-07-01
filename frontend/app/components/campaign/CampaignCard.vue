@@ -51,13 +51,13 @@
       </li>
     </ul>
 
-    <footer v-if="campaign.doctor || campaign.phonePublic" class="campaign-card__foot">
+    <footer v-if="campaign.doctor || (campaign.phonePublic && !isSoldOut)" class="campaign-card__foot">
       <div v-if="campaign.doctor" class="campaign-card__foot-row">
         <Stethoscope :size="15" class="campaign-card__icon" aria-hidden="true" />
         <span class="campaign-card__row-label">Medic veterinar:</span>
         <span>{{ campaign.doctor }}</span>
       </div>
-      <div v-if="campaign.phonePublic" class="campaign-card__foot-row">
+      <div v-if="campaign.phonePublic && !isSoldOut" class="campaign-card__foot-row">
         <Phone :size="15" class="campaign-card__icon" aria-hidden="true" />
         <span class="campaign-card__row-label">Telefon:</span>
         <a :href="`tel:${campaign.phonePublic}`" class="campaign-card__phone">
@@ -66,8 +66,13 @@
       </div>
     </footer>
 
+    <!-- Sold out: the phone number is replaced by a closing notice (spec). -->
+    <p v-if="isSoldOut" class="campaign-card__soldout">
+      <span aria-hidden="true">⛔</span> Locuri ocupate. Mulțumim!
+    </p>
+
     <a
-      v-if="showCta"
+      v-else-if="showCta"
       :href="`tel:${campaign.phonePublic}`"
       class="campaign-card__cta"
     >
@@ -102,16 +107,21 @@ function localToday(): string {
   return `${y}-${m}-${day}`
 }
 
+/** True when the organizer stopped registrations — via flag or the SOLDOUT status. */
+const isSoldOut = computed(() =>
+  !!props.campaign.isSoldOut || props.campaign.status === 'SOLDOUT',
+)
+
 const badge = computed<Badge | null>(() => {
   // Organizer preview — fixed badge, no date logic.
   if (props.variant === 'pending') {
     return { label: 'În așteptarea aprobării', tone: 'neutral' }
   }
 
-  const { status, dateStart, dateEnd, isSoldOut } = props.campaign
-
   // Sold-out overrides everything else.
-  if (isSoldOut) return { label: 'Locuri epuizate', tone: 'warning' }
+  if (isSoldOut.value) return { label: 'Locuri ocupate', tone: 'warning' }
+
+  const { status, dateStart, dateEnd } = props.campaign
 
   const today = localToday()
   // For single-day campaigns dateEnd is omitted — treat end === start.
@@ -133,7 +143,10 @@ const badge = computed<Badge | null>(() => {
 
 /** Only confirmed-upcoming campaigns make sense to call about. */
 const showCta = computed(() =>
-  props.showCallCta && ['ongoing', 'upcoming'].includes(badge.value?.tone || '') && !!props.campaign.phonePublic,
+  props.showCallCta
+  && !isSoldOut.value
+  && ['ongoing', 'upcoming'].includes(badge.value?.tone || '')
+  && !!props.campaign.phonePublic,
 )
 
 // `formatDateRange` (auto-imported from utils/format) renders Romanian
@@ -420,5 +433,23 @@ const dateLabel = computed(() =>
 
 .campaign-card__cta:active {
   transform: translateY(1px);
+}
+
+/* ---- Sold-out notice (replaces the phone / call CTA) ---- */
+.campaign-card__soldout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  align-self: stretch;
+  margin: var(--space-xs) 0 0;
+  padding: var(--space-sm) var(--space-lg);
+  background: #fef3c7;
+  color: #92400e;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  border-radius: var(--radius-md);
+  text-align: center;
 }
 </style>

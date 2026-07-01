@@ -37,7 +37,8 @@ function normalizePublicCampaign(p: PublicCampaign): Campaign {
     slotsCats: p.species.cat,
     doctor: p.doctor ?? undefined,
     phonePublic: p.phonePublic,
-    status: 'APPROVED',
+    status: p.status ?? 'APPROVED',
+    isSoldOut: p.isSoldOut ?? p.status === 'SOLDOUT',
     createdAt: '',
   }
 }
