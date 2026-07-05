@@ -13,8 +13,17 @@
 --      'campaign_manage'). The tokens table already had citizen_id + organizer_id;
 --      the management token sets BOTH organizer_id and campaign_id.
 --
+--   3. token_kind enum — the management tokens use new kind values. Postgres
+--      rejects an unknown enum value at INSERT time, so these MUST be added or
+--      the approval flow (which mints a 'campaign_manage' token) fails and rolls
+--      back. ADD VALUE cannot be USED in the same transaction that adds it, so
+--      run this file via psql (autocommit) rather than inside a BEGIN/COMMIT.
+--
 -- Apply on BOTH dev and prod databases (run from a host that can reach RDS, e.g.
 -- the EC2 box) BEFORE deploying the Lambda that reads these columns. Idempotent.
+
+ALTER TYPE token_kind ADD VALUE IF NOT EXISTS 'citizen_manage';
+ALTER TYPE token_kind ADD VALUE IF NOT EXISTS 'campaign_manage';
 
 ALTER TABLE campaigns
   ADD COLUMN IF NOT EXISTS sold_out boolean NOT NULL DEFAULT false;

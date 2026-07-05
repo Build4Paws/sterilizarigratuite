@@ -6,6 +6,7 @@
     </main>
     <LayoutFooter />
     <LayoutBackToTop />
+    <LayoutCookieConsent />
     <UiToaster />
   </div>
 </template>

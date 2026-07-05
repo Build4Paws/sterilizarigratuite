@@ -44,6 +44,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/seo',
     '@vueuse/nuxt',
+    '@nuxt/scripts',
   ],
 
   site: {
@@ -85,6 +86,9 @@ export default defineNuxtConfig({
     messengerosPassword: process.env.NUXT_MESSENGEROS_PASSWORD || '',
     public: {
       turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '',
+      // GA4 measurement id (G-XXXXXXXXXX). Empty = analytics disabled (dev).
+      // Loaded via plugins/analytics.client.ts behind cookie consent.
+      googleAnalyticsId: process.env.NUXT_PUBLIC_GA_ID || '',
     },
   },
 
@@ -98,11 +102,11 @@ export default defineNuxtConfig({
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+          "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com",
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com data:",
           "img-src 'self' data: https:",
-          "connect-src 'self' https://challenges.cloudflare.com",
+          "connect-src 'self' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com",
           "frame-src https://challenges.cloudflare.com",
           "frame-ancestors 'none'",
           "base-uri 'self'",

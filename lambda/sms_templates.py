@@ -67,7 +67,7 @@ def render_citizen_sms(
     if kind == "campaign_alert":
         return (
             f"Sterilizare gratuita {_species_ro(species)} in {_ascii(locality)}, "
-            f"{_fmt_date(date_start)}. Suna la {phone or ''} pt programare. "
+            f"{_fmt_date(date_start)}. Suna acum la {phone or ''} pentru programare. "
             "Locuri limitate."
         )
     raise ValueError(f"unknown sms kind: {kind}")
