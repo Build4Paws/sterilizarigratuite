@@ -1,4 +1,4 @@
-# Pre-Ship Audit — sterilizarigratuite.ro MVP
+# Pre-Ship Audit — sterilizari-gratuite.ro MVP
 
 > Audit date: 2026-05-10
 > Auditor: deep code review across Vue 3 / Nuxt 4 / AWS proxy / SEO best practices.
@@ -193,7 +193,7 @@ if (secret) { ... }
 **Problem.** Local `.env` contains STS temporary credentials (`AWS_ACCESS_KEY_ID=ASIA...` + `AWS_SESSION_TOKEN=...`). These expire (usually within hours) and are unsuitable for prod. There is no documented production credential plan. Three concrete risks:
 1. If the deploy uses long-lived `AKIA...` keys committed to a CI secret, leakage = direct API Gateway access.
 2. If the deploy reuses STS tokens, the site silently breaks when they expire.
-3. Without IAM scoping, the credentials grant blanket `execute-api:Invoke` on every API in the account, not just `api.sterilizarigratuite.ro`.
+3. Without IAM scoping, the credentials grant blanket `execute-api:Invoke` on every API in the account, not just `api.sterilizari-gratuite.ro`.
 
 **Where.**
 - `frontend/.env` — current local STS tokens (already in `.gitignore`, good).
@@ -330,7 +330,7 @@ routeRules: {
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com data:",
         "img-src 'self' data: https:",
-        "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com https://api.sterilizarigratuite.ro",
+        "connect-src 'self' https://*.hcaptcha.com https://hcaptcha.com https://api.sterilizari-gratuite.ro",
         "frame-src https://*.hcaptcha.com https://hcaptcha.com",
         "frame-ancestors 'none'",
         "base-uri 'self'",
@@ -344,7 +344,7 @@ routeRules: {
 Test in staging first — CSP often breaks edge cases. Add `Content-Security-Policy-Report-Only` first if you want a soft rollout.
 
 **Acceptance.**
-- Run https://observatory.mozilla.org/analyze/sterilizarigratuite.ro after deploy — should score B+ or higher.
+- Run https://observatory.mozilla.org/analyze/sterilizari-gratuite.ro after deploy — should score B+ or higher.
 - Site loads correctly, captcha widget works, fonts render. No console CSP errors.
 
 ---
@@ -609,7 +609,7 @@ For each page, add an explicit canonical that strips query params (or canonicali
 
 ```ts
 const siteConfig = useSiteConfig()
-const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizarigratuite.ro'
+const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizari-gratuite.ro'
 
 useHead(() => ({
   link: [{ rel: 'canonical', href: `${siteUrl}${route.path}` }],
@@ -679,17 +679,17 @@ Optionally add the human name as `addressRegionName` (non-standard but harmless)
 
 ### 18. Don't hardcode site URL in JSON-LD
 
-**Problem.** `frontend/app/pages/index.vue:73,79` hardcodes `https://sterilizarigratuite.ro` in the homepage JSON-LD. Staging deploys (e.g., `staging.sterilizarigratuite.ro` or a Vercel preview URL) will emit JSON-LD pointing at production, which confuses Google during crawl tests.
+**Problem.** `frontend/app/pages/index.vue:73,79` hardcodes `https://sterilizari-gratuite.ro` in the homepage JSON-LD. Staging deploys (e.g., `staging.sterilizari-gratuite.ro` or a Vercel preview URL) will emit JSON-LD pointing at production, which confuses Google during crawl tests.
 
 **Where.**
-- `frontend/app/pages/index.vue:73, 79` — `url: 'https://sterilizarigratuite.ro'`.
+- `frontend/app/pages/index.vue:73, 79` — `url: 'https://sterilizari-gratuite.ro'`.
 
 **Recommended solution.**
 
 Use `useSiteConfig()` (already used in `campanii.vue`):
 ```ts
 const siteConfig = useSiteConfig()
-const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizarigratuite.ro'
+const siteUrl = (siteConfig.url as string | undefined) || 'https://sterilizari-gratuite.ro'
 
 useHead(() => ({
   script: [{

@@ -16,7 +16,7 @@ The public API already exists (`/register`, `/campaigns`, `/campaigns/submit`,
 organizers, and view a dashboard + audit log.
 
 A Nuxt frontend already proxies these: it sends each request to
-`https://api.sterilizarigratuite.ro/admin/...` with header
+`https://api.sterilizari-gratuite.ro/admin/...` with header
 `Authorization: Bearer <Cognito idToken>`, and expects the **exact JSON shapes
 below** (camelCase). Match them precisely.
 

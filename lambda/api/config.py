@@ -73,8 +73,8 @@ ENVIRONMENTS: dict[str, dict] = {
 
 # Incoming custom domain → environment key.
 DOMAIN_TO_ENV: dict[str, str] = {
-    "api.sterilizarigratuite.ro":     "prod",
-    "dev.api.sterilizarigratuite.ro": "dev",
+    "api.sterilizari-gratuite.ro":     "prod",
+    "dev.api.sterilizari-gratuite.ro": "dev",
     # Add the raw execute-api host here (mapped to "dev") if you want to test
     # via the d-xxxx.execute-api.* URL, which otherwise fails closed with 403.
 }

@@ -56,7 +56,7 @@ The browser never talks to AWS API Gateway directly. The pattern in `server/api/
 3. Sign the upstream request with `aws4fetch` (`AwsClient`, service `execute-api`).
 4. Forward error bodies back as `data` on a `createError({ statusCode, statusMessage, data })` so `extractApiError` on the client can map backend error codes (`duplicate_submission`, `validation_failed`, `captcha_failed`, etc.) to Romanian copy.
 
-The base URL defaults to `https://api.sterilizarigratuite.ro` and is overridable via `AWS_API_BASE`. Backend routes wired as of API v1.1.1:
+The base URL defaults to `https://api.sterilizari-gratuite.ro` and is overridable via `AWS_API_BASE`. Backend routes wired as of API v1.1.1:
 - `POST /register` — citizen registration
 - `POST /campaigns/submit` — organizer campaign submission (`submit.post.ts`)
 - `GET /campaigns?county=` — public campaign listing (`campaigns/index.get.ts`)

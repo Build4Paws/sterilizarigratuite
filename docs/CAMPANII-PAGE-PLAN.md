@@ -38,8 +38,8 @@ in-memory window is the simplest correct UX.
 ## 2. Backend contract
 
 ```
-GET https://api.sterilizarigratuite.ro/campaigns
-GET https://api.sterilizarigratuite.ro/campaigns?county=AB
+GET https://api.sterilizari-gratuite.ro/campaigns
+GET https://api.sterilizari-gratuite.ro/campaigns?county=AB
 ```
 
 The endpoint returns **only campaigns that are approved and not finished

@@ -1,5 +1,5 @@
 """
-email_templates.py — campaign lifecycle emails for sterilizarigratuite.ro
+email_templates.py — campaign lifecycle emails for sterilizari-gratuite.ro
 ==========================================================================
 
 Renders the (subject, html, text) triple for the organizer emails
@@ -34,8 +34,8 @@ import html
 from typing import Optional
 
 # ── Brand / config (edit these) ──────────────────────────────────────────────
-BRAND = "sterilizarigratuite.ro"
-SUPPORT_EMAIL = "contact@sterilizarigratuite.ro"
+BRAND = "sterilizari-gratuite.ro"
+SUPPORT_EMAIL = "contact@sterilizari-gratuite.ro"
 
 # Email header logo. A PNG rendered from frontend/public/favicon.svg and served
 # from the site root (frontend/public/email-logo.png → https://.../email-logo.png).
@@ -446,7 +446,7 @@ if __name__ == "__main__":
         organization_name="Asociația Prietenii Animalelor",
         campaign_public_id="a3f1c2e4-5b6d-47a8-9c10-2e7f4b8d9a01",
         organizer_public_id="8d2b1f44-90ab-4c33-bb21-7e9c0a1d2f55",
-        site_url="https://sterilizarigratuite.ro",
+        site_url="https://sterilizari-gratuite.ro",
         details={
             "county_name": "Suceava", "locality": "Bosanci",
             "address": "Str. Primăriei nr. 4",
@@ -462,7 +462,7 @@ if __name__ == "__main__":
             kw["reason"] = ("Numărul de telefon de contact nu a putut fi verificat. "
                             "Te rugăm să retrimiți campania cu un număr valid.")
         if k == "approved":
-            kw["manage_url"] = "https://sterilizarigratuite.ro/gestionare-campanie/TOKEN123"
+            kw["manage_url"] = "https://sterilizari-gratuite.ro/gestionare-campanie/TOKEN123"
         subj, html_doc, text_doc = render(k, **kw)
         with open(f"preview-{k}.html", "w", encoding="utf-8") as f:
             f.write(html_doc)
@@ -478,12 +478,12 @@ if __name__ == "__main__":
     }
     citizen_cases = {
         "registered": dict(name="Maria Popescu", locality="Bosanci",
-                           manage_url="https://sterilizarigratuite.ro/cont/TOKEN123"),
+                           manage_url="https://sterilizari-gratuite.ro/cont/TOKEN123"),
         "campaign_alert": dict(name="Maria Popescu", locality="Bosanci",
                                organization_name="Asociația Prietenii Animalelor",
                                details=citizen_details,
-                               campaign_url="https://sterilizarigratuite.ro/campanie/UUID",
-                               manage_url="https://sterilizarigratuite.ro/cont/TOKEN123"),
+                               campaign_url="https://sterilizari-gratuite.ro/campanie/UUID",
+                               manage_url="https://sterilizari-gratuite.ro/cont/TOKEN123"),
         "deleted": dict(name="Maria Popescu"),
     }
     for k, kw in citizen_cases.items():

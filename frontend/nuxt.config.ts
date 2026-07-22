@@ -48,7 +48,7 @@ export default defineNuxtConfig({
   ],
 
   site: {
-    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://sterilizarigratuite.ro',
+    url: process.env.NUXT_PUBLIC_SITE_URL || 'https://sterilizari-gratuite.ro',
     name: 'Sterilizări Gratuite',
     description: 'Găsește campanii de sterilizare gratuită pentru câini și pisici în România.',
     defaultLocale: 'ro',

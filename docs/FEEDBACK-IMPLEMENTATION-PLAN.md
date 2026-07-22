@@ -55,7 +55,7 @@ trece (exit 0). Modificările sunt pe branch-ul `main`, **fără commit**.
 **Status:** implementat în `app/pages/confirmare.vue` și verificat în browser. Realizat: titlu
 „Gata, {nume}!" + frază lead, rang cu „…care vor fi alertate / va fi alertată", paragraf despre
 primărie (Legea 258/2013) cu localitatea dinamică, și callout „Fiecare înscriere contează!" cu buton
-„Copiază linkul" (copiază `https://sterilizarigratuite.ro/` + toast). Stiluri noi: `.cf__lead`,
+„Copiază linkul" (copiază `https://sterilizari-gratuite.ro/` + toast). Stiluri noi: `.cf__lead`,
 `.statcard__note`, `.share-card*`. Detaliile de mai jos rămân ca referință a ce s-a făcut.
 
 **Fișier:** `app/pages/confirmare.vue` (pagina a fost recent redesenată; modifici doar copy + adaugi 2 blocuri).
@@ -107,7 +107,7 @@ Adaugă un card distinct (folosește stilul `.card` existent + accent orange la 
 </section>
 ```
 
-Opțional (nice to have): un buton care copiază linkul `https://sterilizarigratuite.ro/` folosind
+Opțional (nice to have): un buton care copiază linkul `https://sterilizari-gratuite.ro/` folosind
 același pattern `navigator.clipboard.writeText` + `toast.success(...)` ca la `copyToken`. Dacă îl
 adaugi, textul butonului: „Copiază linkul" / „Link copiat".
 

@@ -193,7 +193,7 @@ Update the stale notes now that wiring is done:
   on `createError(...)` so `extractApiError` maps the code. Copy
   `campaigns/index.get.ts` (GET) or `register.post.ts` (POST + hCaptcha).
 - **CSP:** browser only talks to same-origin `/api/**`; `connect-src` already
-  allows `https://api.sterilizarigratuite.ro` for the server side. No change.
+  allows `https://api.sterilizari-gratuite.ro` for the server side. No change.
 - **No new captcha** on GET routes.
 - After each story: `npm run typecheck` (strict) + manual `npm run dev` smoke of
   the touched page. Node 24+ (`node -v`).

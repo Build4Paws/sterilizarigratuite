@@ -15,7 +15,7 @@
 
 ## 1. Context
 
-Build4Paws (`sterilizarigratuite.ro`) connects Romanian citizens with free animal
+Build4Paws (`sterilizari-gratuite.ro`) connects Romanian citizens with free animal
 sterilization campaigns. There is an internal admin area (Cognito-gated) where
 operators moderate campaigns, manage citizen registrations, etc. The **Rapoarte**
 ("Reports") page lets an admin pick a dataset, apply filters, and download a CSV.

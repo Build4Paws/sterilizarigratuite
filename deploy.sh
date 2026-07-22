@@ -54,6 +54,6 @@ ssh -i "$KEY" -o StrictHostKeyChecking=accept-new "$HOST" '
 '
 
 echo
-echo "Deployed. Verify:  curl -I https://sterilizarigratuite.ro"
+echo "Deployed. Verify:  curl -I https://sterilizari-gratuite.ro"
 echo "Roll back (previous build is kept in /opt/sterilizari-old):"
 echo "  ssh -i \"$KEY\" \"$HOST\" 'sudo mv /opt/sterilizari /opt/sterilizari-bad && sudo mv /opt/sterilizari-old /opt/sterilizari && pm2 restart sterilizari'"

@@ -1,7 +1,7 @@
 # API Lambda (`process-user-data`)
 
 The single Python Lambda behind the API Gateway HTTP API — all public, magic-link
-and admin routes for sterilizarigratuite.ro. Lives here so it's versioned with
+and admin routes for sterilizari-gratuite.ro. Lives here so it's versioned with
 the frontend that calls it.
 
 ```

@@ -12,7 +12,7 @@
 
 | Env | URL |
 |-----|-----|
-| Production | `https://api.sterilizarigratuite.ro` |
+| Production | `https://api.sterilizari-gratuite.ro` |
 | AWS API Gateway | `https://cuk1b8z6w4.execute-api.eu-central-1.amazonaws.com` (`eu-central-1`) |
 | Mock | `https://virtserver.swaggerhub.com/Blitzcryp/BackendStarter/1.0.0` |
 
