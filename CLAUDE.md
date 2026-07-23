@@ -56,7 +56,7 @@ The browser never talks to AWS API Gateway directly. The pattern in `server/api/
 3. Sign the upstream request with `aws4fetch` (`AwsClient`, service `execute-api`).
 4. Forward error bodies back as `data` on a `createError({ statusCode, statusMessage, data })` so `extractApiError` on the client can map backend error codes (`duplicate_submission`, `validation_failed`, `captcha_failed`, etc.) to Romanian copy.
 
-The base URL defaults to `https://api.sterilizari-gratuite.ro` and is overridable via `AWS_API_BASE`. Backend routes wired as of API v1.1.1:
+The base URL comes entirely from `AWS_API_BASE` (`nuxt.config.ts` sets `awsApiBase: process.env.AWS_API_BASE` with **no** code fallback — the backend proxy is dead unless it's set). The active dev environment is `https://dev.api.sterilizari-gratuite.ro/`. Backend routes wired as of API v1.1.1:
 - `POST /register` — citizen registration
 - `POST /campaigns/submit` — organizer campaign submission (`submit.post.ts`)
 - `GET /campaigns?county=` — public campaign listing (`campaigns/index.get.ts`)
@@ -68,6 +68,14 @@ The base URL defaults to `https://api.sterilizari-gratuite.ro` and is overridabl
 Available-but-unused: `GET /register/{id}`, `GET /campaigns/{id}`, `GET /counties`. Citizen magic-link pages (`/m/**`, `/r/**`) remain deferred placeholders; the organizer campaign-management link (`/gestionare-campanie/**`) is wired.
 
 **Sold Out:** an organizer marks a campaign full from the management link they get in the approval email. It sets `campaigns.sold_out`; the campaign stays `approved`/listed but `<CampaignCard>`, the `/harta` side panel and `/campanie/{id}` hide the public phone and show "⛔ Locuri ocupate. Mulțumim!". The flag rides through as `is_sold_out` (list) / `isSoldOut` (detail) → `CampaignCardData.isSoldOut`.
+
+### Admin panel (`/admin`, Cognito-gated)
+
+Internal admin area under `app/pages/admin/**`, proxied through `server/api/admin/**`. Auth is an **Amazon Cognito User Pool** with TOTP MFA — login (`server/api/admin/auth/login.post.ts`) runs `USER_PASSWORD_AUTH` + a software-token MFA challenge, then sets httpOnly session cookies. The `admin-auth` middleware redirects unauthenticated hits to `/admin/login`.
+
+Required env (server-only; see `.env.example`): `COGNITO_REGION`, `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID`, `COGNITO_CLIENT_SECRET`. Missing/empty → login 500s with `"Cognito is not configured."`; a wrong pool → `401 invalid_credentials`. The admin "SMS" section additionally needs `NUXT_MESSENGEROS_EMAIL` / `NUXT_MESSENGEROS_PASSWORD`.
+
+**Deploy/infra:** `deploy.sh` builds locally (baking `frontend/.env` into `.output`) and ships to the EC2 box over SSH + pm2 (`sterilizari`). The active box is the **dev** environment `ec2-35-159-120-82` (key `wip1.pem`, site `dev.sterilizari-gratuite.ro`). An older box (`ec2-63-183-193-23`, `cosmin.pem`) is retired — don't target it. Because secrets are baked at build time, the box has no `.env`; recover real values by grepping the deployed `/opt/sterilizari/server` chunks.
 
 ### Known mocks/stubs (don't ship to prod assuming these are real)
 

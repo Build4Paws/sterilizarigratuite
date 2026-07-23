@@ -44,6 +44,17 @@ def _species_ro(species) -> str:
     return " si ".join(parts)
 
 
+def _national_phone(phone) -> str:
+    """Render a canonical '+40XXXXXXXXX' phone in Romanian national format for the
+    citizen-facing SMS: drop the '+4' so the number reads as Romanians dial it
+    locally ('+40726123456' -> '0726123456'). The stored value is unchanged; this
+    is display-only. Non-+40 values pass through untouched."""
+    p = str(phone or "").strip()
+    if p.startswith("+40"):
+        return "0" + p[3:]
+    return p
+
+
 def _fmt_date(d) -> str:
     """Format the campaign start date as dd.mm.yyyy. Accepts a date/datetime or
     an ISO 'YYYY-MM-DD' string."""
@@ -67,7 +78,7 @@ def render_citizen_sms(
     if kind == "campaign_alert":
         return (
             f"Sterilizare gratuita {_species_ro(species)} in {_ascii(locality)}, "
-            f"{_fmt_date(date_start)}. Suna acum la {phone or ''} pentru programare. "
+            f"{_fmt_date(date_start)}. Suna acum la {_national_phone(phone)} pentru programare. "
             "Locuri limitate."
         )
     raise ValueError(f"unknown sms kind: {kind}")

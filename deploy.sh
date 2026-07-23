@@ -9,8 +9,8 @@ set -euo pipefail
 # and baked into .output — the EC2 box has no .env of its own. Build with .env present.
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-KEY="$ROOT/cosmin.pem"
-HOST="ec2-user@ec2-63-183-193-23.eu-central-1.compute.amazonaws.com"
+KEY="$ROOT/wip1.pem"
+HOST="ec2-user@ec2-35-159-120-82.eu-central-1.compute.amazonaws.com"
 
 # 1. Production build (Nuxt loads frontend/.env automatically).
 cd "$ROOT/frontend"
@@ -54,6 +54,6 @@ ssh -i "$KEY" -o StrictHostKeyChecking=accept-new "$HOST" '
 '
 
 echo
-echo "Deployed. Verify:  curl -I https://sterilizari-gratuite.ro"
+echo "Deployed. Verify:  curl -I https://dev.sterilizari-gratuite.ro"
 echo "Roll back (previous build is kept in /opt/sterilizari-old):"
 echo "  ssh -i \"$KEY\" \"$HOST\" 'sudo mv /opt/sterilizari /opt/sterilizari-bad && sudo mv /opt/sterilizari-old /opt/sterilizari && pm2 restart sterilizari'"

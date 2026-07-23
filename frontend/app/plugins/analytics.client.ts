@@ -36,15 +36,14 @@ export default defineNuxtPlugin(() => {
     },
   })
 
-  // Load once (and only once) consent has been granted. `once` cleans up the
-  // watcher after the script loads so a later revoke can't double-load.
-  const stop = watch(
-    granted,
-    (isGranted) => {
+
+  if (granted.value) {
+    ga.load()
+  } else {
+    const stop = watch(granted, (isGranted) => {
       if (!isGranted) return
       ga.load()
       stop()
-    },
-    { immediate: true },
-  )
+    })
+  }
 })

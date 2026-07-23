@@ -5,6 +5,10 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
+  experimental: {
+    payloadExtraction: false,
+  },
+
   ssr: true,
 
   app: {
